@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var blocker: KeyboardBlocker
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var loginItem = LaunchAtLogin()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
@@ -26,6 +27,19 @@ struct SettingsView: View {
                 label("Paw detection", "Locks by itself when several keys are pressed at once or held down, like a cat walking or sitting on the keyboard.")
             }
             .toggleStyle(GlowSwitchStyle())
+
+            VStack(alignment: .leading, spacing: 6) {
+                Toggle(isOn: Binding(get: { loginItem.isEnabled }, set: { loginItem.set($0) })) {
+                    label("Launch at login", "Opens Paws Off when you log in, so the shortcut and paw detection are always ready.")
+                }
+                .toggleStyle(GlowSwitchStyle())
+                if let error = loginItem.error {
+                    Text(error)
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundStyle(Palette.idle[0])
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
 
             HStack(alignment: .top) {
                 label("Shortcut", "Locks and unlocks from anywhere.")

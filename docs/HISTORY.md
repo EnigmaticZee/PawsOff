@@ -1,5 +1,12 @@
 # Version history
 
+## 1.2.0 — 2026-10-15
+- Fix: Accessibility access no longer goes stale after a rebuild (builds are signed with a stable
+  `identifier "local.pawsoff"` requirement instead of the per-build cdhash).
+- "Already switched on? Reset and ask again" link on the permission screen clears a stale grant.
+- Launch at login toggle in Settings.
+- Menu bar icon is a filled paw (circled while locked).
+
 ## 1.1.1 — 2026-10-15
 - "Made by Zaid" credit in Settings and the About window (new About item in the menu bar menu).
 - Development notes moved to docs/DEVELOPMENT.md.

@@ -240,6 +240,16 @@ final class KeyboardBlocker: ObservableObject {
         if hasPermission { installTap() } else { pollPermission() }
     }
 
+    /// Clears a stale grant (e.g. one left by an older build) so macOS asks again.
+    func resetPermission() {
+        let tccutil = Process()
+        tccutil.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+        tccutil.arguments = ["reset", "Accessibility", Bundle.main.bundleIdentifier ?? "local.pawsoff"]
+        try? tccutil.run()
+        tccutil.waitUntilExit()
+        requestPermission()
+    }
+
     func openAccessibilitySettings() {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
             NSWorkspace.shared.open(url)

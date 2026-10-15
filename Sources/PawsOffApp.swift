@@ -38,7 +38,7 @@ struct PawsOffScene: App {
         MenuBarExtra {
             MenuBarContent().environmentObject(blocker)
         } label: {
-            Image(systemName: blocker.isActive ? "pawprint.fill" : "pawprint")
+            Image(systemName: blocker.isActive ? "pawprint.circle.fill" : "pawprint.fill")
         }
     }
 }

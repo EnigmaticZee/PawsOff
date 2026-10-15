@@ -41,5 +41,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-codesign --force --deep --sign - "$APP"
+# Ad-hoc signature with a stable requirement: macOS ties the Accessibility grant to the
+# designated requirement, and the default ad-hoc one (cdhash) changes on every build.
+codesign --force --sign - -r='designated => identifier "local.pawsoff"' "$APP"
 echo "Built $APP $VERSION ($BUILD_NUMBER)"

@@ -21,9 +21,12 @@ with `swiftc` via `build.sh`. Read `README.md` first, then these rules before ch
 - After ANY UI change: `./build.sh && "Paws Off.app/Contents/MacOS/PawsOff" --render-previews <dir>` and
   look at the PNGs (handy when you can't screenshot the live window). Add a case
   to `KeyboardBlocker.PreviewState` when you add a UI state. TextFields render as yellow boxes off-screen.
+- Keep the stable signing requirement in `build.sh` (`designated => identifier "local.pawsoff"`); the
+  default ad-hoc requirement is a per-build cdhash, which silently invalidates the Accessibility grant.
+  A Developer ID signature (for sharing) replaces this.
 - Bump the version with `./build.sh <version>`, log it in `docs/HISTORY.md`, commit, and tag `vX.Y.Z`.
 
 ## Not verified
-v1.1.1: UI checked only through off-screen renders. Still to be tested by hand with Accessibility
+v1.2.0: UI checked only through off-screen renders. Still to be tested by hand with Accessibility
 granted: actual key blocking, unlock phrase, ⌃⌥⌘L shortcut, paw detection on a real keyboard, menu bar
-actions, timer auto-unlock, and auto-release on lock / sleep / user switch.
+actions, launch at login, timer auto-unlock, and auto-release on lock / sleep / user switch.

@@ -18,6 +18,7 @@ without typing gibberish, or leave your Mac running without your pets typing int
 - **Paw detection:** when 4+ letter keys are held at once, or 2+ are held for 3 seconds (a cat walking or
   sitting on the keyboard), Paws Off locks in Away mode on its own. Turn it off in Settings.
 - **Global shortcut:** ⌃⌥⌘L locks and unlocks from any app.
+- **Launch at login** (Settings), so the shortcut and paw detection are always ready.
 - **Menu bar paw:** lock for cleaning, lock while away, or unlock. The app keeps running in the menu bar
   when you close the window.
 - **Auto-release:** the keyboard is handed back the moment the screen locks, the screen saver starts,
@@ -41,8 +42,9 @@ open "Paws Off.app"
 ```
 
 On first launch click **Grant Access** and enable Paws Off in
-System Settings → Privacy & Security → Accessibility. The app is ad-hoc signed, so macOS may ask
-again after a rebuild (remove the old entry and re-add it if the toggle seems stuck).
+System Settings → Privacy & Security → Accessibility. Builds are signed with a stable identity
+(`identifier "local.pawsoff"`), so the grant survives rebuilds. If the switch is on but locking does
+nothing, click **Already switched on? Reset and ask again** in the app.
 
 To install, drag `Paws Off.app` into `/Applications`.
 
@@ -80,6 +82,7 @@ iconutil -c icns /tmp/AppIcon.iconset -o Assets/AppIcon.icns
 | `Sources/ContentView.swift` | Main window |
 | `Sources/SettingsView.swift` | Settings sheet (unlock phrase, paw detection, shortcut) |
 | `Sources/MenuBarContent.swift` | Menu bar menu |
+| `Sources/LaunchAtLogin.swift` | Login item toggle (SMAppService) |
 | `Sources/Theme.swift` | `Palette` colours and shared controls (mode picker, chips, switch, keycap) |
 | `Sources/PawsOffApp.swift` | App entry point, window + menu bar scenes, `--render-previews` flag |
 | `Sources/PreviewRenderer.swift` | Off-screen PNG renders of each UI state |

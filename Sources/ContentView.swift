@@ -300,8 +300,15 @@ struct ContentView: View {
     @ViewBuilder
     private var footer: some View {
         if !blocker.hasPermission {
-            Button("Open Accessibility Settings") { blocker.openAccessibilitySettings() }
-                .buttonStyle(PillStyle())
+            VStack(spacing: 10) {
+                Button("Open Accessibility Settings") { blocker.openAccessibilitySettings() }
+                    .buttonStyle(PillStyle())
+                Button("Already switched on? Reset and ask again") { blocker.resetPermission() }
+                    .buttonStyle(.plain)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.45))
+                    .underline()
+            }
         } else if locked {
             hint("lock.open", "Releases by itself if your Mac locks or sleeps")
         } else if let summary = blocker.lastSummary {
