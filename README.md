@@ -61,7 +61,7 @@ For leaving your computer running near curious pets.
 | 🐈 **Paw detection** | Locks on its own when a cat walks or sits on the keyboard (4+ keys held at once, or 2+ held for 3 seconds). |
 | ⌨️ **Global shortcut** | Lock or unlock from any app: <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>L</kbd> on Mac, <kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>Shift</kbd><kbd>L</kbd> on Windows. |
 | 🐾 **Menu bar / tray paw** | Lock, unlock or open Paws Off, even with the window closed. |
-| 🌗 **Light & dark** | Follows your system appearance automatically; pick Light or Dark in ⚙️ Settings on Windows. |
+| 🌗 **Light & dark** | Windows: follows your system light/dark setting (Auto), or pick Light or Dark in ⚙️ Settings. The Mac app is dark for now. |
 | 🚀 **Launch at login** | Keeps the shortcut and paw detection ready. Turn it on in ⚙️ Settings, along with your unlock phrase. |
 | 🔓 **Never locks you out** | The keyboard is released the moment your computer locks, sleeps, switches user or shuts down, so you can always type your password. |
 
