@@ -1,5 +1,12 @@
 # Version history
 
+## 1.3.0 — 2026-10-15
+- **Windows app**: same look and features (Clean/Away, timer, unlock phrase, paw detection, tray icon,
+  launch at sign-in). Single .exe, no install, no admin rights. Shortcut: Ctrl+Alt+Shift+L.
+- **One-click downloads**: GitHub Releases now carry PawsOff-mac.dmg (universal: Apple Silicon + Intel)
+  and PawsOff-Windows.exe, built by GitHub Actions.
+- README: download buttons and first-launch steps for both platforms.
+
 ## 1.2.0 — 2026-10-15
 - Fix: Accessibility access no longer goes stale after a rebuild (builds are signed with a stable
   `identifier "local.pawsoff"` requirement instead of the per-build cdhash).

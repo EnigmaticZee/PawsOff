@@ -141,16 +141,9 @@
             </Rectangle.Fill>
         </Rectangle>
         <Canvas IsHitTestVisible="False">
-            <Ellipse x:Name="Glow1" Width="320" Height="320" Canvas.Left="-60" Canvas.Top="20" Opacity="0.35">
-                <Ellipse.Effect>
-                    <BlurEffect Radius="140" />
-                </Ellipse.Effect>
-            </Ellipse>
-            <Ellipse x:Name="Glow2" Width="300" Height="300" Canvas.Left="150" Canvas.Top="300" Opacity="0.35">
-                <Ellipse.Effect>
-                    <BlurEffect Radius="140" />
-                </Ellipse.Effect>
-            </Ellipse>
+            <!-- Soft glows as radial gradients (WPF's blur radius is too limited to hide the edges). -->
+            <Ellipse x:Name="Glow1" Width="560" Height="560" Canvas.Left="-180" Canvas.Top="-100" />
+            <Ellipse x:Name="Glow2" Width="540" Height="540" Canvas.Left="30" Canvas.Top="180" />
         </Canvas>
 
         <Grid>

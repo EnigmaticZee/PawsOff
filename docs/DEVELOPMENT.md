@@ -1,8 +1,10 @@
 # Development notes
 
-Project: **Paws Off**, a SwiftUI macOS app (window + menu bar) that blocks keyboard input while the
-user cleans their keyboard (Clean mode) or steps away from pets (Away mode). No Xcode project; built
-with `swiftc` via `build.sh`. Read `README.md` first, then these rules before changing anything.
+Project: **Paws Off**, a keyboard-blocking app for cleaning (Clean mode) and pets (Away mode), in two
+native versions that share one design and one set of rules:
+- **Mac** (`Sources/`): SwiftUI, window + menu bar. No Xcode project; built with `swiftc` via `build.sh`.
+- **Windows** (`windows/`): WPF on .NET Framework 4.8, window + tray. Built by `dotnet publish` (CI only;
+  it can't be built on a Mac). Read `README.md` first, then these rules before changing anything.
 
 ## Rules of the road
 - Build with `./build.sh`; it must print `Built ...` with no errors. Compile mode is Swift 5 (`-swift-version 5`).
@@ -26,9 +28,23 @@ with `swiftc` via `build.sh`. Read `README.md` first, then these rules before ch
   A Developer ID signature (for sharing) replaces this.
 - README images come from `Tools/make-readme-art.sh`; rerun it after UI changes and update the version
   badge in README.md on release.
+- **Windows:** all keyboard handling lives in `windows/KeyboardBlocker.cs` (one `WH_KEYBOARD_LL` hook).
+  The hook callback must stay fast and never touch UI directly (Windows silently removes slow hooks):
+  state changes are synchronous, UI updates go through `Notify()` → `Dispatcher.BeginInvoke`.
+  Auto-release observers live in `WatchForLockAndSleep()`; same rule as Mac, never remove one.
+- Keep both apps in step: a feature or copy change on one side should land on the other (or be noted in
+  HISTORY as platform-specific). Colours mirror `Palette`. Windows preview states are
+  `KeyboardBlocker.PreviewStates`; CI renders them as the `windows-previews` artifact — check those PNGs
+  after any Windows UI change.
+- Releases: bump with `./build.sh <version>` (writes `VERSION`, which both apps read), log it in
+  `docs/HISTORY.md`, update the README version badge, commit, tag `vX.Y.Z`, push the tag. The
+  `release` job in `.github/workflows/build.yml` builds and attaches both downloads.
 - Bump the version with `./build.sh <version>`, log it in `docs/HISTORY.md`, commit, and tag `vX.Y.Z`.
 
 ## Not verified
-v1.2.0: UI checked only through off-screen renders. Still to be tested by hand with Accessibility
+Windows 1.3.0: compiled and screen renders checked in CI only; never run interactively. Untested:
+key blocking, unlock phrase, shortcut, paw detection, tray menu, launch at sign-in, auto-release.
+
+Mac v1.2.0: UI checked only through off-screen renders. Still to be tested by hand with Accessibility
 granted: actual key blocking, unlock phrase, ⌃⌥⌘L shortcut, paw detection on a real keyboard, menu bar
 actions, launch at login, timer auto-unlock, and auto-release on lock / sleep / user switch.

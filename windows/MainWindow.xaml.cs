@@ -36,6 +36,13 @@ namespace PawsOff
 
         static Color Hex(string hex) => (Color)ColorConverter.ConvertFromString(hex);
 
+        static Brush Glow(Color c) => new RadialGradientBrush(new GradientStopCollection
+        {
+            new GradientStop(Color.FromArgb(92, c.R, c.G, c.B), 0),
+            new GradientStop(Color.FromArgb(40, c.R, c.G, c.B), 0.45),
+            new GradientStop(Color.FromArgb(0, c.R, c.G, c.B), 1),
+        });
+
         static string Spaced(string text) => string.Join(" ", text.ToCharArray());
 
         // MARK: State → UI
@@ -51,8 +58,8 @@ namespace PawsOff
             Halo.Stroke = gradient;
             Ring.Stroke = gradient;
             DiscShadow.Color = accent[1];
-            Glow1.Fill = new SolidColorBrush(accent[0]);
-            Glow2.Fill = new SolidColorBrush(accent[1]);
+            Glow1.Fill = Glow(accent[0]);
+            Glow2.Fill = Glow(accent[1]);
 
             SetTab(CleanTab, mode == LockMode.Clean);
             SetTab(AwayTab, mode == LockMode.Away);

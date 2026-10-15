@@ -4,13 +4,20 @@
 
 # Paws Off
 
-**Pause your Mac's keyboard with one click.**<br>
+**Pause your keyboard with one click.**<br>
 Wipe it down without typing gibberish — or step away without your cat writing your emails.
 
+<a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg"><img src="https://img.shields.io/badge/Download_for_Mac-111?style=for-the-badge&logo=apple&logoColor=white" alt="Download for Mac" height="44"></a>
+&nbsp;
+<a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows.exe"><img src="https://img.shields.io/badge/Download_for_Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows" height="44"></a>
+
+<sub>Free · macOS 14+ (Apple Silicon & Intel) · Windows 10 & 11 · <a href="https://github.com/EnigmaticZee/PawsOff/releases">All releases</a></sub>
+
+<br>
+
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-111?logo=apple&logoColor=white)
-![Swift](https://img.shields.io/badge/Swift-5-F05138?logo=swift&logoColor=white)
-![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-0A84FF)
-![Version](https://img.shields.io/badge/version-1.2.0-8A63D2)
+![Windows 10/11](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows&logoColor=white)
+![Version](https://img.shields.io/badge/version-1.3.0-8A63D2)
 ![No network](https://img.shields.io/badge/network-none-2EA44F)
 ![License: MIT](https://img.shields.io/badge/license-MIT-F2C14E)
 
@@ -35,13 +42,13 @@ For wiping down your keyboard.
 
 - **One-click lock.** Every key is ignored, including modifiers and media keys.
 - **Auto-unlock timer:** 30 s, 1 min or 2 min, with a countdown ring.
-- **Trackpad stays on**, so you can always click **Unlock**.
+- **Trackpad and mouse stay on**, so you can always click **Unlock**.
 
 </td>
 <td width="50%" valign="top">
 
 ### 🐾 Away mode
-For leaving your Mac running near curious pets.
+For leaving your computer running near curious pets.
 
 - **Unlock phrase.** Type `unlock` (or your own word) to release it. Pets can't spell.
 - **Welcome-back summary:** *"Paws detected while you were away · 214 keys stopped in 47 min."*
@@ -56,10 +63,10 @@ For leaving your Mac running near curious pets.
 | | |
 | --- | --- |
 | 🐈 **Paw detection** | Locks on its own when a cat walks or sits on the keyboard (4+ keys held at once, or 2+ held for 3 seconds). |
-| ⌨️ **Global shortcut** | <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>⌘</kbd> <kbd>L</kbd> locks and unlocks from any app. |
-| 🔝 **Menu bar paw** | Lock for cleaning, lock while away, or unlock, even with the window closed. |
+| ⌨️ **Global shortcut** | Mac: <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>⌘</kbd> <kbd>L</kbd> · Windows: <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>L</kbd>. Locks and unlocks from any app. |
+| 🐾 **Menu bar / tray paw** | Lock for cleaning, lock while away, or unlock, even with the window closed. |
 | 🚀 **Launch at login** | So the shortcut and paw detection are always on. |
-| 🔓 **Never locks you out** | The keyboard is released the moment your Mac locks, sleeps, starts the screen saver, switches user or shuts down, so you can always type your password. |
+| 🔓 **Never locks you out** | The keyboard is released the moment your computer locks, sleeps, switches user or shuts down, so you can always type your password. |
 
 <br>
 
@@ -82,25 +89,37 @@ For leaving your Mac running near curious pets.
 
 ## 📦 Install
 
-Paws Off is built from source in one command. You need **macOS 14 or later** and the Xcode command line tools.
+### 🍎 Mac
 
-```sh
-xcode-select --install          # once, if you don't have the tools yet
-git clone https://github.com/EnigmaticZee/PawsOff.git && cd PawsOff
-./build.sh                      # → "Paws Off.app"
-open "Paws Off.app"
-```
-
-Drag **Paws Off.app** into `/Applications` to keep it.
-
-### First launch
-
-1. Click **Grant Access**.
-2. In **System Settings → Privacy & Security → Accessibility**, switch on **Paws Off**.
-3. The button changes to **Lock**. That's it.
+1. **[Download PawsOff-mac.dmg](https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg)**, open it, and drag **Paws Off** into **Applications**.
+2. Open Paws Off. The first time, macOS says it can't verify the developer, because the app isn't notarized by Apple yet. Click **Done**, then go to **System Settings → Privacy & Security**, scroll down, and click **Open Anyway**.
+3. Click **Grant Access**, and switch on **Paws Off** in **System Settings → Privacy & Security → Accessibility**. The button changes to **Lock**. That's it.
 
 > [!TIP]
-> If the switch is already on but nothing gets locked, click **Already switched on? Reset and ask again** in the app. This clears a grant left behind by an older build.
+> If the Accessibility switch is already on but nothing gets locked, click **Already switched on? Reset and ask again** in the app.
+
+### 🪟 Windows
+
+1. **[Download PawsOff-Windows.exe](https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows.exe)** and open it. There's nothing to install, and it doesn't need admin rights.
+2. The first time, Windows SmartScreen may say *"Windows protected your PC"*, because the app isn't code-signed yet. Click **More info → Run anyway**.
+3. Paws Off appears with a paw in the system tray. Closing the window keeps it running there.
+
+> [!NOTE]
+> Move the `.exe` somewhere permanent (for example `Documents\PawsOff`) before turning on **Launch at sign-in**, so Windows can find it later.
+
+### 🛠️ Build it yourself
+
+```sh
+# Mac (needs the Xcode command line tools: xcode-select --install)
+git clone https://github.com/EnigmaticZee/PawsOff.git && cd PawsOff
+./build.sh && open "Paws Off.app"
+```
+
+```powershell
+# Windows (needs the .NET SDK)
+git clone https://github.com/EnigmaticZee/PawsOff.git; cd PawsOff
+dotnet publish windows/PawsOff.csproj -c Release -o out; .\out\PawsOff.exe
+```
 
 <br>
 
@@ -110,46 +129,52 @@ Drag **Paws Off.app** into `/Applications` to keep it.
 | --- | --- |
 | Lock for cleaning | Pick **Clean**, choose a timer (optional), click **Lock** |
 | Lock while you step away | Pick **Away**, click **Lock** |
-| Lock from anywhere | <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>⌘</kbd> <kbd>L</kbd>, or the 🐾 in the menu bar |
-| Unlock | Click **Unlock**, type your unlock phrase, or press <kbd>⌃</kbd> <kbd>⌥</kbd> <kbd>⌘</kbd> <kbd>L</kbd> again |
-| Change the phrase or paw detection | ⚙️ in the top-right corner |
+| Lock from anywhere | The shortcut (Mac <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>L</kbd>, Windows <kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>Shift</kbd><kbd>L</kbd>), or the 🐾 in the menu bar / tray |
+| Unlock | Click **Unlock**, type your unlock phrase, or press the shortcut again |
+| Change the phrase, paw detection or launch at login | ⚙️ in the top-right corner |
 
 <br>
 
 ## 🔍 How it works
 
 ```
- keyboard ──▶ Paws Off event tap ──▶ unlocked? ──yes──▶ your apps
-                     │                   │
-                     │                   no ──▶ swallowed (counted, checked for unlock phrase)
-                     │
-                     └──▶ watching for ⌃⌥⌘L and paw patterns
+ keyboard ──▶ Paws Off keyboard hook ──▶ unlocked? ──yes──▶ your apps
+                      │                     │
+                      │                     no ──▶ swallowed (counted, checked for unlock phrase)
+                      │
+                      └──▶ watching for the shortcut and paw patterns
 ```
 
-- A **session event tap** (`CGEventTap`) sees keyboard events before any app does. While unlocked it passes everything straight through. While locked it drops them.
-- **Auto-release** listens for screen lock, screen saver, display and system sleep, user switching and shutdown, and unlocks immediately.
+- **Mac:** a session event tap (`CGEventTap`). **Windows:** a low-level keyboard hook (`WH_KEYBOARD_LL`). Both see key presses before any app does. While unlocked they pass everything straight through; while locked they drop them.
+- **Auto-release** listens for screen lock, sleep, user switching and shutdown (plus screen saver and display sleep on Mac), and unlocks immediately.
 - **Paw detection** only looks at *how many keys are held and for how long*, never at what you type. It never fires while the screen is locked.
 
 ### 🔒 Privacy & safety
 
 - **No network access.** Paws Off never connects to the internet.
 - **Nothing you type is stored or logged.** While locked it keeps only the last few characters, enough to spot your unlock phrase, and discards them on unlock.
-- **There is always a way out:** trackpad click, unlock phrase, shortcut, timer, or locking your Mac.
+- **There is always a way out:** mouse or trackpad click, unlock phrase, shortcut, timer, or locking your computer.
 
 <br>
 
 ## ❓ FAQ
 
 <details>
-<summary><b>Why does it need Accessibility access?</b></summary>
+<summary><b>Why does the Mac version need Accessibility access?</b></summary>
 <br>
-macOS only lets apps with Accessibility access intercept keystrokes. Paws Off uses it solely to drop key presses while locked and to notice the shortcut and paw patterns.
+macOS only lets apps with Accessibility access intercept keystrokes. Paws Off uses it solely to drop key presses while locked and to notice the shortcut and paw patterns. Windows needs no permission.
 </details>
 
 <details>
-<summary><b>Can it block the Touch ID / power button?</b></summary>
+<summary><b>Why do macOS and Windows warn me the first time?</b></summary>
 <br>
-No. macOS handles that key itself. If it gets pressed, your Mac locks, and Paws Off releases the keyboard so you can log back in.
+Apple and Microsoft show a one-time warning for apps that aren't signed with a paid developer certificate. Paws Off is open source, so you can read every line or build it yourself. Signed builds are on the roadmap.
+</details>
+
+<details>
+<summary><b>Can it block the Touch ID / power button, or Ctrl+Alt+Delete?</b></summary>
+<br>
+No. The system handles those itself. If one gets pressed, your computer locks, and Paws Off releases the keyboard so you can log back in.
 </details>
 
 <details>
@@ -159,15 +184,15 @@ Holding four or more letter keys at once looks like a paw. Turn <b>Paw detection
 </details>
 
 <details>
-<summary><b>Does the trackpad get locked too?</b></summary>
+<summary><b>Does the trackpad or mouse get locked too?</b></summary>
 <br>
 Never. The trackpad and mouse always work, so you can click <b>Unlock</b>.
 </details>
 
 <details>
-<summary><b>Can I share the app with friends?</b></summary>
+<summary><b>On Windows, some keys still reach an app running as administrator.</b></summary>
 <br>
-Builds are signed for your own Mac only, so other Macs will block them. Sharing needs a Developer ID–signed, notarized build (see the roadmap).
+Windows doesn't let normal apps block input to apps running with admin rights. Everything else is blocked as usual.
 </details>
 
 <br>
@@ -177,7 +202,7 @@ Builds are signed for your own Mac only, so other Macs will block them. Sharing 
 - [ ] Screen-cleaning mode: a black fullscreen that shows smudges, with trackpad clicks paused
 - [ ] Key tester to check every key after cleaning
 - [ ] Custom global shortcut
-- [ ] Developer ID signing, notarization and a DMG for sharing
+- [ ] Signed and notarized builds, so there's no first-launch warning
 - [ ] Lifetime stats: *"1,203 paw presses blocked"*
 
 <br>
@@ -185,11 +210,13 @@ Builds are signed for your own Mac only, so other Macs will block them. Sharing 
 ## 🛠️ Development
 
 ```sh
-./build.sh                    # build "Paws Off.app"
-./build.sh 1.3.0              # bump VERSION and build
+./build.sh                    # Mac: build "Paws Off.app"
+Tools/make-dmg.sh             # Mac: universal app + dist/PawsOff-mac.dmg
 "Paws Off.app/Contents/MacOS/PawsOff" --render-previews /tmp/previews   # PNG of every UI state
 Tools/make-readme-art.sh      # refresh the images in this README
 ```
+
+GitHub Actions builds both apps on every push and renders the Windows screens (the `windows-previews` artifact). Pushing a tag like `v1.4.0` publishes a Release with both downloads.
 
 | Path | What |
 | --- | --- |
@@ -201,11 +228,13 @@ Tools/make-readme-art.sh      # refresh the images in this README
 | `Sources/Theme.swift` | `Palette` colours and shared controls |
 | `Sources/PawsOffApp.swift` | App entry point, window and menu bar scenes |
 | `Sources/PreviewRenderer.swift` | Off-screen renders used for checks and README art |
-| `Tools/` | Icon and README art generators |
+| `windows/` | The Windows app (WPF, .NET Framework 4.8): same structure, `KeyboardBlocker.cs` holds the hook |
+| `.github/workflows/build.yml` | Builds both apps; publishes Releases on tags |
+| `Tools/` | Icon, Windows icon, DMG and README art generators |
 | `docs/DEVELOPMENT.md` | **Rules to read before changing code** |
 | `docs/HISTORY.md` | Version history |
 
-**Releasing:** `./build.sh <version>`, add an entry to [docs/HISTORY.md](docs/HISTORY.md), update the version badge above, commit, then `git tag v<version>`.
+**Releasing:** `./build.sh <version>`, add an entry to [docs/HISTORY.md](docs/HISTORY.md), update the version badge above, commit, then `git tag v<version> && git push --tags`. CI does the rest.
 
 ## 🤝 Contributing
 
