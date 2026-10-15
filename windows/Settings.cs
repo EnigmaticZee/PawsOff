@@ -4,6 +4,9 @@ using Microsoft.Win32;
 
 namespace PawsOff
 {
+    /// Auto follows the Windows light/dark app setting.
+    public enum ThemeChoice { Auto, Light, Dark }
+
     /// User settings, stored in HKCU\Software\PawsOff. Preview instances never touch the registry.
     public sealed class Settings
     {
@@ -16,6 +19,7 @@ namespace PawsOff
         int timerSeconds;
         string unlockPhrase = "unlock";
         bool pawDetection = true;
+        ThemeChoice theme = ThemeChoice.Auto;
 
         Settings(bool persists) { this.persists = persists; }
 
@@ -31,6 +35,7 @@ namespace PawsOff
                 if (key.GetValue("TimerSeconds") is int t) s.timerSeconds = t;
                 if (key.GetValue("UnlockPhrase") is string p) s.unlockPhrase = p;
                 if (key.GetValue("PawDetection") is int paw) s.pawDetection = paw != 0;
+                if (Enum.TryParse(key.GetValue("Theme") as string, out ThemeChoice th)) s.theme = th;
             }
             return s;
         }
@@ -57,6 +62,23 @@ namespace PawsOff
         {
             get => pawDetection;
             set { pawDetection = value; Save("PawDetection", value ? 1 : 0); }
+        }
+
+        public ThemeChoice Theme
+        {
+            get => theme;
+            set { theme = value; Save("Theme", value.ToString()); }
+        }
+
+        /// True when the app should draw dark: the user's choice, or the Windows setting on Auto.
+        public bool UsesDarkTheme
+        {
+            get
+            {
+                if (theme != ThemeChoice.Auto) return theme == ThemeChoice.Dark;
+                using (var personalize = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
+                    return personalize?.GetValue("AppsUseLightTheme") is int light && light == 0;
+            }
         }
 
         /// Lowercased phrase with surrounding spaces removed; empty means "click to unlock only".

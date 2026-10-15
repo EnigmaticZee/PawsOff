@@ -5,22 +5,26 @@ using System.Windows.Media.Imaging;
 
 namespace PawsOff
 {
-    /// Off-screen renders of each UI state, so the interface can be checked without a screen
-    /// (used by CI and for the README art).
+    /// Off-screen renders of each UI state in dark and light, so the interface can be checked
+    /// without a screen (CI uploads them as the windows-previews artifact).
     static class PreviewRenderer
     {
         public static void RenderAll(string dir)
         {
             Directory.CreateDirectory(dir);
-            int index = 1;
-            foreach (var state in KeyboardBlocker.PreviewStates)
-                Render(KeyboardBlocker.Preview(state), false, Path.Combine(dir, $"{index++}-{state}.png"));
-            Render(KeyboardBlocker.Preview("cleanReady"), true, Path.Combine(dir, $"{index}-settings.png"));
+            foreach (var dark in new[] { true, false })
+            {
+                string theme = dark ? "dark" : "light";
+                int index = 1;
+                foreach (var state in KeyboardBlocker.PreviewStates)
+                    Render(KeyboardBlocker.Preview(state), dark, false, Path.Combine(dir, $"{theme}-{index++}-{state}.png"));
+                Render(KeyboardBlocker.Preview("cleanReady"), dark, true, Path.Combine(dir, $"{theme}-{index}-settings.png"));
+            }
         }
 
-        static void Render(KeyboardBlocker blocker, bool settings, string path)
+        static void Render(KeyboardBlocker blocker, bool dark, bool settings, string path)
         {
-            var window = new MainWindow(blocker)
+            var window = new MainWindow(blocker, dark)
             {
                 Left = -10000,
                 Top = -10000,
@@ -28,7 +32,7 @@ namespace PawsOff
                 ShowInTaskbar = false,
             };
             window.Show();
-            if (settings) window.OpenSettings();
+            if (settings) window.OpenSettings(animate: false);
             window.UpdateLayout();
 
             var root = window.RootGrid;

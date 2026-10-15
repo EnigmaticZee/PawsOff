@@ -8,42 +8,53 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using Microsoft.Win32;
 
 namespace PawsOff
 {
     public partial class MainWindow : Window
     {
-        // Same colours as Palette in the Mac app (Sources/Theme.swift).
-        static readonly Color[] Idle = { Hex("#FA8C78"), Hex("#C266FA") };
-        static readonly Color[] Locked = { Hex("#5CEBC7"), Hex("#3394FA") };
         const double RingCircumference = Math.PI * 212 / 3; // in stroke-thickness units, for StrokeDashArray
 
         readonly KeyboardBlocker blocker;
+        readonly bool? forcedDark; // previews render a fixed theme
         readonly DispatcherTimer countdown = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
         bool pulsing;
+        bool dark;
 
         /// Closing hides to the tray unless the app is quitting.
         public bool AllowClose { get; set; }
 
-        public MainWindow(KeyboardBlocker blocker)
+        public MainWindow(KeyboardBlocker blocker, bool? forcedDark = null)
         {
             InitializeComponent();
             this.blocker = blocker;
+            this.forcedDark = forcedDark;
             blocker.Changed += Refresh;
             countdown.Tick += (s, e) => UpdateCountdown();
+            if (forcedDark == null) SystemEvents.UserPreferenceChanged += OnSystemPreferenceChanged;
+            ApplyTheme();
+        }
+
+        static string Spaced(string text) => string.Join(" ", text.ToCharArray());
+
+        static Visibility Show(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;
+
+        // MARK: Theme
+
+        void ApplyTheme()
+        {
+            dark = forcedDark ?? blocker.Settings.UsesDarkTheme;
+            Theme.Apply(Resources, dark);
             Refresh();
         }
 
-        static Color Hex(string hex) => (Color)ColorConverter.ConvertFromString(hex);
-
-        static Brush Glow(Color c) => new RadialGradientBrush(new GradientStopCollection
+        /// Follows the Windows light/dark switch live while the theme is Auto.
+        void OnSystemPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
-            new GradientStop(Color.FromArgb(92, c.R, c.G, c.B), 0),
-            new GradientStop(Color.FromArgb(40, c.R, c.G, c.B), 0.45),
-            new GradientStop(Color.FromArgb(0, c.R, c.G, c.B), 1),
-        });
-
-        static string Spaced(string text) => string.Join(" ", text.ToCharArray());
+            if (e.Category == UserPreferenceCategory.General)
+                Dispatcher.BeginInvoke(new Action(ApplyTheme));
+        }
 
         // MARK: State → UI
 
@@ -51,25 +62,28 @@ namespace PawsOff
         {
             bool locked = blocker.IsActive;
             var mode = locked ? blocker.ActiveMode : blocker.Settings.Mode;
-            var accent = locked ? Locked : Idle;
+            var accent = locked ? Theme.Locked : Theme.Idle;
             var gradient = new LinearGradientBrush(accent[0], accent[1], new Point(0, 0), new Point(1, 1));
 
             Disc.Fill = gradient;
             Halo.Stroke = gradient;
             Ring.Stroke = gradient;
             DiscShadow.Color = accent[1];
-            Glow1.Fill = Glow(accent[0]);
-            Glow2.Fill = Glow(accent[1]);
+            DiscShadow.Opacity = dark ? 0.55 : 0.4;
+            double glow = (double)Resources["GlowStrength"];
+            Glow1.Fill = Theme.Glow(accent[0], glow);
+            Glow2.Fill = Theme.Glow(accent[1], glow);
 
-            SetTab(CleanTab, mode == LockMode.Clean);
-            SetTab(AwayTab, mode == LockMode.Away);
+            SetSelected(CleanTab, mode == LockMode.Clean, segmented: true);
+            SetSelected(AwayTab, mode == LockMode.Away, segmented: true);
             ModePicker.Opacity = locked ? 0.45 : 1;
             ModePicker.IsEnabled = !locked;
-            SettingsButton.Visibility = locked ? Visibility.Hidden : Visibility.Visible;
+            bool settingsOpen = SettingsPage.Visibility == Visibility.Visible;
+            SettingsButton.Visibility = locked || settingsOpen ? Visibility.Hidden : Visibility.Visible;
 
             StatusLabel.Text = Spaced(locked ? (blocker.PawTriggered ? "PAWS DETECTED" : "KEYBOARD LOCKED") : "KEYBOARD ACTIVE");
-            KeyboardGlyph.Visibility = mode == LockMode.Away ? Visibility.Collapsed : Visibility.Visible;
-            PawGlyph.Visibility = mode == LockMode.Away ? Visibility.Visible : Visibility.Collapsed;
+            KeyboardGlyph.Visibility = Show(mode == LockMode.Clean);
+            PawGlyph.Visibility = Show(mode == LockMode.Away);
             ButtonLabel.Text = Spaced(locked ? "UNLOCK" : "LOCK");
 
             TitleText.Text = TitleFor(locked, mode);
@@ -78,14 +92,18 @@ namespace PawsOff
             TimerChips.Visibility = Show(!locked && mode == LockMode.Clean);
             PhraseRow.Visibility = Show(!locked && mode == LockMode.Away);
             LockedInfo.Visibility = Show(locked);
+            LockedInfoIcon.Data = (Geometry)FindResource(mode == LockMode.Away ? "PawGeometry" : "SparkleGeometry");
             foreach (var chip in TimerChips.Children.OfType<Button>())
-                SetChip(chip, int.Parse((string)chip.Tag) == blocker.Settings.TimerSeconds);
+                SetSelected(chip, int.Parse((string)chip.Tag) == blocker.Settings.TimerSeconds, segmented: false);
+            foreach (var choice in ThemeButtons.Children.OfType<Button>())
+                SetSelected(choice, (string)choice.Tag == blocker.Settings.Theme.ToString(), segmented: true);
             string phrase = blocker.Settings.TrimmedPhrase;
             PhraseText.Text = phrase.Length == 0 ? "off" : phrase;
 
             var summary = blocker.LastSummary;
             SummaryCard.Visibility = Show(!locked && summary != null);
-            HintText.Visibility = Show(locked || summary == null);
+            Hint.Visibility = Show(locked || summary == null);
+            HintIcon.Text = locked ? "" : ""; // unlock / keyboard
             HintText.Text = locked
                 ? "Releases by itself if your PC locks or sleeps"
                 : $"Press {KeyboardBlocker.ShortcutLabel} to lock from anywhere";
@@ -98,8 +116,6 @@ namespace PawsOff
             if (timed) countdown.Start(); else countdown.Stop();
             UpdateCountdown();
         }
-
-        static Visibility Show(bool visible) => visible ? Visibility.Visible : Visibility.Collapsed;
 
         string TitleFor(bool locked, LockMode mode)
         {
@@ -133,8 +149,10 @@ namespace PawsOff
 
         void FillSummary(LockSummary s)
         {
-            SummaryHeadline.Text = s.PawTriggered ? "🐾  Paws detected while you were away"
-                : s.Mode == LockMode.Away ? "Welcome back" : "✓  All clean";
+            SummaryPaw.Visibility = Show(s.PawTriggered);
+            CheckIcon.Visibility = Show(!s.PawTriggered);
+            SummaryHeadline.Text = s.PawTriggered ? "Paws detected while you were away"
+                : s.Mode == LockMode.Away ? "Welcome back" : "All clean";
             SummaryDetail.Text = $"{s.Keys} key{(s.Keys == 1 ? "" : "s")} stopped in {Format(s.Duration)}";
             SummaryReason.Text = s.Reason == null ? "" : $"{s.Reason}, so it unlocked by itself";
             SummaryReason.Visibility = Show(s.Reason != null);
@@ -167,18 +185,19 @@ namespace PawsOff
             }
         }
 
-        static void SetTab(Button tab, bool selected)
+        /// Tabs, chips and theme buttons share one selected look, drawn from the theme.
+        /// In a segmented pill the unselected options are see-through; chips keep a faint fill.
+        static void SetSelected(Button button, bool selected, bool segmented)
         {
-            tab.Background = new SolidColorBrush(selected ? Color.FromArgb(0x24, 255, 255, 255) : Colors.Transparent);
-            tab.BorderBrush = new SolidColorBrush(selected ? Color.FromArgb(0x1F, 255, 255, 255) : Colors.Transparent);
-            tab.Foreground = new SolidColorBrush(Color.FromArgb(selected ? (byte)0xF2 : (byte)0x80, 255, 255, 255));
-        }
-
-        static void SetChip(Button chip, bool selected)
-        {
-            chip.Background = new SolidColorBrush(Color.FromArgb(selected ? (byte)0x29 : (byte)0x0D, 255, 255, 255));
-            chip.BorderBrush = new SolidColorBrush(Color.FromArgb(selected ? (byte)0x40 : (byte)0x1A, 255, 255, 255));
-            chip.Foreground = new SolidColorBrush(Color.FromArgb(selected ? (byte)0xF2 : (byte)0x8C, 255, 255, 255));
+            button.SetResourceReference(ForegroundProperty, selected ? "TextBody" : "TextMuted");
+            if (!selected && segmented)
+            {
+                button.Background = Brushes.Transparent;
+                button.BorderBrush = Brushes.Transparent;
+                return;
+            }
+            button.SetResourceReference(BackgroundProperty, selected ? "SelectedFill" : "Fill1");
+            button.SetResourceReference(BorderBrushProperty, selected ? "SelectedStroke" : "Stroke1");
         }
 
         /// Breathing halo while locked without a timer.
@@ -205,9 +224,9 @@ namespace PawsOff
             }
         }
 
-        // MARK: Settings panel
+        // MARK: Settings page
 
-        public void OpenSettings()
+        public void OpenSettings(bool animate = true)
         {
             PhraseBox.Text = blocker.Settings.UnlockPhrase;
             PawSwitch.IsChecked = blocker.Settings.PawDetection;
@@ -215,15 +234,42 @@ namespace PawsOff
             ShortcutText.Text = KeyboardBlocker.ShortcutLabel;
             var v = Assembly.GetExecutingAssembly().GetName().Version;
             CreditText.Text = $"Made by Zaid · v{v.Major}.{v.Minor}.{v.Build}";
-            SettingsOverlay.Visibility = Visibility.Visible;
+            SettingsPage.Visibility = Visibility.Visible;
+            Slide(0, animate, null);
+            Refresh();
+        }
+
+        void CloseSettings()
+        {
+            Slide(380, true, () =>
+            {
+                SettingsPage.Visibility = Visibility.Collapsed;
+                Refresh();
+            });
+        }
+
+        void Slide(double to, bool animate, Action done)
+        {
+            if (!animate)
+            {
+                SettingsSlide.BeginAnimation(TranslateTransform.XProperty, null);
+                SettingsSlide.X = to;
+                done?.Invoke();
+                return;
+            }
+            var slide = new DoubleAnimation(to, TimeSpan.FromMilliseconds(240)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+            if (done != null) slide.Completed += (s, e) => done();
+            SettingsSlide.BeginAnimation(TranslateTransform.XProperty, slide);
         }
 
         void OnSettings(object sender, RoutedEventArgs e) => OpenSettings();
 
-        void OnSettingsDone(object sender, RoutedEventArgs e)
+        void OnSettingsDone(object sender, RoutedEventArgs e) => CloseSettings();
+
+        void OnThemeChoice(object sender, RoutedEventArgs e)
         {
-            SettingsOverlay.Visibility = Visibility.Collapsed;
-            Refresh();
+            blocker.Settings.Theme = (ThemeChoice)Enum.Parse(typeof(ThemeChoice), (string)((Button)sender).Tag);
+            ApplyTheme();
         }
 
         /// The phrase is matched from key codes, so only letters, digits and spaces can be typed.
@@ -299,6 +345,7 @@ namespace PawsOff
             }
             countdown.Stop();
             blocker.Changed -= Refresh;
+            if (forcedDark == null) SystemEvents.UserPreferenceChanged -= OnSystemPreferenceChanged;
             base.OnClosing(e);
         }
     }

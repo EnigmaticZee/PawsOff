@@ -4,21 +4,44 @@
         Title="Paws Off" Width="380" Height="620"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
-        FontFamily="Segoe UI" Foreground="White"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
+        Foreground="{DynamicResource TextBody}"
         Icon="Assets/PawsOff.ico"
         UseLayoutRounding="True">
 
+    <!-- Colours come from Theme.cs (DynamicResource), so light and dark swap live. -->
     <Window.Resources>
         <FontFamily x:Key="Icons">Segoe MDL2 Assets</FontFamily>
+        <FontFamily x:Key="Display">Segoe UI Variable Display, Segoe UI</FontFamily>
 
-        <!-- Paw print: four toes and a pad, drawn so it needs no icon font. -->
+        <!-- Paw print: four angled toes and a rounded pad (100x100 box). -->
         <GeometryGroup x:Key="PawGeometry" FillRule="Nonzero">
-            <EllipseGeometry Center="19,40" RadiusX="9" RadiusY="11.5" />
-            <EllipseGeometry Center="37,21" RadiusX="9.5" RadiusY="12.5" />
-            <EllipseGeometry Center="63,21" RadiusX="9.5" RadiusY="12.5" />
-            <EllipseGeometry Center="81,40" RadiusX="9" RadiusY="11.5" />
-            <EllipseGeometry Center="50,70" RadiusX="23" RadiusY="19" />
+            <EllipseGeometry Center="17,45" RadiusX="9" RadiusY="12">
+                <EllipseGeometry.Transform>
+                    <RotateTransform Angle="-28" CenterX="17" CenterY="45" />
+                </EllipseGeometry.Transform>
+            </EllipseGeometry>
+            <EllipseGeometry Center="36,24" RadiusX="9.5" RadiusY="13">
+                <EllipseGeometry.Transform>
+                    <RotateTransform Angle="-10" CenterX="36" CenterY="24" />
+                </EllipseGeometry.Transform>
+            </EllipseGeometry>
+            <EllipseGeometry Center="64,24" RadiusX="9.5" RadiusY="13">
+                <EllipseGeometry.Transform>
+                    <RotateTransform Angle="10" CenterX="64" CenterY="24" />
+                </EllipseGeometry.Transform>
+            </EllipseGeometry>
+            <EllipseGeometry Center="83,45" RadiusX="9" RadiusY="12">
+                <EllipseGeometry.Transform>
+                    <RotateTransform Angle="28" CenterX="83" CenterY="45" />
+                </EllipseGeometry.Transform>
+            </EllipseGeometry>
+            <PathGeometry Figures="M50,50 C61,50 70,58 76,68 C81,77 79,88 69,90 C62,91.5 57,88 50,88 C43,88 38,91.5 31,90 C21,88 19,77 24,68 C30,58 39,50 50,50 Z" />
         </GeometryGroup>
+
+        <!-- Sparkles (Clean): one large and two small four-point stars. -->
+        <PathGeometry x:Key="SparkleGeometry"
+                      Figures="M40,18 C46.8,45.2 46.8,45.2 74,52 C46.8,58.8 46.8,58.8 40,86 C33.2,58.8 33.2,58.8 6,52 C33.2,45.2 33.2,45.2 40,18 Z M78,4 C80.8,15.2 80.8,15.2 92,18 C80.8,20.8 80.8,20.8 78,32 C75.2,20.8 75.2,20.8 64,18 C75.2,15.2 75.2,15.2 78,4 Z M82,70 C84,78 84,78 92,80 C84,82 84,82 82,90 C80,82 80,82 72,80 C80,78 80,78 82,70 Z" />
 
         <LinearGradientBrush x:Key="LockedGradient" StartPoint="0,0" EndPoint="1,0">
             <GradientStop Color="#5CEBC7" Offset="0" />
@@ -27,8 +50,8 @@
 
         <Style x:Key="Plain" TargetType="Button">
             <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Foreground" Value="White" />
             <Setter Property="Focusable" Value="False" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBody}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -43,11 +66,11 @@
         <Style x:Key="Capsule" TargetType="Button">
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Focusable" Value="False" />
-            <Setter Property="Foreground" Value="#8CFFFFFF" />
-            <Setter Property="Background" Value="#0DFFFFFF" />
-            <Setter Property="BorderBrush" Value="#1AFFFFFF" />
-            <Setter Property="Padding" Value="10,5" />
-            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
+            <Setter Property="Background" Value="{DynamicResource Fill1}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Stroke1}" />
+            <Setter Property="Padding" Value="11,5" />
+            <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -58,7 +81,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Property="Opacity" Value="0.85" />
+                                <Setter TargetName="Bg" Property="Opacity" Value="0.82" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -66,21 +89,38 @@
             </Setter>
         </Style>
 
-        <Style x:Key="TitleButton" TargetType="Button">
-            <Setter Property="Cursor" Value="Hand" />
+        <!-- Windows 11 caption buttons: 46 px wide; Close turns red on hover. -->
+        <Style x:Key="CaptionButton" TargetType="Button">
             <Setter Property="Focusable" Value="False" />
-            <Setter Property="Foreground" Value="#80FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
             <Setter Property="FontFamily" Value="{StaticResource Icons}" />
-            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontSize" Value="10" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bg" Width="40" Height="34" Background="Transparent">
+                        <Border x:Name="Bg" Width="46" Height="40" Background="Transparent">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="#1AFFFFFF" />
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Fill2}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="CloseButton" TargetType="Button" BasedOn="{StaticResource CaptionButton}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg" Width="46" Height="40" Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="#C42B1C" />
+                                <Setter Property="Foreground" Value="White" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -88,23 +128,25 @@
             </Setter>
         </Style>
 
+        <!-- Toggle switch (track only; the label sits beside it in the row). -->
         <Style x:Key="Switch" TargetType="CheckBox">
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Focusable" Value="False" />
-            <Setter Property="Foreground" Value="White" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <DockPanel Background="Transparent" LastChildFill="True">
-                            <Border x:Name="Track" DockPanel.Dock="Right" Width="38" Height="22" CornerRadius="11"
-                                    Background="#24FFFFFF" VerticalAlignment="Top" Margin="12,0,0,0">
-                                <Ellipse x:Name="Knob" Width="18" Height="18" Fill="White" HorizontalAlignment="Left" Margin="2,0" />
-                            </Border>
-                            <ContentPresenter />
-                        </DockPanel>
+                        <Border x:Name="Track" Width="40" Height="22" CornerRadius="11" Background="{DynamicResource Fill3}"
+                                BorderBrush="{DynamicResource Stroke1}" BorderThickness="1">
+                            <Ellipse x:Name="Knob" Width="16" Height="16" Fill="{DynamicResource SwitchKnob}" HorizontalAlignment="Left" Margin="2,0">
+                                <Ellipse.Effect>
+                                    <DropShadowEffect BlurRadius="3" ShadowDepth="1" Direction="270" Opacity="0.25" />
+                                </Ellipse.Effect>
+                            </Ellipse>
+                        </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="Track" Property="Background" Value="{StaticResource LockedGradient}" />
+                                <Setter TargetName="Track" Property="BorderBrush" Value="Transparent" />
                                 <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right" />
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -116,39 +158,33 @@
         <Style x:Key="SettingTitle" TargetType="TextBlock">
             <Setter Property="FontSize" Value="13" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="#E6FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBody}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style x:Key="SettingDetail" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="Foreground" Value="#80FFFFFF" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextMuted}" />
             <Setter Property="TextWrapping" Value="Wrap" />
-            <Setter Property="Margin" Value="0,3,0,0" />
+            <Setter Property="LineHeight" Value="17" />
+            <Setter Property="Margin" Value="0,4,0,0" />
         </Style>
     </Window.Resources>
 
     <Grid x:Name="RootGrid" Width="380" Height="620">
         <Grid.Clip>
-            <RectangleGeometry Rect="0,0,380,620" RadiusX="14" RadiusY="14" />
+            <RectangleGeometry Rect="0,0,380,620" RadiusX="8" RadiusY="8" />
         </Grid.Clip>
 
-        <!-- Background: the same dark gradient and two soft glows as the Mac app. -->
-        <Rectangle>
-            <Rectangle.Fill>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                    <GradientStop Color="#0F0F1A" Offset="0" />
-                    <GradientStop Color="#1A1429" Offset="1" />
-                </LinearGradientBrush>
-            </Rectangle.Fill>
-        </Rectangle>
+        <!-- Background gradient and two soft accent glows. -->
+        <Rectangle Fill="{DynamicResource WindowBackground}" />
         <Canvas IsHitTestVisible="False">
-            <!-- Soft glows as radial gradients (WPF's blur radius is too limited to hide the edges). -->
             <Ellipse x:Name="Glow1" Width="560" Height="560" Canvas.Left="-180" Canvas.Top="-100" />
             <Ellipse x:Name="Glow2" Width="540" Height="540" Canvas.Left="30" Canvas.Top="180" />
         </Canvas>
 
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="34" />
+                <RowDefinition Height="40" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -159,30 +195,31 @@
 
             <!-- Title bar: drag anywhere; settings, minimize, close to tray. -->
             <Grid Grid.Row="0" Background="Transparent" MouseLeftButtonDown="OnDrag">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0,0,0" Opacity="0.5">
-                    <Path Data="{StaticResource PawGeometry}" Fill="White" Width="12" Height="12" Stretch="Uniform" />
-                    <TextBlock Text="Paws Off" FontSize="11" FontWeight="SemiBold" Margin="6,0,0,0" />
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <Path Data="{StaticResource PawGeometry}" Fill="{DynamicResource TextMuted}" Width="13" Height="13" Stretch="Uniform" />
+                    <TextBlock Text="Paws Off" FontSize="12" Foreground="{DynamicResource TextMuted}" Margin="8,0,0,0" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button x:Name="SettingsButton" Style="{StaticResource TitleButton}" Content="&#xE713;" FontSize="13" Click="OnSettings" ToolTip="Settings" />
-                    <Button Style="{StaticResource TitleButton}" Content="&#xE921;" Click="OnMinimize" ToolTip="Minimize" />
-                    <Button Style="{StaticResource TitleButton}" Content="&#xE8BB;" Click="OnClose" ToolTip="Close to the tray" />
+                    <Button x:Name="SettingsButton" Style="{StaticResource CaptionButton}" Content="&#xE713;" FontSize="13" Click="OnSettings" ToolTip="Settings" />
+                    <Button Style="{StaticResource CaptionButton}" Content="&#xE921;" Click="OnMinimize" ToolTip="Minimize" />
+                    <Button Style="{StaticResource CloseButton}" Content="&#xE8BB;" Click="OnClose" ToolTip="Close to the tray" />
                 </StackPanel>
             </Grid>
 
             <!-- Clean / Away switch -->
-            <Border Grid.Row="1" x:Name="ModePicker" HorizontalAlignment="Center" Margin="0,10,0,0" Padding="4"
-                    CornerRadius="20" Background="#0FFFFFFF" BorderBrush="#1AFFFFFF" BorderThickness="1">
+            <Border Grid.Row="1" x:Name="ModePicker" HorizontalAlignment="Center" Margin="0,14,0,0" Padding="4"
+                    CornerRadius="18" Background="{DynamicResource Fill1}" BorderBrush="{DynamicResource Stroke1}" BorderThickness="1">
                 <StackPanel Orientation="Horizontal">
-                    <Button x:Name="CleanTab" Style="{StaticResource Capsule}" Padding="16,6" FontSize="12" Click="OnCleanTab">
+                    <Button x:Name="CleanTab" Style="{StaticResource Capsule}" Padding="16,6" Click="OnCleanTab">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock FontFamily="{StaticResource Icons}" Text="&#xE765;" FontSize="12" VerticalAlignment="Center" Margin="0,1,7,0" />
+                            <Path Data="{StaticResource SparkleGeometry}" Width="13" Height="13" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,7,0"
+                                  Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                             <TextBlock Text="Clean" VerticalAlignment="Center" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="AwayTab" Style="{StaticResource Capsule}" Padding="16,6" FontSize="12" Margin="4,0,0,0" Click="OnAwayTab">
+                    <Button x:Name="AwayTab" Style="{StaticResource Capsule}" Padding="16,6" Margin="4,0,0,0" Click="OnAwayTab">
                         <StackPanel Orientation="Horizontal">
-                            <Path Data="{StaticResource PawGeometry}" Width="11" Height="11" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,7,0"
+                            <Path Data="{StaticResource PawGeometry}" Width="12" Height="12" Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,7,0"
                                   Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
                             <TextBlock Text="Away" VerticalAlignment="Center" />
                         </StackPanel>
@@ -191,7 +228,7 @@
             </Border>
 
             <TextBlock Grid.Row="2" x:Name="StatusLabel" HorizontalAlignment="Center" Margin="0,20,0,0"
-                       FontSize="11" FontWeight="SemiBold" Foreground="#8CFFFFFF" />
+                       FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" />
 
             <!-- The big glowing button -->
             <Button Grid.Row="3" x:Name="BigButton" Style="{StaticResource Plain}" Click="OnBigButton"
@@ -206,7 +243,7 @@
                             <ScaleTransform x:Name="HaloScale" />
                         </Ellipse.RenderTransform>
                     </Ellipse>
-                    <Ellipse x:Name="RingTrack" Width="212" Height="212" Stroke="#14FFFFFF" StrokeThickness="3" Visibility="Collapsed" />
+                    <Ellipse x:Name="RingTrack" Width="212" Height="212" Stroke="{DynamicResource Fill2}" StrokeThickness="3" Visibility="Collapsed" />
                     <Ellipse x:Name="Ring" Width="212" Height="212" StrokeThickness="3" StrokeDashCap="Round"
                              Visibility="Collapsed" RenderTransformOrigin="0.5,0.5">
                         <Ellipse.RenderTransform>
@@ -218,32 +255,30 @@
                             <DropShadowEffect x:Name="DiscShadow" BlurRadius="60" ShadowDepth="14" Direction="270" Opacity="0.55" />
                         </Ellipse.Effect>
                     </Ellipse>
-                    <Ellipse Width="168" Height="168" Stroke="#2EFFFFFF" StrokeThickness="1">
-                        <Ellipse.Fill>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                <GradientStop Color="#4D1A1429" Offset="0" />
-                                <GradientStop Color="#661A1429" Offset="1" />
-                            </LinearGradientBrush>
-                        </Ellipse.Fill>
-                    </Ellipse>
+                    <!-- Frosted glass: tinted fill, a soft top highlight and a hairline rim. -->
+                    <Ellipse Width="168" Height="168" Fill="{DynamicResource GlassFill}" />
+                    <Ellipse Width="168" Height="168" Fill="{DynamicResource GlassHighlight}" />
+                    <Ellipse Width="168" Height="168" Stroke="#38FFFFFF" StrokeThickness="1" />
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock x:Name="KeyboardGlyph" FontFamily="{StaticResource Icons}" Text="&#xE765;" FontSize="54" HorizontalAlignment="Center" />
-                        <Path x:Name="PawGlyph" Data="{StaticResource PawGeometry}" Fill="White" Width="50" Height="50" Stretch="Uniform" HorizontalAlignment="Center" />
-                        <TextBlock x:Name="ButtonLabel" FontSize="12" FontWeight="Bold" Foreground="#D9FFFFFF" HorizontalAlignment="Center" Margin="0,10,0,0" />
+                        <TextBlock x:Name="KeyboardGlyph" FontFamily="{StaticResource Icons}" Text="&#xE765;" FontSize="54"
+                                   Foreground="White" HorizontalAlignment="Center" />
+                        <Path x:Name="PawGlyph" Data="{StaticResource PawGeometry}" Fill="White" Width="52" Height="52" Stretch="Uniform" HorizontalAlignment="Center" />
+                        <TextBlock x:Name="ButtonLabel" FontSize="12" FontWeight="Bold" Foreground="#E6FFFFFF" HorizontalAlignment="Center" Margin="0,10,0,0" />
                     </StackPanel>
                 </Grid>
             </Button>
 
             <StackPanel Grid.Row="4" Margin="24,0">
-                <TextBlock x:Name="TitleText" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" />
-                <TextBlock x:Name="SubtitleText" FontSize="13" Foreground="#99FFFFFF" TextWrapping="Wrap" TextAlignment="Center"
-                           MaxWidth="300" Margin="0,8,0,0" HorizontalAlignment="Center" />
+                <TextBlock x:Name="TitleText" FontFamily="{StaticResource Display}" FontSize="28" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Center" />
+                <TextBlock x:Name="SubtitleText" FontSize="13" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" TextAlignment="Center"
+                           LineHeight="19" MaxWidth="300" Margin="0,6,0,0" HorizontalAlignment="Center" />
             </StackPanel>
 
             <!-- Detail row: timer chips (Clean), unlock phrase (Away) or live info (locked). -->
             <Grid Grid.Row="5" Height="34" Margin="0,16,0,0">
                 <StackPanel x:Name="TimerChips" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock FontFamily="{StaticResource Icons}" Text="&#xE916;" FontSize="12" Foreground="#73FFFFFF" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <TextBlock FontFamily="{StaticResource Icons}" Text="&#xE916;" FontSize="13" Foreground="{DynamicResource TextFaint}" VerticalAlignment="Center" Margin="0,0,7,0" />
                     <Button Tag="0" Content="No timer" Style="{StaticResource Capsule}" Click="OnChip" />
                     <Button Tag="30" Content="30 s" Style="{StaticResource Capsule}" Margin="6,0,0,0" Click="OnChip" />
                     <Button Tag="60" Content="1 min" Style="{StaticResource Capsule}" Margin="6,0,0,0" Click="OnChip" />
@@ -251,90 +286,124 @@
                 </StackPanel>
                 <Button x:Name="PhraseRow" Style="{StaticResource Plain}" Click="OnSettings" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock FontFamily="{StaticResource Icons}" Text="&#xE765;" FontSize="12" Foreground="#A6FFFFFF" VerticalAlignment="Center" Margin="0,0,8,0" />
-                        <TextBlock Text="Unlock phrase" FontSize="12" Foreground="#A6FFFFFF" VerticalAlignment="Center" />
-                        <Border Background="#1AFFFFFF" CornerRadius="6" Padding="8,3" Margin="8,0">
-                            <TextBlock x:Name="PhraseText" FontFamily="Consolas" FontWeight="SemiBold" FontSize="12" />
+                        <!-- Text-cursor icon: "A" with a caret -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,8,0">
+                            <TextBlock Text="A" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" />
+                            <Rectangle Width="1.3" Height="13" Fill="{DynamicResource TextMuted}" Margin="2,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="Unlock phrase" FontSize="12" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" />
+                        <Border Background="{DynamicResource Fill2}" BorderBrush="{DynamicResource Stroke1}" BorderThickness="1" CornerRadius="6" Padding="8,2" Margin="8,0">
+                            <TextBlock x:Name="PhraseText" FontFamily="Cascadia Mono, Consolas" FontWeight="SemiBold" FontSize="12" Foreground="{DynamicResource TextBody}" />
                         </Border>
-                        <TextBlock FontFamily="{StaticResource Icons}" Text="&#xE70F;" FontSize="11" Foreground="#66FFFFFF" VerticalAlignment="Center" />
+                        <TextBlock FontFamily="{StaticResource Icons}" Text="&#xE70F;" FontSize="11" Foreground="{DynamicResource TextFaint}" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
                 <Border x:Name="LockedInfo" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="16"
-                        Background="#14FFFFFF" BorderBrush="#1FFFFFFF" BorderThickness="1" Padding="14,7">
-                    <TextBlock x:Name="LockedInfoText" FontSize="12" FontWeight="Medium" Foreground="#BFFFFFFF" />
+                        Background="{DynamicResource Fill2}" BorderBrush="{DynamicResource Stroke1}" BorderThickness="1" Padding="14,7">
+                    <StackPanel Orientation="Horizontal">
+                        <Path x:Name="LockedInfoIcon" Width="12" Height="12" Stretch="Uniform" Fill="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBlock x:Name="LockedInfoText" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextBody}" VerticalAlignment="Center" />
+                    </StackPanel>
                 </Border>
             </Grid>
 
-            <Grid Grid.Row="6" Margin="24,12,24,20" MinHeight="44">
-                <TextBlock x:Name="HintText" FontSize="11" Foreground="#66FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                <Border x:Name="SummaryCard" HorizontalAlignment="Center" CornerRadius="14" Background="#12FFFFFF"
-                        BorderBrush="#1FFFFFFF" BorderThickness="1" Padding="16,9">
+            <Grid Grid.Row="6" Margin="24,12,24,20" MinHeight="48">
+                <StackPanel x:Name="Hint" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock x:Name="HintIcon" FontFamily="{StaticResource Icons}" FontSize="12" Foreground="{DynamicResource TextFaint}" VerticalAlignment="Center" Margin="0,0,7,0" />
+                    <TextBlock x:Name="HintText" FontSize="11" Foreground="{DynamicResource TextFaint}" VerticalAlignment="Center" />
+                </StackPanel>
+                <Border x:Name="SummaryCard" HorizontalAlignment="Center" CornerRadius="12" Background="{DynamicResource Fill2}"
+                        BorderBrush="{DynamicResource Stroke1}" BorderThickness="1" Padding="16,9">
                     <StackPanel>
-                        <TextBlock x:Name="SummaryHeadline" FontSize="12" FontWeight="SemiBold" Foreground="#D9FFFFFF" HorizontalAlignment="Center" />
-                        <TextBlock x:Name="SummaryDetail" FontSize="11" Foreground="#80FFFFFF" HorizontalAlignment="Center" Margin="0,3,0,0" />
-                        <TextBlock x:Name="SummaryReason" FontSize="11" Foreground="#80FFFFFF" HorizontalAlignment="Center" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <!-- Check in a filled circle, or a paw -->
+                            <Grid x:Name="CheckIcon" Width="14" Height="14" VerticalAlignment="Center" Margin="0,0,7,0">
+                                <Ellipse Fill="{DynamicResource TextBody}" />
+                                <Path Data="M4,7.3 L6.2,9.5 L10.2,4.8" Stroke="{DynamicResource CheckInk}" StrokeThickness="1.6"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                            </Grid>
+                            <Path x:Name="SummaryPaw" Data="{StaticResource PawGeometry}" Fill="{DynamicResource TextBody}" Width="13" Height="13"
+                                  Stretch="Uniform" VerticalAlignment="Center" Margin="0,0,7,0" />
+                            <TextBlock x:Name="SummaryHeadline" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextBody}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock x:Name="SummaryDetail" FontSize="11" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" Margin="0,3,0,0" />
+                        <TextBlock x:Name="SummaryReason" FontSize="11" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center" />
                     </StackPanel>
                 </Border>
             </Grid>
         </Grid>
 
-        <!-- Settings panel -->
-        <Grid x:Name="SettingsOverlay" Visibility="Collapsed" Background="#B3000000">
-            <Border Width="336" VerticalAlignment="Center" CornerRadius="16" Padding="24" BorderBrush="#24FFFFFF" BorderThickness="1">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                        <GradientStop Color="#1A1429" Offset="0" />
-                        <GradientStop Color="#0F0F1A" Offset="1" />
-                    </LinearGradientBrush>
-                </Border.Background>
-                <StackPanel>
-                    <TextBlock Text="Settings" FontSize="20" FontWeight="Bold" />
-
-                    <TextBlock Text="Unlock phrase" Style="{StaticResource SettingTitle}" Margin="0,20,0,0" />
-                    <TextBlock Style="{StaticResource SettingDetail}" Margin="0,3,0,10"
-                               Text="Type it while locked to release the keyboard. Pets can't spell. Letters and numbers only; leave it empty to unlock by clicking." />
-                    <Border CornerRadius="10" Background="#14FFFFFF" BorderBrush="#24FFFFFF" BorderThickness="1" Padding="10,7">
-                        <TextBox x:Name="PhraseBox" Background="Transparent" BorderThickness="0" Foreground="White" CaretBrush="White"
-                                 FontFamily="Consolas" FontSize="13" MaxLength="24" TextChanged="OnPhraseChanged" />
-                    </Border>
-
-                    <CheckBox x:Name="PawSwitch" Style="{StaticResource Switch}" Margin="0,22,0,0" Click="OnPawSwitch">
-                        <StackPanel>
-                            <TextBlock Text="Paw detection" Style="{StaticResource SettingTitle}" />
-                            <TextBlock Style="{StaticResource SettingDetail}"
-                                       Text="Locks by itself when several keys are pressed at once or held down, like a cat walking or sitting on the keyboard." />
-                        </StackPanel>
-                    </CheckBox>
-
-                    <CheckBox x:Name="LoginSwitch" Style="{StaticResource Switch}" Margin="0,18,0,0" Click="OnLoginSwitch">
-                        <StackPanel>
-                            <TextBlock Text="Launch at sign-in" Style="{StaticResource SettingTitle}" />
-                            <TextBlock Style="{StaticResource SettingDetail}"
-                                       Text="Starts quietly in the tray when you sign in, so the shortcut and paw detection are always ready." />
-                        </StackPanel>
-                    </CheckBox>
-
-                    <DockPanel Margin="0,18,0,0">
-                        <Border DockPanel.Dock="Right" CornerRadius="6" Background="#1AFFFFFF" BorderBrush="#29FFFFFF" BorderThickness="1"
-                                Padding="8,4" VerticalAlignment="Top" Margin="12,0,0,0">
-                            <TextBlock x:Name="ShortcutText" FontSize="12" FontWeight="SemiBold" />
+        <!-- Settings: a full page that slides in from the right, below the title bar. -->
+        <Grid x:Name="SettingsPage" Margin="0,40,0,0" Visibility="Collapsed" Background="{DynamicResource WindowBackground}">
+            <Grid.RenderTransform>
+                <TranslateTransform x:Name="SettingsSlide" X="380" />
+            </Grid.RenderTransform>
+            <StackPanel Margin="24,4,24,0">
+                <StackPanel Orientation="Horizontal">
+                    <Button Style="{StaticResource Plain}" Click="OnSettingsDone" ToolTip="Back" Margin="-6,0,6,0">
+                        <Border Width="32" Height="32" CornerRadius="6" Background="Transparent">
+                            <TextBlock FontFamily="{StaticResource Icons}" Text="&#xE72B;" FontSize="14" Foreground="{DynamicResource TextBody}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <StackPanel>
-                            <TextBlock Text="Shortcut" Style="{StaticResource SettingTitle}" />
-                            <TextBlock Text="Locks and unlocks from anywhere." Style="{StaticResource SettingDetail}" />
-                        </StackPanel>
-                    </DockPanel>
-
-                    <DockPanel Margin="0,24,0,0">
-                        <Button DockPanel.Dock="Right" Content="Done" Style="{StaticResource Capsule}" Padding="18,8" FontSize="12"
-                                Foreground="White" Background="#1FFFFFFF" BorderBrush="#33FFFFFF" Click="OnSettingsDone" />
-                        <TextBlock x:Name="CreditText" FontSize="11" Foreground="#66FFFFFF" VerticalAlignment="Center" />
-                    </DockPanel>
+                    </Button>
+                    <TextBlock Text="Settings" FontFamily="{StaticResource Display}" FontSize="22" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" />
                 </StackPanel>
-            </Border>
+
+                <!-- Appearance -->
+                <TextBlock Text="Appearance" Style="{StaticResource SettingTitle}" Margin="0,22,0,10" />
+                <Border HorizontalAlignment="Left" Padding="4" CornerRadius="18" Background="{DynamicResource Fill1}"
+                        BorderBrush="{DynamicResource Stroke1}" BorderThickness="1">
+                    <StackPanel x:Name="ThemeButtons" Orientation="Horizontal">
+                        <Button Tag="Auto" Content="Auto" Style="{StaticResource Capsule}" Padding="16,6" Click="OnThemeChoice" />
+                        <Button Tag="Light" Content="Light" Style="{StaticResource Capsule}" Padding="16,6" Margin="4,0,0,0" Click="OnThemeChoice" />
+                        <Button Tag="Dark" Content="Dark" Style="{StaticResource Capsule}" Padding="16,6" Margin="4,0,0,0" Click="OnThemeChoice" />
+                    </StackPanel>
+                </Border>
+                <TextBlock Text="Auto matches your Windows light or dark setting." Style="{StaticResource SettingDetail}" Margin="0,8,0,0" />
+
+                <!-- Unlock phrase -->
+                <TextBlock Text="Unlock phrase" Style="{StaticResource SettingTitle}" Margin="0,24,0,0" />
+                <TextBlock Style="{StaticResource SettingDetail}" Margin="0,4,0,10"
+                           Text="Type it while locked to release the keyboard. Letters and numbers only; leave it empty to unlock by clicking." />
+                <Border CornerRadius="8" Background="{DynamicResource Fill2}" BorderBrush="{DynamicResource Stroke2}" BorderThickness="1" Padding="10,7">
+                    <TextBox x:Name="PhraseBox" Background="Transparent" BorderThickness="0" Foreground="{DynamicResource TextBody}"
+                             CaretBrush="{DynamicResource TextBody}" FontFamily="Cascadia Mono, Consolas" FontSize="13" MaxLength="24"
+                             TextChanged="OnPhraseChanged" />
+                </Border>
+
+                <!-- Paw detection -->
+                <DockPanel Margin="0,24,0,0">
+                    <CheckBox x:Name="PawSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" Click="OnPawSwitch" VerticalAlignment="Center" />
+                    <TextBlock Text="Paw detection" Style="{StaticResource SettingTitle}" />
+                </DockPanel>
+                <TextBlock Style="{StaticResource SettingDetail}"
+                           Text="Locks by itself when several keys are pressed at once or held down, like a cat walking or sitting on the keyboard." />
+
+                <!-- Launch at sign-in -->
+                <DockPanel Margin="0,20,0,0">
+                    <CheckBox x:Name="LoginSwitch" DockPanel.Dock="Right" Style="{StaticResource Switch}" Click="OnLoginSwitch" VerticalAlignment="Center" />
+                    <TextBlock Text="Launch at sign-in" Style="{StaticResource SettingTitle}" />
+                </DockPanel>
+                <TextBlock Style="{StaticResource SettingDetail}"
+                           Text="Starts quietly in the tray when you sign in, so the shortcut and paw detection are always ready." />
+
+                <!-- Shortcut -->
+                <DockPanel Margin="0,20,0,0">
+                    <Border DockPanel.Dock="Right" CornerRadius="6" Background="{DynamicResource Fill2}" BorderBrush="{DynamicResource Stroke2}"
+                            BorderThickness="1" Padding="8,3" VerticalAlignment="Center">
+                        <TextBlock x:Name="ShortcutText" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextBody}" />
+                    </Border>
+                    <TextBlock Text="Shortcut" Style="{StaticResource SettingTitle}" />
+                </DockPanel>
+                <TextBlock Text="Locks and unlocks from any app." Style="{StaticResource SettingDetail}" />
+            </StackPanel>
+
+            <TextBlock x:Name="CreditText" FontSize="11" Foreground="{DynamicResource TextFaint}"
+                       HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,20" />
         </Grid>
 
         <!-- Hairline window edge -->
-        <Border CornerRadius="14" BorderBrush="#24FFFFFF" BorderThickness="1" IsHitTestVisible="False" />
+        <Border CornerRadius="8" BorderBrush="{DynamicResource Stroke2}" BorderThickness="1" IsHitTestVisible="False" />
     </Grid>
 </Window>
