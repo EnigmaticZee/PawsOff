@@ -65,6 +65,7 @@ jobs:
           $shell = New-Object -ComObject WScript.Shell
           $shell.AppActivate($setup.Id) | Out-Null; Start-Sleep 1
           $shell.SendKeys("{ENTER}"); Start-Sleep 3; Shot "2-options"
+          $shell.SendKeys("{ENTER}"); Start-Sleep 8; Shot "3-finished"
           Get-Process | Where-Object { $_.ProcessName -like "PawsOff-Windows-Setup*" } | Stop-Process -Force
       - name: Test silent install and uninstall
         shell: pwsh

@@ -9,7 +9,7 @@ Wipe it down without typing gibberish — or step away without your cat writing 
 
 <a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg"><img src="https://img.shields.io/badge/Download_for_Mac-111?style=for-the-badge&logo=apple&logoColor=white" alt="Download for Mac" height="44"></a>
 &nbsp;
-<a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows.exe"><img src="https://img.shields.io/badge/Download_for_Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows" height="44"></a>
+<a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Setup.exe"><img src="https://img.shields.io/badge/Download_for_Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows" height="44"></a>
 
 <sub>Free · macOS 14+ (Apple Silicon & Intel) · Windows 10 & 11</sub>
 
@@ -122,9 +122,11 @@ Click **Already switched on? Reset and ask again** in Paws Off. This clears an o
 
 ### 🪟 Windows
 
-1. **[Download PawsOff-Windows.exe](https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows.exe)** and move it somewhere permanent, for example `Documents\PawsOff`. There's nothing to install, and it doesn't need admin rights.
-2. Open it. If SmartScreen says *"Windows protected your PC"*, click **More info → Run anyway**.
-3. Paws Off appears with a paw in the system tray. Closing the window keeps it running there.
+1. **[Download PawsOff-Windows-Setup.exe](https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Setup.exe)** and open it. If SmartScreen says *"Windows protected your PC"*, click **More info → Run anyway**.
+2. Click through the short setup. It installs just for you (no admin rights) and can add a desktop shortcut or start Paws Off when you sign in.
+3. Paws Off appears with a paw in the system tray. Closing the window keeps it running there. Uninstall any time from **Settings → Apps**.
+
+Prefer no installer? The [portable PawsOff-Windows-Portable.exe](https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Portable.exe) runs from anywhere.
 
 <br>
 
@@ -190,7 +192,7 @@ git clone https://github.com/EnigmaticZee/PawsOff.git && cd PawsOff
 
 # Mac (needs the Xcode command line tools: xcode-select --install)
 ./build.sh && open "Paws Off.app"   # build and run
-Tools/make-dmg.sh                    # universal app + dist/PawsOff-mac.dmg
+Tools/make-dmg.sh                    # universal app + dist/PawsOff-mac.dmg (needs: pip install dmgbuild)
 Tools/make-readme-art.sh             # refresh the images in this README
 
 # Windows (needs the .NET SDK, run on Windows)
@@ -202,7 +204,8 @@ dotnet publish windows/PawsOff.csproj -c Release -o out
 | `Sources/` | Mac app (SwiftUI). `KeyboardBlocker.swift` holds the event tap and all lock logic. |
 | `windows/` | Windows app (WPF, .NET Framework 4.8). `KeyboardBlocker.cs` holds the hook and all lock logic. |
 | `.github/workflows/build.yml` | Builds both apps on every push; publishes a Release when a `v*` tag is pushed. |
-| `Tools/` | Icon, Windows icon, DMG and README art generators. |
+| `windows/installer/PawsOff.iss` | Windows Setup wizard (Inno Setup), built by CI. |
+| `Tools/` | Icon, Windows icon, installer art, DMG and README art generators. |
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | **Rules to read before changing code.** |
 | [`docs/HISTORY.md`](docs/HISTORY.md) | Version history. |
 

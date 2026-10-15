@@ -6,6 +6,13 @@
   selected pills, milky glass on the big button and softer glows.
 - **Windows: rounded Nunito font**, bundled inside the app, to match the Mac app's rounded look on every
   PC. Headings are bold.
+- **Beautiful Mac installer:** the DMG opens to a branded window with a drag-to-Applications arrow, the
+  paw as the disk icon and a first-launch tip.
+- **Windows installer:** a proper Setup wizard (PawsOff-Windows-Setup.exe) with Paws Off artwork. Installs
+  per user without admin rights, adds a Start menu entry, can add a desktop shortcut and start at sign-in,
+  closes a running copy before upgrading, and uninstalls cleanly from Settings → Apps. The portable .exe is
+  still available.
+- Release notes now include file sizes, install steps and SHA-256 checksums.
 - `--render-previews` (Mac) now writes every state in both looks (`dark-…png` and `light-…png`).
 
 ## 1.4.0 — 2026-10-15

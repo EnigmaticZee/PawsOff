@@ -42,6 +42,10 @@ native versions that share one design and one set of rules:
   HISTORY as platform-specific). Colours mirror `Palette`. Windows preview states are
   `KeyboardBlocker.PreviewStates`; CI renders them as the `windows-previews` artifact — check those PNGs
   after any Windows UI change.
+- Installers: `Tools/make-installer-art.swift` draws the DMG background and the Inno Setup wizard bitmaps
+  into `Assets/installer` (rerun it after brand changes). The DMG layout lives in `Tools/dmg-settings.py`
+  (icon positions must match the arrow in the art). The Windows wizard is `windows/installer/PawsOff.iss`;
+  CI screenshots it (`installer-screens` artifact) and tests a silent install and uninstall.
 - Releases: bump with `./build.sh <version>` (writes `VERSION`, which both apps read), log it in
   `docs/HISTORY.md`, commit, tag `vX.Y.Z`, push the tag (the README release badge updates by itself). The
   `release` job in `.github/workflows/build.yml` builds and attaches both downloads.

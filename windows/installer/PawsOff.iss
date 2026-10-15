@@ -28,6 +28,7 @@ DefaultDirName={autopf}\Paws Off
 DisableDirPage=yes
 DefaultGroupName=Paws Off
 DisableProgramGroupPage=yes
+DisableWelcomePage=no
 DisableReadyPage=yes
 UsePreviousTasks=yes
 
