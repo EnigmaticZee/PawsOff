@@ -1,0 +1,5 @@
+# Build outputs (rebuild with ./build.sh)
+/*.app/
+build/
+*.iconset/
+.DS_Store
