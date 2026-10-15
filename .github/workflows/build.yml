@@ -118,7 +118,10 @@ jobs:
           $run = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name PawsOff -ErrorAction SilentlyContinue
           if (-not $run) { throw "Sign-in entry missing" }
           Write-Host "Installed OK: $dir"
+          # Close the app and wait until it's fully gone, so its file can be removed.
           Get-Process PawsOff -ErrorAction SilentlyContinue | Stop-Process -Force
+          Wait-Process -Name PawsOff -Timeout 15 -ErrorAction SilentlyContinue
+          Start-Sleep 2
           $u = Start-Process "$dir\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES' -PassThru
           $u.WaitForExit()
           Start-Sleep 3
