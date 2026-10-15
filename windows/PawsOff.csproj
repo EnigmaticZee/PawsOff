@@ -22,6 +22,10 @@
 
   <ItemGroup>
     <Resource Include="Assets\PawsOff.ico" />
+    <!-- Nunito (SIL Open Font License, see Fonts/OFL.txt), embedded so the app looks the same on every PC.
+         Static weights cut from the official variable font: WPF mis-spaces variable fonts. -->
+    <Resource Include="Fonts\*.ttf" />
+    <Resource Include="Fonts\OFL.txt" />
   </ItemGroup>
 
 </Project>

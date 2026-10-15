@@ -1,5 +1,9 @@
 # Version history
 
+## 1.4.1 — 2026-10-15
+- Windows: the app now uses Nunito, a rounded font bundled inside the .exe, to match the Mac app's
+  rounded look on every PC. Headings are bold.
+
 ## 1.4.0 — 2026-10-15
 - **Windows: light mode.** Appearance setting with Auto (default, follows the Windows light/dark
   setting and switches live), Light and Dark.
