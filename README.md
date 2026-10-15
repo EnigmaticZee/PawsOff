@@ -86,7 +86,7 @@ Paws Off is built from source in one command. You need **macOS 14 or later** and
 
 ```sh
 xcode-select --install          # once, if you don't have the tools yet
-git clone <this-repo> PawsOff && cd PawsOff
+git clone https://github.com/EnigmaticZee/PawsOff.git && cd PawsOff
 ./build.sh                      # → "Paws Off.app"
 open "Paws Off.app"
 ```
