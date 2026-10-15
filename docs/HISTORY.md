@@ -1,8 +1,8 @@
 # Version history
 
 ## Unreleased
-- Mac: tidier top of the window. The settings button is now a native title-bar button, lined up with
-  the window buttons, and the empty band above the Clean/Away switch is gone. Spacing follows one
+- Mac: tidier top of the window. The settings button now sits in a native toolbar slot, lined up with
+  the window buttons and inset from the corner the way macOS does it, and the empty band above the Clean/Away switch is gone. Spacing follows one
   even rhythm from the timer row down.
 - Mac: auto-unlock timer is now No timer, 2 min or **Custom**: set any length from 2:01 right in the row
   (type "5" or "3:30", or use − / +). Clicking elsewhere cancels it, and a custom length is a one-off:

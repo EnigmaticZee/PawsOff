@@ -25,8 +25,10 @@ native versions that share one design and one set of rules:
 - After ANY UI change: `./build.sh && "Paws Off.app/Contents/MacOS/PawsOff" --render-previews <dir>` and
   look at the PNGs (light and dark; handy when you can't screenshot the live window). Add a case
   to `KeyboardBlocker.PreviewState` when you add a UI state. TextFields render as yellow boxes off-screen.
-- The Mac settings button is a native title-bar accessory (`Sources/TitleBar.swift`), so macOS keeps it
-  aligned with the window buttons; don't move it back into the SwiftUI layout. `WindowConfigurator`
+- The Mac settings button is a borderless item in a real `NSToolbar` (`Sources/TitleBar.swift`, unified
+  compact style), so macOS sets its alignment with the window buttons, its inset from the corner and its
+  hover state; don't move it into the SwiftUI layout or position it by hand. The toolbar's height is
+  measured at runtime (`WindowMetrics`) so the window stays 620 pt on every macOS version. `WindowConfigurator`
   also drops the app from the Dock while the window is closed (`.accessory`) and the menu bar's "Show"
   brings it back (`.regular`).
 - Paw stats (`PawStats`) live only in UserDefaults; never send them anywhere without a new, explicit

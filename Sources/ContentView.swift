@@ -10,10 +10,11 @@ struct ContentView: View {
     @Environment(\.ink) private var ink
     @Environment(\.isPreviewRender) private var isPreviewRender
 
-    /// The window is 620 pt tall in total. Its hidden title bar (32 pt) is part of that: the
-    /// content runs up underneath it, and the window buttons sit centred in it.
+    /// The window is 620 pt tall in total. Its title bar + toolbar is part of that (height measured
+    /// from the real window): the content runs up underneath it.
     private let windowHeight: CGFloat = 620
-    private let titleBarHeight: CGFloat = 32
+    @ObservedObject private var metrics = WindowMetrics.shared
+    private var titleBarHeight: CGFloat { metrics.titleBarHeight }
 
     private var locked: Bool { blocker.isActive }
     private var shownMode: LockMode { locked ? blocker.activeMode : blocker.mode }
@@ -72,8 +73,8 @@ struct ContentView: View {
             .padding(.horizontal, 24)
             .frame(maxWidth: .infinity)
 
-            // The settings button itself is a native title-bar accessory (see SettingsTitlebarButton);
-            // renders only show stand-ins for the title-bar controls.
+            // The settings button itself is a native toolbar item (see SettingsToolbar); renders only
+            // show stand-ins for the title-bar controls.
             if isPreviewRender { previewTitleBar }
         }
         // Off-screen renders have no title bar, so they get the full height directly. In the real
@@ -359,14 +360,16 @@ struct ContentView: View {
     /// renders so the title bar can be judged (positions match the real window).
     private var previewTitleBar: some View {
         ZStack {
-            HStack(spacing: 9) {
+            HStack(spacing: 9.5) {
                 Circle().fill(Color(red: 1.0, green: 0.37, blue: 0.34))
                 Circle().fill(Color(red: 1.0, green: 0.74, blue: 0.18))
             }
-            .frame(width: 37, height: 14)
-            .position(x: 9 + 18.5, y: titleBarHeight / 2)
-            SettingsTitlebarButton()
-                .position(x: 380 - SettingsTitlebarButton.trailingInset - SettingsTitlebarButton.size / 2, y: titleBarHeight / 2)
+            .frame(width: 37.5, height: 14)
+            .position(x: 30.25, y: titleBarHeight / 2)
+            Image(systemName: "gearshape")
+                .font(.system(size: 17))
+                .foregroundStyle(.secondary)
+                .position(x: 380 - 26, y: titleBarHeight / 2)
                 .opacity(locked ? 0 : 1)
         }
     }
