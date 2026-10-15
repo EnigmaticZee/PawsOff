@@ -18,6 +18,7 @@ final class WindowMetrics: ObservableObject {
 /// with the system's own hover and press states.
 final class SettingsToolbar: NSObject, NSToolbarDelegate {
     static let settingsID = NSToolbarItem.Identifier("settings")
+    static let glyphPointSize: CGFloat = 13
     private var item: NSToolbarItem?
     private var lockWatch: AnyCancellable?
 
@@ -42,7 +43,9 @@ final class SettingsToolbar: NSObject, NSToolbarDelegate {
                  willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
         guard id == Self.settingsID else { return nil }
         let item = NSToolbarItem(itemIdentifier: id)
-        item.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Settings")
+        // Optically the same height as the window buttons (14 pt), like icons in Apple's own toolbars.
+        item.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Settings")?
+            .withSymbolConfiguration(.init(pointSize: Self.glyphPointSize, weight: .regular))
         item.label = "Settings"
         item.toolTip = "Settings"
         item.isBordered = false

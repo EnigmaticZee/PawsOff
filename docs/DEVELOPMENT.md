@@ -27,7 +27,8 @@ native versions that share one design and one set of rules:
   to `KeyboardBlocker.PreviewState` when you add a UI state. TextFields render as yellow boxes off-screen.
 - The Mac settings button is a borderless item in a real `NSToolbar` (`Sources/TitleBar.swift`, unified
   compact style), so macOS sets its alignment with the window buttons, its inset from the corner and its
-  hover state; don't move it into the SwiftUI layout or position it by hand. The toolbar's height is
+  hover state; don't move it into the SwiftUI layout or position it by hand. Its glyph is sized
+  (`glyphPointSize`) to the window buttons' 14 pt height, like icons in Apple's own toolbars. The toolbar's height is
   measured at runtime (`WindowMetrics`) so the window stays 620 pt on every macOS version. `WindowConfigurator`
   also drops the app from the Dock while the window is closed (`.accessory`) and the menu bar's "Show"
   brings it back (`.regular`).

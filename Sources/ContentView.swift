@@ -367,9 +367,9 @@ struct ContentView: View {
             .frame(width: 37.5, height: 14)
             .position(x: 30.25, y: titleBarHeight / 2)
             Image(systemName: "gearshape")
-                .font(.system(size: 17))
+                .font(.system(size: SettingsToolbar.glyphPointSize))
                 .foregroundStyle(.secondary)
-                .position(x: 380 - 26, y: titleBarHeight / 2)
+                .position(x: 380 - 26.25, y: titleBarHeight / 2)
                 .opacity(locked ? 0 : 1)
         }
     }
