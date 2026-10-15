@@ -1,5 +1,11 @@
 # Version history
 
+## 1.5.0 — 2026-10-15
+- **Mac: light mode.** Appearance setting in Settings with Auto (default, follows the macOS light/dark
+  setting and switches live), Light and Dark, matching the Windows app: soft lilac background, white
+  selected pills, milky glass on the big button and softer glows.
+- `--render-previews` now writes every state in both looks (`dark-…png` and `light-…png`).
+
 ## 1.4.0 — 2026-10-15
 - **Windows: light mode.** Appearance setting with Auto (default, follows the Windows light/dark
   setting and switches live), Light and Dark.

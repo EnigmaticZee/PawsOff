@@ -13,7 +13,7 @@ func rgb(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat, _ a: CGFloat = 1) -> NSColor 
 
 func screen(_ name: String) -> NSImage {
     let files = try! FileManager.default.contentsOfDirectory(atPath: previews.path)
-    let file = files.first { $0.hasSuffix("-\(name).png") }!
+    let file = files.first { $0.hasPrefix("dark-") && $0.hasSuffix("-\(name).png") }!
     return NSImage(contentsOf: previews.appendingPathComponent(file))!
 }
 

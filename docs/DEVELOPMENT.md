@@ -18,10 +18,12 @@ native versions that share one design and one set of rules:
   user-toggleable. Its thresholds (4 held keys, or 2 held for 3 s) are untested on real pets; tune with care.
 - Never store or log what the user types; the phrase buffer only exists while locked.
 - Settings persist via the `didSet`/`save` pattern in KeyboardBlocker; preview instances never persist.
-- Colours live in `Palette` (Sources/Theme.swift); `Tools/make-icon.swift` mirrors them. Keep the
+- Colours live in `Palette` (Sources/Theme.swift); `Tools/make-icon.swift` mirrors them. Anything that
+  changes with light/dark goes through `Ink` (`@Environment(\.ink)`); never hard-code `.white` outside the
+  big button, which sits on the accent gradient in both looks. Keep the
   icon subtle (dark base, faint glow, white paw), not a bright multi-colour gradient.
 - After ANY UI change: `./build.sh && "Paws Off.app/Contents/MacOS/PawsOff" --render-previews <dir>` and
-  look at the PNGs (handy when you can't screenshot the live window). Add a case
+  look at the PNGs (light and dark; handy when you can't screenshot the live window). Add a case
   to `KeyboardBlocker.PreviewState` when you add a UI state. TextFields render as yellow boxes off-screen.
 - Keep the stable signing requirement in `build.sh` (`designated => identifier "local.pawsoff"`); the
   default ad-hoc requirement is a per-build cdhash, which silently invalidates the Accessibility grant.
