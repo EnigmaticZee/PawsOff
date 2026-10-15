@@ -39,7 +39,7 @@ Wipe it down without typing gibberish — or step away without your cat writing 
 For wiping down your keyboard.
 
 - **One click** and every key is ignored, including modifiers and media keys.
-- **Auto-unlock timer:** 30 s, 1 min or 2 min, with a countdown ring.
+- **Auto-unlock timer:** 2 min or any custom length, with a countdown ring. (Windows: 30 s, 1 min or 2 min.)
 - **Your trackpad and mouse keep working**, so you can always click **Unlock**.
 
 </td>
@@ -60,7 +60,8 @@ For leaving your computer running near curious pets.
 | --- | --- |
 | 🐈 **Paw detection** | Locks on its own when a cat walks or sits on the keyboard (4+ keys held at once, or 2+ held for 3 seconds). |
 | ⌨️ **Global shortcut** | Lock or unlock from any app: <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>L</kbd> on Mac, <kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>Shift</kbd><kbd>L</kbd> on Windows. |
-| 🐾 **Menu bar / tray paw** | Lock, unlock or open Paws Off, even with the window closed. |
+| 🐾 **Menu bar / tray paw** | Lock, unlock or open Paws Off, even with the window closed. On Mac it leaves the Dock until you open the window again. |
+| 📊 **Your paw stats** | Lifetime totals, kept only on your Mac and shown as rotating one-liners like *"≈ 486 words typed by paws, never sent"*. (Mac for now.) |
 | 🌗 **Light & dark** | Follows your system light/dark setting (Auto), or pick Light or Dark in ⚙️ Settings. |
 | 🚀 **Launch at login** | Keeps the shortcut and paw detection ready. Turn it on in ⚙️ Settings, along with your unlock phrase. |
 | 🔓 **Never locks you out** | The keyboard is released the moment your computer locks, sleeps, switches user or shuts down, so you can always type your password. |
@@ -179,7 +180,7 @@ Windows doesn't let normal apps block input to apps running with admin rights. E
 - [ ] Key tester to check every key after cleaning
 - [ ] Custom global shortcut
 - [ ] Signed and notarized builds, so there's no first-launch prompt
-- [ ] Lifetime stats: *"1,203 paw presses blocked"*
+- [ ] Paw stats and the custom timer on Windows
 
 <br>
 
