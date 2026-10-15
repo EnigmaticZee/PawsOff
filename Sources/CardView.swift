@@ -22,7 +22,6 @@ struct CardView: View {
     @FocusState private var customFieldFocused: Bool
     @Environment(\.ink) private var ink
     @Environment(\.isPreviewRender) private var isPreviewRender
-    @Environment(\.openWindow) private var openWindow
 
     private var locked: Bool { blocker.isActive }
     private var shownMode: LockMode { locked ? blocker.activeMode : blocker.mode }
@@ -35,12 +34,14 @@ struct CardView: View {
                 .contentShape(Rectangle())
                 .onTapGesture { cancelCustomTimer() }
 
-            if showSettings {
-                SettingsPage(place: place) { withAnimation(.snappy(duration: 0.3)) { showSettings = false } }
-                    .transition(.move(edge: .trailing))
-            } else {
-                mainPage
-                    .transition(.move(edge: .leading))
+            Group {
+                if showSettings {
+                    SettingsPage(place: place) { withAnimation(.snappy(duration: 0.3)) { showSettings = false } }
+                        .transition(.move(edge: .trailing))
+                } else {
+                    mainPage
+                        .transition(.move(edge: .leading))
+                }
             }
         }
         .frame(width: Self.size.width, height: Self.size.height)
@@ -397,17 +398,16 @@ struct CardView: View {
                 bottomText
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if place == .panel && !locked {
-                    barButton("macwindow", help: "Open the Paws Off window") {
-                        NSApp.setActivationPolicy(.regular)
-                        openWindow(id: "main")
-                        NSApp.activate()
-                    }
+                    barButton("macwindow", help: "Open the Paws Off window") { MainWindow.show() }
                 }
                 if !locked {
                     barButton("gearshape", help: "Settings") {
                         cancelCustomTimer()
                         withAnimation(.snappy(duration: 0.3)) { showSettings = true }
                     }
+                }
+                if place == .panel {
+                    barButton("power", help: "Quit Paws Off") { NSApp.terminate(nil) }
                 }
             }
             .padding(.leading, 16)

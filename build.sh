@@ -45,6 +45,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSHumanReadableCopyright</key><string>Made by Zaid</string>
+  <!-- Starts as a menu bar app (no Dock icon); the window brings the Dock icon back while open. -->
+  <key>LSUIElement</key><true/>
 </dict>
 </plist>
 PLIST

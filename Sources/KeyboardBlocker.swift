@@ -22,6 +22,14 @@ enum Appearance: String, CaseIterable, Identifiable {
     }
 }
 
+/// Where Paws Off shows up when it starts. The menu bar panel is always there; this decides whether
+/// the window opens too.
+enum LaunchPlace: String, CaseIterable, Identifiable {
+    case menuBar, window
+    var id: String { rawValue }
+    var title: String { self == .menuBar ? "Menu bar" : "Window" }
+}
+
 /// What happened during the last lock, shown after the keyboard is released.
 struct LockSummary {
     let mode: LockMode
@@ -68,6 +76,7 @@ final class KeyboardBlocker: ObservableObject {
     @Published var unlockPhrase = "unlock" { didSet { save(unlockPhrase, Keys.phrase) } }
     @Published var pawDetection = true { didSet { save(pawDetection, Keys.paw) } }
     @Published var appearance: Appearance = .auto { didSet { save(appearance.rawValue, Keys.appearance) } }
+    @Published var launchPlace: LaunchPlace = .menuBar { didSet { save(launchPlace.rawValue, Keys.launchPlace) } }
 
     static let timerChoices = [0, 120]
     /// Custom lengths start just above the 2 min preset and go up to 99:59.
@@ -77,7 +86,7 @@ final class KeyboardBlocker: ObservableObject {
 
     private enum Keys {
         static let mode = "mode", timer = "timerSeconds", phrase = "unlockPhrase", paw = "pawDetection"
-        static let appearance = "appearance"
+        static let appearance = "appearance", launchPlace = "launchPlace"
         static let customSeconds = "customSeconds", stats = "pawStats"
     }
 
@@ -90,13 +99,17 @@ final class KeyboardBlocker: ObservableObject {
     private var typed = ""
     private var heldKeys: [Int64: Date] = [:]
 
-    init() {
+    /// The one live instance, shared by the menu bar panel and the window.
+    static let shared = KeyboardBlocker()
+
+    private init() {
         let defaults = UserDefaults.standard
         mode = LockMode(rawValue: defaults.string(forKey: Keys.mode) ?? "") ?? .clean
         timerSeconds = defaults.object(forKey: Keys.timer) as? Int ?? 0
         unlockPhrase = defaults.string(forKey: Keys.phrase) ?? "unlock"
         pawDetection = defaults.object(forKey: Keys.paw) as? Bool ?? true
         appearance = Appearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .auto
+        launchPlace = LaunchPlace(rawValue: defaults.string(forKey: Keys.launchPlace) ?? "") ?? .menuBar
         customSeconds = Self.clampCustom(defaults.object(forKey: Keys.customSeconds) as? Int ?? 180)
         if !Self.timerChoices.contains(timerSeconds) {
             timerSeconds = 0 // old 30 s / 1 min choices, or a past custom length: back to the default

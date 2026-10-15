@@ -89,11 +89,14 @@ namespace PawsOff
                 SetSelected(chip, int.Parse((string)chip.Tag) == blocker.Settings.TimerSeconds, segmented: false);
             foreach (var choice in ThemeButtons.Children.OfType<Button>())
                 SetSelected(choice, (string)choice.Tag == blocker.Settings.Theme.ToString(), segmented: true);
+            foreach (var choice in StartButtons.Children.OfType<Button>())
+                SetSelected(choice, (string)choice.Tag == blocker.Settings.StartIn.ToString(), segmented: true);
             string phrase = blocker.Settings.TrimmedPhrase;
             PhraseText.Text = phrase.Length == 0 ? "off" : phrase;
 
             GearButton.Visibility = Show(!locked);
             OpenWindowButton.Visibility = Show(isPanel && !locked);
+            QuitButton.Visibility = Show(isPanel);
             if (locked && settingsOpen) CloseSettings(animate: false);
 
             bool timed = locked && blocker.EndsAt != null;
@@ -272,6 +275,12 @@ namespace PawsOff
         {
             blocker.Settings.Theme = (ThemeChoice)Enum.Parse(typeof(ThemeChoice), (string)((Button)sender).Tag);
             ThemeManager.Reapply();
+        }
+
+        void OnStartChoice(object sender, RoutedEventArgs e)
+        {
+            blocker.Settings.StartIn = (StartPlace)Enum.Parse(typeof(StartPlace), (string)((Button)sender).Tag);
+            Refresh();
         }
 
         /// The phrase is matched from key codes, so only letters, digits and spaces can be typed.

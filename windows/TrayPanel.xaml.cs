@@ -28,7 +28,7 @@ namespace PawsOff
             ShowNearTray();
         }
 
-        void ShowNearTray()
+        public void ShowNearTray()
         {
             var area = SystemParameters.WorkArea; // the screen minus the taskbar
             Left = area.Right - Width + 2;

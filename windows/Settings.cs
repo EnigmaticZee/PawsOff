@@ -7,6 +7,9 @@ namespace PawsOff
     /// Auto follows the Windows light/dark app setting.
     public enum ThemeChoice { Auto, Light, Dark }
 
+    /// Where Paws Off opens when it starts. The tray icon is always there.
+    public enum StartPlace { Tray, Window }
+
     /// User settings, stored in HKCU\Software\PawsOff. Preview instances never touch the registry.
     public sealed class Settings
     {
@@ -20,6 +23,10 @@ namespace PawsOff
         string unlockPhrase = "unlock";
         bool pawDetection = true;
         ThemeChoice theme = ThemeChoice.Auto;
+        StartPlace startIn = StartPlace.Tray;
+
+        /// True the very first time Paws Off runs (nothing saved yet).
+        public bool IsFirstRun { get; private set; }
 
         Settings(bool persists) { this.persists = persists; }
 
@@ -30,12 +37,13 @@ namespace PawsOff
             var s = new Settings(true);
             using (var key = Registry.CurrentUser.OpenSubKey(KeyPath))
             {
-                if (key == null) return s;
+                if (key == null) { s.IsFirstRun = true; return s; }
                 if (Enum.TryParse(key.GetValue("Mode") as string, out LockMode m)) s.mode = m;
                 if (key.GetValue("TimerSeconds") is int t) s.timerSeconds = t;
                 if (key.GetValue("UnlockPhrase") is string p) s.unlockPhrase = p;
                 if (key.GetValue("PawDetection") is int paw) s.pawDetection = paw != 0;
                 if (Enum.TryParse(key.GetValue("Theme") as string, out ThemeChoice th)) s.theme = th;
+                if (Enum.TryParse(key.GetValue("StartIn") as string, out StartPlace sp)) s.startIn = sp;
             }
             return s;
         }
@@ -62,6 +70,12 @@ namespace PawsOff
         {
             get => pawDetection;
             set { pawDetection = value; Save("PawDetection", value ? 1 : 0); }
+        }
+
+        public StartPlace StartIn
+        {
+            get => startIn;
+            set { startIn = value; Save("StartIn", value.ToString()); }
         }
 
         public ThemeChoice Theme

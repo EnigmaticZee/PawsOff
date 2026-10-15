@@ -37,6 +37,14 @@ struct SettingsPage: View {
                         .frame(height: 26)
                 }
                 divider
+                row("Start in", help: "Where Paws Off opens when it starts. Menu bar: quietly, with just the paw in the menu bar. Window: the window opens too. Either way the other is one click away.") {
+                    CapsulePicker(options: LaunchPlace.allCases, selection: $blocker.launchPlace,
+                                  shown: blocker.launchPlace, horizontalPadding: 9) { ($0.title, nil) }
+                        .fixedSize()
+                        .scaleEffect(0.86)
+                        .frame(height: 26)
+                }
+                divider
                 row("Unlock phrase", help: "Type it while locked to release the keyboard. Pets can't spell. Leave it empty to unlock by clicking only.") {
                     phraseField
                 }

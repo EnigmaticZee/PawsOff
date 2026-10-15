@@ -16,6 +16,11 @@ enum PreviewRenderer {
                     .environment(\.isPreviewRender, true)
                 write(view, to: dir.appendingPathComponent("\(theme)-\(index + 1)-\(state.rawValue).png"))
             }
+            let panel = CardView(place: .panel)
+                .environmentObject(KeyboardBlocker.preview(.withStats))
+                .environment(\.colorScheme, scheme)
+                .environment(\.isPreviewRender, true)
+            write(panel, to: dir.appendingPathComponent("\(theme)-\(count + 2)-menu-bar-panel.png"))
             let settings = CardView(showingSettings: true)
                 .environmentObject(KeyboardBlocker.preview(.withStats))
                 .environment(\.colorScheme, scheme)

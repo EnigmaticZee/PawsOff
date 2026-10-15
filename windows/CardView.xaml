@@ -125,7 +125,8 @@
             <Grid Grid.Row="6" Height="45">
                 <Rectangle Height="1" VerticalAlignment="Top" Fill="{DynamicResource Stroke1}" />
                 <DockPanel Margin="16,1,10,0" LastChildFill="True">
-                    <Button x:Name="GearButton" DockPanel.Dock="Right" Style="{StaticResource BarIcon}" Content="&#xE713;" Click="OnSettings" ToolTip="Settings" />
+                    <Button x:Name="QuitButton" DockPanel.Dock="Right" Style="{StaticResource BarIcon}" Content="&#xE7E8;" Click="OnQuit" ToolTip="Quit Paws Off" />
+                    <Button x:Name="GearButton" DockPanel.Dock="Right" Style="{StaticResource BarIcon}" Content="&#xE713;" Click="OnSettings" ToolTip="Settings" Margin="0,0,2,0" />
                     <Button x:Name="OpenWindowButton" DockPanel.Dock="Right" Style="{StaticResource BarIcon}" Content="&#xE8A7;" Click="OnOpenWindow"
                             ToolTip="Open the Paws Off window" Margin="0,0,2,0" />
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
@@ -168,6 +169,18 @@
                                 <Button Tag="Auto" Content="Auto" Style="{StaticResource Capsule}" Padding="9,2" Click="OnThemeChoice" />
                                 <Button Tag="Light" Content="Light" Style="{StaticResource Capsule}" Padding="9,2" Margin="2,0,0,0" Click="OnThemeChoice" />
                                 <Button Tag="Dark" Content="Dark" Style="{StaticResource Capsule}" Padding="9,2" Margin="2,0,0,0" Click="OnThemeChoice" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    <Rectangle Height="1" Fill="{DynamicResource Stroke1}" Margin="10,0" />
+                    <Grid Height="40" Margin="10,0" Background="Transparent"
+                          ToolTip="Where Paws Off opens when it starts. Tray: the pop-up by the clock. Window: the window. Either way the other is one click away.">
+                        <TextBlock Text="Start in" Style="{StaticResource RowTitle}" />
+                        <Border HorizontalAlignment="Right" VerticalAlignment="Center" Padding="2" CornerRadius="14" Background="{DynamicResource Fill1}"
+                                BorderBrush="{DynamicResource Stroke1}" BorderThickness="1">
+                            <StackPanel x:Name="StartButtons" Orientation="Horizontal">
+                                <Button Tag="Tray" Content="Tray" Style="{StaticResource Capsule}" Padding="9,2" Click="OnStartChoice" />
+                                <Button Tag="Window" Content="Window" Style="{StaticResource Capsule}" Padding="9,2" Margin="2,0,0,0" Click="OnStartChoice" />
                             </StackPanel>
                         </Border>
                     </Grid>

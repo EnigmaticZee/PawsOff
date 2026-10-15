@@ -57,8 +57,14 @@ namespace PawsOff
             panel.Card.OpenWindowRequested += () => { panel.HidePanel(); ShowWindow(); };
             tray = new TrayIcon(blocker, ShowWindow, panel.Toggle, Quit);
 
+            // Signing in (--minimized) starts quietly. Otherwise open where the user chose: the window,
+            // or the tray pop-up so it's clear where Paws Off lives. The very first run opens the window.
             if (!args.Contains("--minimized"))
-                window.Show();
+            {
+                if (settings.IsFirstRun || settings.StartIn == StartPlace.Window) window.Show();
+                else panel.ShowNearTray();
+                settings.StartIn = settings.StartIn; // saves the key, so later runs aren't "first"
+            }
         }
 
         void ShowWindow()

@@ -2,6 +2,27 @@ import SwiftUI
 import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    private var appearanceWatch: Any?
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        let blocker = KeyboardBlocker.shared
+        // Set on the app so the window and the menu bar panel match, and Auto follows the system live.
+        appearanceWatch = blocker.$appearance.sink { NSApp.appearance = $0.nsAppearance }
+
+        // Paws Off starts as a menu bar app (LSUIElement), so nothing flashes in the Dock. The window
+        // opens when the user chose it, and always while keyboard access still needs granting.
+        let snapshot = CommandLine.arguments.contains("--snapshot-window")
+        if snapshot || blocker.launchPlace == .window || !blocker.hasPermission {
+            MainWindow.show()
+        }
+    }
+
+    /// Opening the app again (Finder, Spotlight, Dock) brings up the window.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        MainWindow.show()
+        return false
+    }
+
     // Keep running in the menu bar (and keep the shortcut and paw detection alive) when the window closes.
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 }
@@ -37,22 +58,10 @@ struct PawsOffApp {
 
 struct PawsOffScene: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @StateObject private var blocker = KeyboardBlocker()
+    @ObservedObject private var blocker = KeyboardBlocker.shared
 
     var body: some Scene {
-        // The compact card in a small window...
-        Window("Paws Off", id: "main") {
-            CardView(place: .window)
-                .environmentObject(blocker)
-                .background(WindowConfigurator())
-                // Set on the app (not .preferredColorScheme) so Auto reliably goes back to following
-                // the system, live, and the menu bar panel matches the window.
-                .onChange(of: blocker.appearance, initial: true) { NSApp.appearance = blocker.appearance.nsAppearance }
-        }
-        .windowStyle(.hiddenTitleBar)
-        .windowResizability(.contentSize)
-
-        // ...and the same card one click away in the menu bar.
+        // The card one click away in the menu bar. The window (same card) is opened by MainWindow.
         MenuBarExtra {
             CardView(place: .panel)
                 .environmentObject(blocker)
