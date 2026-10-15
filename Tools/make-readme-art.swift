@@ -11,9 +11,9 @@ func rgb(_ r: CGFloat, _ g: CGFloat, _ b: CGFloat, _ a: CGFloat = 1) -> NSColor 
     NSColor(srgbRed: r, green: g, blue: b, alpha: a)
 }
 
-func screen(_ name: String) -> NSImage {
+func screen(_ name: String, theme: String = "dark") -> NSImage {
     let files = try! FileManager.default.contentsOfDirectory(atPath: previews.path)
-    let file = files.first { $0.hasPrefix("dark-") && $0.hasSuffix("-\(name).png") }!
+    let file = files.first { $0.hasPrefix("\(theme)-") && $0.hasSuffix("-\(name).png") }!
     return NSImage(contentsOf: previews.appendingPathComponent(file))!
 }
 
@@ -72,24 +72,24 @@ do {
         glow(rgb(0.76, 0.40, 0.98, 0.30), at: NSPoint(x: 1000, y: 200), radius: 760)
         glow(rgb(0.20, 0.58, 0.98, 0.28), at: NSPoint(x: 1680, y: 820), radius: 700)
 
-        let side = NSSize(width: 456, height: 744)   // 380x620 window at 1.2x
-        let middle = NSSize(width: 532, height: 868) // 1.4x
+        let side = NSSize(width: 480, height: 645)   // 320x430 card at 1.5x
+        let middle = NSSize(width: 560, height: 753) // 1.75x
         let gap: CGFloat = 70
         let total = side.width * 2 + middle.width + gap * 2
         var x = (size.width - total) / 2
-        drawWindow(screen("awayReady"), in: NSRect(x: x, y: (size.height - side.height) / 2 - 10, width: side.width, height: side.height), radius: 22)
+        drawWindow(screen("menu-bar-panel", theme: "light"), in: NSRect(x: x, y: (size.height - side.height) / 2 - 10, width: side.width, height: side.height), radius: 22)
         x += side.width + gap
         drawWindow(screen("cleanTimer"), in: NSRect(x: x, y: (size.height - middle.height) / 2, width: middle.width, height: middle.height), radius: 26)
         x += middle.width + gap
-        drawWindow(screen("pawsDetected"), in: NSRect(x: x, y: (size.height - side.height) / 2 - 10, width: side.width, height: side.height), radius: 22)
+        drawWindow(screen("pawsDetected", theme: "light"), in: NSRect(x: x, y: (size.height - side.height) / 2 - 10, width: side.width, height: side.height), radius: 22)
     }
     save(rep, "hero.png")
 }
 
 // Gallery: each state as its own rounded window on a transparent background.
-for name in ["cleanReady", "cleanTimer", "awayReady", "awayLocked", "pawsDetected", "backFromAway"] {
+for name in ["cleanReady", "cleanCustom", "awayLocked", "pawsDetected", "menu-bar-panel", "settings"] {
     let pad: CGFloat = 40
-    let win = NSSize(width: 532, height: 868)
+    let win = NSSize(width: 512, height: 688) // 320x430 card at 1.6x
     let rep = canvas(NSSize(width: win.width + pad * 2, height: win.height + pad * 2)) {
         drawWindow(screen(name), in: NSRect(x: pad, y: pad + 8, width: win.width, height: win.height), radius: 26)
     }

@@ -218,14 +218,14 @@ namespace PawsOff
             var lines = new System.Collections.Generic.List<string>();
             if (s.PawKeys > 0)
             {
-                lines.Add($"{s.PawKeys:N0} {Plural(s.PawKeys, "key", "keys")} your cat didn't get to type");
-                if (s.PawKeys >= 5) lines.Add($"≈ {s.PawKeys / 5:N0} {Plural(s.PawKeys / 5, "word", "words")} typed by paws, never sent");
-                lines.Add($"{s.PawKeys:N0} {Plural(s.PawKeys, "keystroke", "keystrokes")} of cat poetry, unpublished");
+                lines.Add($"{s.PawKeys:N0} {Plural(s.PawKeys, "key", "keys")} your cat didn't type");
+                if (s.PawKeys >= 5) lines.Add($"≈ {s.PawKeys / 5:N0} {Plural(s.PawKeys / 5, "word", "words")} by paws, never sent");
+                lines.Add($"{s.PawKeys:N0} {Plural(s.PawKeys, "key", "keys")} of unpublished cat poetry");
             }
             if (s.PawAmbushes > 0) lines.Add($"{s.PawAmbushes:N0} keyboard {Plural(s.PawAmbushes, "ambush", "ambushes")} foiled");
-            if (s.AwaySessions > 0) lines.Add($"{s.AwaySessions:N0} {Plural(s.AwaySessions, "time", "times")} the pets were left unsupervised");
+            if (s.AwaySessions > 0) lines.Add($"{s.AwaySessions:N0} unsupervised pet {Plural(s.AwaySessions, "session", "sessions")}");
             if (s.CleanSessions > 0) lines.Add($"{s.CleanSessions:N0} spotless {Plural(s.CleanSessions, "wipe-down", "wipe-downs")}, zero typos");
-            if (s.KeysStopped > 0) lines.Add($"{s.KeysStopped:N0} {Plural(s.KeysStopped, "key", "keys")} pressed and politely ignored");
+            if (s.KeysStopped > 0) lines.Add($"{s.KeysStopped:N0} {Plural(s.KeysStopped, "key", "keys")} politely ignored");
             return lines;
         }
 

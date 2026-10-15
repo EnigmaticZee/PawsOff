@@ -477,21 +477,21 @@ struct CardView: View {
         func plural(_ x: Int, _ one: String, _ many: String) -> String { x == 1 ? one : many }
         var lines: [String] = []
         if s.pawKeys > 0 {
-            lines.append("\(n(s.pawKeys)) \(plural(s.pawKeys, "key", "keys")) your cat didn't get to type")
-            if s.pawKeys >= 5 { lines.append("≈ \(n(s.pawKeys / 5)) \(plural(s.pawKeys / 5, "word", "words")) typed by paws, never sent") }
-            lines.append("\(n(s.pawKeys)) \(plural(s.pawKeys, "keystroke", "keystrokes")) of cat poetry, unpublished")
+            lines.append("\(n(s.pawKeys)) \(plural(s.pawKeys, "key", "keys")) your cat didn't type")
+            if s.pawKeys >= 5 { lines.append("≈ \(n(s.pawKeys / 5)) \(plural(s.pawKeys / 5, "word", "words")) by paws, never sent") }
+            lines.append("\(n(s.pawKeys)) \(plural(s.pawKeys, "key", "keys")) of unpublished cat poetry")
         }
         if s.pawAmbushes > 0 {
             lines.append("\(n(s.pawAmbushes)) keyboard \(plural(s.pawAmbushes, "ambush", "ambushes")) foiled")
         }
         if s.awaySessions > 0 {
-            lines.append("\(n(s.awaySessions)) \(plural(s.awaySessions, "time", "times")) the pets were left unsupervised")
+            lines.append("\(n(s.awaySessions)) unsupervised pet \(plural(s.awaySessions, "session", "sessions"))")
         }
         if s.cleanSessions > 0 {
             lines.append("\(n(s.cleanSessions)) spotless \(plural(s.cleanSessions, "wipe-down", "wipe-downs")), zero typos")
         }
         if s.keysStopped > 0 {
-            lines.append("\(n(s.keysStopped)) \(plural(s.keysStopped, "key", "keys")) pressed and politely ignored")
+            lines.append("\(n(s.keysStopped)) \(plural(s.keysStopped, "key", "keys")) politely ignored")
         }
         return lines
     }

@@ -101,8 +101,13 @@ jobs:
       - name: Test silent install and uninstall
         shell: pwsh
         run: |
-          $p = Start-Process dist\PawsOff-Windows-Setup.exe -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/TASKS=startup' -PassThru -Wait
+          # Wait for the installer only: after a silent install it starts Paws Off, which keeps running
+          # (Start-Process -Wait would wait for that too).
+          $p = Start-Process dist\PawsOff-Windows-Setup.exe -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/TASKS=startup' -PassThru
+          $p.WaitForExit()
           if ($p.ExitCode -ne 0) { throw "Install failed: $($p.ExitCode)" }
+          Start-Sleep 3
+          if (-not (Get-Process PawsOff -ErrorAction SilentlyContinue)) { throw "Paws Off didn't start after a silent install (automatic updates rely on that)" }
           $dir = "$env:LOCALAPPDATA\Programs\Paws Off"
           if (-not (Test-Path "$dir\PawsOff.exe")) { throw "PawsOff.exe was not installed" }
           if (-not (Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Paws Off.lnk")) { throw "Start menu shortcut missing" }
@@ -110,7 +115,8 @@ jobs:
           if (-not $run) { throw "Sign-in entry missing" }
           Write-Host "Installed OK: $dir"
           Get-Process PawsOff -ErrorAction SilentlyContinue | Stop-Process -Force
-          $u = Start-Process "$dir\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES' -PassThru -Wait
+          $u = Start-Process "$dir\unins000.exe" -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES' -PassThru
+          $u.WaitForExit()
           Start-Sleep 3
           if (Test-Path "$dir\PawsOff.exe") { throw "Uninstall left PawsOff.exe behind" }
           $run = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name PawsOff -ErrorAction SilentlyContinue
