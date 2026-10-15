@@ -1,4 +1,4 @@
-// Renders the Spotless app icon. Usage: swift Tools/make-icon.swift <out.iconset>
+// Renders the Paws Off app icon. Usage: swift Tools/make-icon.swift <out.iconset>
 // Then: iconutil -c icns <out.iconset> -o Assets/AppIcon.icns
 // Colours mirror `Palette` in Sources/ContentView.swift: the dark window background
 // with a faint glow of the idle accent, nothing louder.
@@ -65,10 +65,10 @@ func render(_ px: Int) -> Data {
     rgb(1, 1, 1, 0.16).setStroke()
     discPath.stroke()
 
-    // Keyboard glyph.
-    let config = NSImage.SymbolConfiguration(pointSize: s * 0.22, weight: .light)
+    // Paw glyph.
+    let config = NSImage.SymbolConfiguration(pointSize: s * 0.2, weight: .regular)
         .applying(.init(paletteColors: [rgb(1, 1, 1, 0.92)]))
-    if let sym = NSImage(systemSymbolName: "keyboard", accessibilityDescription: nil)?.withSymbolConfiguration(config) {
+    if let sym = NSImage(systemSymbolName: "pawprint.fill", accessibilityDescription: nil)?.withSymbolConfiguration(config) {
         let sz = sym.size
         sym.draw(in: NSRect(x: (s - sz.width) / 2, y: (s - sz.height) / 2, width: sz.width, height: sz.height))
     }

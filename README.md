@@ -1,4 +1,4 @@
-# Spotless
+# Paws Off
 
 A tiny macOS app that pauses your keyboard with one click, so you can wipe down your
 keyboard and MacBook without typing gibberish or triggering shortcuts.
@@ -11,7 +11,7 @@ keyboard and MacBook without typing gibberish or triggering shortcuts.
 - Live counter of keys caught while locked.
 
 > The Touch ID / power key is handled by macOS itself and can't be blocked. If you press it,
-> the Mac locks and Spotless releases the keyboard automatically.
+> the Mac locks and Paws Off releases the keyboard automatically.
 
 ## Requirements
 
@@ -21,15 +21,15 @@ keyboard and MacBook without typing gibberish or triggering shortcuts.
 ## Build & run
 
 ```sh
-./build.sh          # builds Spotless.app in the project root
-open Spotless.app
+./build.sh          # builds "Paws Off.app" in the project root
+open "Paws Off.app"
 ```
 
-On first launch click **Grant Access** and enable Spotless in
+On first launch click **Grant Access** and enable Paws Off in
 System Settings → Privacy & Security → Accessibility. The app is ad-hoc signed, so macOS may ask
 again after a rebuild (remove the old entry and re-add it if the toggle seems stuck).
 
-To install, drag `Spotless.app` into `/Applications`.
+To install, drag `"Paws Off.app"` into `/Applications`.
 
 ## Releasing a new version
 
@@ -42,7 +42,7 @@ Log every version in [docs/HISTORY.md](docs/HISTORY.md) and tag it: `git tag v1.
 ## Checking the UI without a screen
 
 ```sh
-Spotless.app/Contents/MacOS/Spotless --render-previews /tmp/spotless-previews
+"Paws Off.app/Contents/MacOS/PawsOff" --render-previews /tmp/pawsoff-previews
 ```
 
 Writes a PNG of every UI state (needs permission, ready, locked, auto-released).
@@ -60,7 +60,7 @@ iconutil -c icns /tmp/AppIcon.iconset -o Assets/AppIcon.icns
 | --- | --- |
 | `Sources/KeyboardBlocker.swift` | CGEventTap that swallows keys; lock/sleep observers; Accessibility permission |
 | `Sources/ContentView.swift` | The whole UI and the colour `Palette` |
-| `Sources/SpotlessApp.swift` | App entry point, window styling, `--render-previews` flag |
+| `Sources/PawsOffApp.swift` | App entry point, window styling, `--render-previews` flag |
 | `Sources/PreviewRenderer.swift` | Off-screen PNG renders of each UI state |
 | `Tools/make-icon.swift` | Draws the app icon |
 | `Assets/AppIcon.icns` | Generated icon (committed) |

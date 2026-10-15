@@ -6,19 +6,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 @main
-struct SpotlessApp {
+struct PawsOffApp {
     static func main() {
-        // `Spotless --render-previews <dir>` writes PNGs of every UI state and exits.
+        // `PawsOff --render-previews <dir>` writes PNGs of every UI state and exits.
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--render-previews"), i + 1 < args.count {
             PreviewRenderer.renderAll(to: URL(fileURLWithPath: args[i + 1]))
             exit(0)
         }
-        SpotlessScene.main()
+        PawsOffScene.main()
     }
 }
 
-struct SpotlessScene: App {
+struct PawsOffScene: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var blocker = KeyboardBlocker()
 

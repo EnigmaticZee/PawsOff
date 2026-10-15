@@ -64,7 +64,7 @@ struct ContentView: View {
 
     private var subtitle: String {
         if !blocker.hasPermission {
-            return "Spotless needs Accessibility access to pause your keyboard."
+            return "Paws Off needs Accessibility access to pause your keyboard."
         }
         if blocker.isActive {
             return "Every key is ignored. Click the button with your trackpad or mouse when you're done."
