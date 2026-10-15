@@ -1,96 +1,53 @@
 import SwiftUI
 
-struct ContentView: View {
+/// The whole app UI as one compact card. The same card is shown in the app window and in the
+/// menu bar panel; settings slide in inside it, at the same size.
+struct CardView: View {
+    /// Where the card is shown. The panel gets a button to open the window.
+    enum Place { case window, panel }
+
+    static let size = CGSize(width: 320, height: 430)
+
+    var place: Place = .window
     @EnvironmentObject var blocker: KeyboardBlocker
     @State private var pulse = false
     @State private var hovering = false
-    @State private var showSettings = false
+    @State private var showSettings: Bool
+
+    init(place: Place = .window, showingSettings: Bool = false) {
+        self.place = place
+        _showSettings = State(initialValue: showingSettings)
+    }
     @State private var customText = ""
     @FocusState private var customFieldFocused: Bool
     @Environment(\.ink) private var ink
     @Environment(\.isPreviewRender) private var isPreviewRender
-
-    /// The window is 620 pt tall in total. Its title bar + toolbar is part of that (height measured
-    /// from the real window): the content runs up underneath it.
-    private let windowHeight: CGFloat = 620
-    @ObservedObject private var metrics = WindowMetrics.shared
-    private var titleBarHeight: CGFloat { metrics.titleBarHeight }
+    @Environment(\.openWindow) private var openWindow
 
     private var locked: Bool { blocker.isActive }
     private var shownMode: LockMode { locked ? blocker.activeMode : blocker.mode }
     private var accent: [Color] { locked ? Palette.locked : Palette.idle }
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack {
             background
                 // Clicking empty space cancels a custom timer that's being set.
                 .contentShape(Rectangle())
                 .onTapGesture { cancelCustomTimer() }
 
-            // Spacing follows one rhythm: the top group hangs from the title bar, everything else
-            // stacks from the bottom edge with even 20 pt gaps, and the one flexible space sits
-            // above the button. The footer has a fixed height, so nothing jumps between states.
-            VStack(spacing: 0) {
-                ModePicker(mode: $blocker.mode, shown: shownMode, disabled: locked || !blocker.hasPermission)
-                    .padding(.top, titleBarHeight + 14)
-
-                Text(statusLabel)
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .tracking(3)
-                    .foregroundStyle(ink.text(0.55))
-                    .contentTransition(.opacity)
-                    .padding(.top, 16)
-
-                Spacer(minLength: 0)
-
-                bigButton
-
-                VStack(spacing: 8) {
-                    Text(title)
-                        .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundStyle(ink.primary)
-                        .contentTransition(.opacity)
-
-                    Text(subtitle)
-                        .font(.system(size: 13, weight: .regular, design: .rounded))
-                        .foregroundStyle(ink.text(0.6))
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: 300)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .contentTransition(.opacity)
-                }
-                .padding(.top, 2)
-
-                detailRow
-                    .frame(height: 34)
-                    .padding(.top, 20)
-
-                footer
-                    .frame(height: 64, alignment: .top)
-                    .padding(.top, 20)
-                    .padding(.bottom, 12)
+            if showSettings {
+                SettingsPage(place: place) { withAnimation(.snappy(duration: 0.3)) { showSettings = false } }
+                    .transition(.move(edge: .trailing))
+            } else {
+                mainPage
+                    .transition(.move(edge: .leading))
             }
-            .padding(.horizontal, 24)
-            .frame(maxWidth: .infinity)
-
-            // The settings button itself is a native toolbar item (see SettingsToolbar); renders only
-            // show stand-ins for the title-bar controls.
-            if isPreviewRender { previewTitleBar }
         }
-        // Off-screen renders have no title bar, so they get the full height directly. In the real
-        // window the frame covers the area below the title bar and the content extends up into it.
-        .ignoresSafeArea()
-        .frame(width: 380, height: isPreviewRender ? windowHeight : windowHeight - titleBarHeight)
-        .sheet(isPresented: $showSettings) {
-            SettingsView().environmentObject(blocker)
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .pawsOffOpenSettings)) { _ in
-            cancelCustomTimer()
-            showSettings = true
-        }
+        .frame(width: Self.size.width, height: Self.size.height)
         .onChange(of: blocker.mode) { cancelCustomTimer() }
         // A custom length is a one-off: once that lock ends, go back to No timer.
         .onChange(of: blocker.isActive) { _, active in
+            if active { showSettings = false }
             if !active && blocker.timerIsCustom { blocker.selectTimer(0) }
         }
         .animation(.spring(response: 0.5, dampingFraction: 0.8), value: blocker.isActive)
@@ -99,12 +56,43 @@ struct ContentView: View {
         .onAppear { pulse = true }
     }
 
-    // MARK: Copy
+    /// Mode switch on top, the button with its title in the middle, the session's controls under
+    /// it, and a bottom bar with your stats and the settings button.
+    private var mainPage: some View {
+        VStack(spacing: 0) {
+            ModePicker(mode: $blocker.mode, shown: shownMode, disabled: locked || !blocker.hasPermission)
+                .padding(.top, 16)
 
-    private var statusLabel: String {
-        if locked { return blocker.pawTriggered ? "PAWS DETECTED" : "KEYBOARD LOCKED" }
-        return "KEYBOARD ACTIVE"
+            Spacer(minLength: 4)
+
+            bigButton
+
+            VStack(spacing: 4) {
+                Text(title)
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(ink.primary)
+                    .contentTransition(.opacity)
+                Text(subtitle)
+                    .font(.system(size: 12, weight: .regular, design: .rounded))
+                    .foregroundStyle(ink.text(0.6))
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 270)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .contentTransition(.opacity)
+            }
+            .padding(.horizontal, 20)
+
+            detailRow
+                .frame(height: 30)
+                .padding(.top, 14)
+
+            Spacer(minLength: 4)
+
+            bottomBar
+        }
     }
+
+    // MARK: Copy
 
     private var title: String {
         if !blocker.hasPermission { return "Welcome to Paws Off" }
@@ -149,14 +137,14 @@ struct ContentView: View {
             LinearGradient(colors: ink.background, startPoint: .top, endPoint: .bottom)
             Circle()
                 .fill(accent[0].opacity(0.35 * ink.glow))
-                .frame(width: 320, height: 320)
-                .blur(radius: 110)
-                .offset(x: -90, y: -130)
+                .frame(width: 260, height: 260)
+                .blur(radius: 90)
+                .offset(x: -80, y: -110)
             Circle()
                 .fill(accent[1].opacity(0.35 * ink.glow))
-                .frame(width: 300, height: 300)
-                .blur(radius: 110)
-                .offset(x: 110, y: 140)
+                .frame(width: 240, height: 240)
+                .blur(radius: 90)
+                .offset(x: 90, y: 120)
         }
         .ignoresSafeArea()
     }
@@ -172,7 +160,7 @@ struct ContentView: View {
                     // Breathing halo while locked
                     Circle()
                         .stroke(LinearGradient(colors: accent, startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2)
-                        .frame(width: 214, height: 214)
+                        .frame(width: 166, height: 166)
                         .scaleEffect(locked && pulse ? 1.12 : 1.0)
                         .opacity(locked ? (pulse ? 0 : 0.8) : 0)
                         .animation(
@@ -183,26 +171,26 @@ struct ContentView: View {
 
                 Circle()
                     .fill(LinearGradient(colors: accent, startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 190, height: 190)
-                    .shadow(color: accent[1].opacity(0.55 * ink.glow), radius: 40, y: 14)
+                    .frame(width: 148, height: 148)
+                    .shadow(color: accent[1].opacity(0.55 * ink.glow), radius: 28, y: 10)
 
                 glass
-                    .frame(width: 168, height: 168)
+                    .frame(width: 130, height: 130)
                     .overlay(Circle().stroke(.white.opacity(ink.dark ? 0.18 : 0.35), lineWidth: 1))
 
-                VStack(spacing: 10) {
+                VStack(spacing: 7) {
                     Image(systemName: icon)
-                        .font(.system(size: 50, weight: .regular))
+                        .font(.system(size: 38, weight: .regular))
                         .foregroundStyle(.white)
                         .symbolRenderingMode(.hierarchical)
                         .contentTransition(.symbolEffect(.replace))
                     Text(buttonLabel)
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
                         .tracking(1.5)
                         .foregroundStyle(.white.opacity(0.85))
                 }
             }
-            .frame(width: 240, height: 240)
+            .frame(width: 190, height: 190)
             .scaleEffect(hovering ? 1.03 : 1)
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: hovering)
         }
@@ -240,7 +228,7 @@ struct ContentView: View {
                     )
                     .rotationEffect(.degrees(-90))
             }
-            .frame(width: 212, height: 212)
+            .frame(width: 164, height: 164)
         }
     }
 
@@ -258,7 +246,8 @@ struct ContentView: View {
     @ViewBuilder
     private var detailRow: some View {
         if !blocker.hasPermission {
-            Color.clear
+            Button("Open Accessibility Settings") { blocker.openAccessibilitySettings() }
+                .buttonStyle(PillStyle())
         } else if locked {
             lockedInfo
         } else if blocker.mode == .clean {
@@ -356,26 +345,8 @@ struct ContentView: View {
         .buttonStyle(.plain)
     }
 
-    /// Stand-ins for the window buttons and the settings accessory, drawn only in off-screen
-    /// renders so the title bar can be judged (positions match the real window).
-    private var previewTitleBar: some View {
-        ZStack {
-            HStack(spacing: 9.5) {
-                Circle().fill(Color(red: 1.0, green: 0.37, blue: 0.34))
-                Circle().fill(Color(red: 1.0, green: 0.74, blue: 0.18))
-            }
-            .frame(width: 37.5, height: 14)
-            .position(x: 30.25, y: titleBarHeight / 2)
-            Image(systemName: "gearshape")
-                .font(.system(size: SettingsToolbar.glyphPointSize))
-                .foregroundStyle(.secondary)
-                .position(x: 380 - 26.25, y: titleBarHeight / 2)
-                .opacity(locked ? 0 : 1)
-        }
-    }
-
     private var phraseRow: some View {
-        Button { showSettings = true } label: {
+        Button { withAnimation(.snappy(duration: 0.3)) { showSettings = true } } label: {
             HStack(spacing: 8) {
                 Image(systemName: "character.cursor.ibeam")
                 Text("Unlock phrase")
@@ -418,52 +389,86 @@ struct ContentView: View {
         .overlay(Capsule().stroke(ink.stroke(0.12), lineWidth: 1))
     }
 
-    @ViewBuilder
-    private var footer: some View {
-        if !blocker.hasPermission {
-            VStack(spacing: 10) {
-                Button("Open Accessibility Settings") { blocker.openAccessibilitySettings() }
-                    .buttonStyle(PillStyle())
-                Button("Already switched on? Reset and ask again") { blocker.resetPermission() }
-                    .buttonStyle(.plain)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(ink.text(0.45))
-                    .underline()
+    /// Hairline, then one row: what's happening (or your stats) on the left, controls on the right.
+    private var bottomBar: some View {
+        VStack(spacing: 0) {
+            Rectangle().fill(ink.stroke(0.1)).frame(height: 1)
+            HStack(spacing: 6) {
+                bottomText
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if place == .panel && !locked {
+                    barButton("macwindow", help: "Open the Paws Off window") {
+                        NSApp.setActivationPolicy(.regular)
+                        openWindow(id: "main")
+                        NSApp.activate()
+                    }
+                }
+                if !locked {
+                    barButton("gearshape", help: "Settings") {
+                        cancelCustomTimer()
+                        withAnimation(.snappy(duration: 0.3)) { showSettings = true }
+                    }
+                }
             }
+            .padding(.leading, 16)
+            .padding(.trailing, 10)
+            .frame(height: 44)
+        }
+    }
+
+    @ViewBuilder
+    private var bottomText: some View {
+        if !blocker.hasPermission {
+            Button("Already switched on? Reset and ask again") { blocker.resetPermission() }
+                .buttonStyle(.plain)
+                .font(.system(size: 11, weight: .medium, design: .rounded))
+                .foregroundStyle(ink.text(0.5))
+                .underline()
         } else if locked {
-            hint("lock.open", "Releases by itself if your Mac locks or sleeps")
+            hint("lock.open", "Releases if your Mac locks or sleeps")
         } else {
-            // Re-evaluated every few seconds: rotates the stats line and retires the summary card.
+            // Re-evaluated every few seconds: rotates the stats line and retires the session summary.
             TimelineView(.periodic(from: .now, by: 6)) { context in
-                idleFooter(at: context.date)
+                idleLine(at: context.date)
             }
         }
     }
 
-    /// Last session's card for a minute after unlocking, then your lifetime paw stats (rotating
-    /// jokes), or the shortcut hint until there are any stats.
+    /// Last session for a minute after unlocking, then your lifetime paw stats (rotating jokes),
+    /// or the shortcut hint until there are any stats.
     @ViewBuilder
-    private func idleFooter(at date: Date) -> some View {
+    private func idleLine(at date: Date) -> some View {
         let lines = Self.statsLines(blocker.stats)
-        if let summary = blocker.lastSummary, date.timeIntervalSince(summary.endedAt) < 60 {
-            summaryCard(summary)
+        if let s = blocker.lastSummary, date.timeIntervalSince(s.endedAt) < 60 {
+            let headline = s.pawTriggered ? "Paws caught" : s.mode == .away ? "Welcome back" : "All clean"
+            HStack(spacing: 6) {
+                Image(systemName: s.pawTriggered ? "pawprint.fill" : "checkmark.circle.fill")
+                Text("\(headline) · \(s.keys.formatted()) \(s.keys == 1 ? "key" : "keys") stopped").lineLimit(1)
+            }
+            .font(.system(size: 11, weight: .semibold, design: .rounded))
+            .foregroundStyle(ink.text(0.75))
+            .help(s.reason.map { "\($0), so it unlocked by itself" } ?? "Stopped in \(Self.format(s.duration))")
         } else if !lines.isEmpty {
             let line = lines[Int(date.timeIntervalSince1970 / 6) % lines.count]
-            HStack(spacing: 7) {
+            HStack(spacing: 6) {
                 Image(systemName: "pawprint.fill")
                     .foregroundStyle(LinearGradient(colors: Palette.idle, startPoint: .topLeading, endPoint: .bottomTrailing))
                 Text(line)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
                     .id(line)
                     .transition(.opacity)
             }
-            .font(.system(size: 12, weight: .medium, design: .rounded))
+            .font(.system(size: 11, weight: .medium, design: .rounded))
             .foregroundStyle(ink.text(0.6))
             .animation(.easeInOut(duration: 0.5), value: line)
-            .padding(.top, 12)
         } else {
-            hint("keyboard", "Press \(KeyboardBlocker.shortcutLabel) to lock from anywhere")
-                .padding(.top, 12)
+            hint("keyboard", "\(KeyboardBlocker.shortcutLabel) locks from anywhere")
         }
+    }
+
+    private func barButton(_ symbol: String, help: String, action: @escaping () -> Void) -> some View {
+        BarIconButton(symbol: symbol, action: action).help(help)
     }
 
     /// Short, quirky one-liners built from the lifetime totals. Only lines with a number > 0 show.
@@ -497,7 +502,8 @@ struct ContentView: View {
             Text(text)
         }
         .font(.system(size: 11, weight: .medium, design: .rounded))
-        .foregroundStyle(ink.text(0.4))
+        .foregroundStyle(ink.text(0.45))
+        .lineLimit(1)
     }
 
     private static func format(_ seconds: TimeInterval) -> String {
@@ -507,32 +513,25 @@ struct ContentView: View {
         f.maximumUnitCount = 2
         return f.string(from: max(1, seconds)) ?? ""
     }
+}
 
-    private func summaryCard(_ s: LockSummary) -> some View {
-        let headline = s.pawTriggered ? "Paws detected while you were away"
-            : s.mode == .away ? "Welcome back" : "All clean"
-        let detail = "\(s.keys) key\(s.keys == 1 ? "" : "s") stopped in \(Self.format(s.duration))"
+/// A small icon button with a circular hover highlight, sized like the window buttons.
+struct BarIconButton: View {
+    var symbol: String
+    var action: () -> Void
+    @State private var hovering = false
+    @Environment(\.ink) private var ink
 
-        return VStack(spacing: 3) {
-            HStack(spacing: 6) {
-                Image(systemName: s.pawTriggered ? "pawprint.fill" : "checkmark.circle.fill")
-                Text(headline)
-            }
-            .font(.system(size: 12, weight: .semibold, design: .rounded))
-            .foregroundStyle(ink.text(0.85))
-            Text(detail)
-                .font(.system(size: 11, weight: .regular, design: .rounded))
-                .foregroundStyle(ink.text(0.5))
-                .multilineTextAlignment(.center)
-            if let reason = s.reason {
-                Text("\(reason), so it unlocked by itself")
-                    .font(.system(size: 11, weight: .regular, design: .rounded))
-                    .foregroundStyle(ink.text(0.5))
-            }
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(ink.text(hovering ? 0.8 : 0.55))
+                .frame(width: 28, height: 28)
+                .background(Circle().fill(ink.fill(hovering ? 0.1 : 0)))
+                .contentShape(Circle())
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 9)
-        .background(RoundedRectangle(cornerRadius: 14).fill(ink.fill(0.07)))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(ink.stroke(0.12), lineWidth: 1))
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
     }
 }

@@ -15,6 +15,7 @@ namespace PawsOff
         KeyboardBlocker blocker;
         TrayIcon tray;
         MainWindow window;
+        TrayPanel panel;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -46,9 +47,15 @@ namespace PawsOff
             }) { IsBackground = true };
             listener.Start();
 
-            blocker = new KeyboardBlocker(Settings.Load(), Dispatcher);
+            var settings = Settings.Load();
+            ThemeManager.Init(settings);
+            blocker = new KeyboardBlocker(settings, Dispatcher);
             window = new MainWindow(blocker);
-            tray = new TrayIcon(blocker, ShowWindow, Quit);
+            panel = new TrayPanel(blocker);
+            window.Card.QuitRequested += Quit;
+            panel.Card.QuitRequested += Quit;
+            panel.Card.OpenWindowRequested += () => { panel.HidePanel(); ShowWindow(); };
+            tray = new TrayIcon(blocker, ShowWindow, panel.Toggle, Quit);
 
             if (!args.Contains("--minimized"))
                 window.Show();
@@ -66,6 +73,8 @@ namespace PawsOff
         {
             window.AllowClose = true;
             window.Close();
+            panel.AllowClose = true;
+            panel.Close();
             tray.Dispose();
             blocker.Dispose();
             Shutdown(0);

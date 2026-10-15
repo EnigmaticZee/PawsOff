@@ -1,8 +1,46 @@
+using System;
 using System.Windows;
+using Microsoft.Win32;
 using System.Windows.Media;
 
 namespace PawsOff
 {
+    /// Applies the light or dark colour set to the whole app (window and tray pop-up together)
+    /// and follows the Windows setting live while the theme is Auto.
+    static class ThemeManager
+    {
+        static Settings settings;
+        static bool? forced;
+
+        public static event Action Changed;
+        public static bool IsDark { get; private set; } = true;
+
+        public static void Init(Settings appSettings)
+        {
+            settings = appSettings;
+            SystemEvents.UserPreferenceChanged += (s, e) =>
+            {
+                if (e.Category == UserPreferenceCategory.General)
+                    Application.Current.Dispatcher.BeginInvoke(new Action(Reapply));
+            };
+            Reapply();
+        }
+
+        /// Previews render a fixed theme.
+        public static void Force(bool dark)
+        {
+            forced = dark;
+            Reapply();
+        }
+
+        public static void Reapply()
+        {
+            IsDark = forced ?? settings?.UsesDarkTheme ?? true;
+            Theme.Apply(Application.Current.Resources, IsDark);
+            Changed?.Invoke();
+        }
+    }
+
     /// Light and dark colour sets. XAML refers to these keys with DynamicResource, so applying a
     /// theme repaints the whole window. Accent colours are shared with the Mac app's Palette.
     static class Theme

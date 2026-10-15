@@ -19,6 +19,7 @@ namespace PawsOff
         public int Keys;
         public bool PawTriggered;
         public string Reason; // set when released automatically (PC locked, sleep, ...)
+        public DateTime EndedAt = DateTime.Now;
     }
 
     /// Owns one low-level keyboard hook for the app's lifetime. While unlocked it passes every

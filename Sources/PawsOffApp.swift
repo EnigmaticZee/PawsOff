@@ -40,21 +40,25 @@ struct PawsOffScene: App {
     @StateObject private var blocker = KeyboardBlocker()
 
     var body: some Scene {
+        // The compact card in a small window...
         Window("Paws Off", id: "main") {
-            ContentView()
+            CardView(place: .window)
                 .environmentObject(blocker)
-                .background(WindowConfigurator(blocker: blocker))
+                .background(WindowConfigurator())
                 // Set on the app (not .preferredColorScheme) so Auto reliably goes back to following
-                // the system, live, and the Settings sheet and menu bar menu match the window.
+                // the system, live, and the menu bar panel matches the window.
                 .onChange(of: blocker.appearance, initial: true) { NSApp.appearance = blocker.appearance.nsAppearance }
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
 
+        // ...and the same card one click away in the menu bar.
         MenuBarExtra {
-            MenuBarContent().environmentObject(blocker)
+            CardView(place: .panel)
+                .environmentObject(blocker)
         } label: {
             Image(systemName: blocker.isActive ? "pawprint.circle.fill" : "pawprint.fill")
         }
+        .menuBarExtraStyle(.window)
     }
 }

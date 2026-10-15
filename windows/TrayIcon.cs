@@ -12,7 +12,7 @@ namespace PawsOff
         readonly Forms.NotifyIcon icon;
         readonly Forms.ToolStripMenuItem status, lockClean, lockAway, unlock;
 
-        public TrayIcon(KeyboardBlocker blocker, Action showWindow, Action quit)
+        public TrayIcon(KeyboardBlocker blocker, Action showWindow, Action togglePanel, Action quit)
         {
             this.blocker = blocker;
 
@@ -45,7 +45,7 @@ namespace PawsOff
             icon.ContextMenuStrip = menu;
             icon.MouseClick += (s, e) =>
             {
-                if (e.Button == Forms.MouseButtons.Left) showWindow();
+                if (e.Button == Forms.MouseButtons.Left) togglePanel();
             };
 
             blocker.Changed += Update;

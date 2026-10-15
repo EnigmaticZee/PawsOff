@@ -1,0 +1,24 @@
+<Window x:Class="PawsOff.TrayPanel"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Paws Off" Width="340" Height="450"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True"
+        FontFamily="{StaticResource AppFont}"
+        UseLayoutRounding="True">
+
+    <!-- The shared card popping up from the tray, like Windows' own quick panels:
+         rounded corners, a soft shadow, and it hides when you click elsewhere. -->
+    <Border Margin="10" CornerRadius="10" BorderBrush="{DynamicResource Stroke2}" BorderThickness="1"
+            Background="{DynamicResource WindowBackground}">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="18" ShadowDepth="4" Direction="270" Opacity="0.28" />
+        </Border.Effect>
+        <Grid>
+            <Grid.Clip>
+                <RectangleGeometry Rect="0,0,318,428" RadiusX="9" RadiusY="9" />
+            </Grid.Clip>
+            <ContentControl x:Name="CardHost" />
+        </Grid>
+    </Border>
+</Window>
