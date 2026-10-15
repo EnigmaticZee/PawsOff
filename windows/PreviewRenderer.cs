@@ -33,7 +33,7 @@ namespace PawsOff
                 var panel = new TrayPanel(KeyboardBlocker.Preview("cleanReady")) { Left = -10000, Top = -10000, ShowActivated = false };
                 panel.Show();
                 panel.UpdateLayout();
-                Save((FrameworkElement)panel.Content, Path.Combine(dir, $"{theme}-{index}-tray-panel.png"));
+                Save((FrameworkElement)panel.Content, Path.Combine(dir, $"{theme}-{index}-tray-panel.png"), panel.Width, panel.Height);
                 panel.AllowClose = true;
                 panel.Close();
             }
@@ -48,9 +48,12 @@ namespace PawsOff
             card.Detach();
         }
 
-        static void Save(FrameworkElement element, string path)
+        /// Width/height default to the element's own size; pass the window's size for elements with
+        /// an outer margin (the pop-up's shadow), so nothing is cropped.
+        static void Save(FrameworkElement element, string path, double width = 0, double height = 0)
         {
-            var bitmap = new RenderTargetBitmap((int)element.ActualWidth * 2, (int)element.ActualHeight * 2, 192, 192, PixelFormats.Pbgra32);
+            int w = (int)(width > 0 ? width : element.ActualWidth), h = (int)(height > 0 ? height : element.ActualHeight);
+            var bitmap = new RenderTargetBitmap(w * 2, h * 2, 192, 192, PixelFormats.Pbgra32);
             bitmap.Render(element);
             var encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(bitmap));
