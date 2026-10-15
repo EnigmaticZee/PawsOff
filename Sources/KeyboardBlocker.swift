@@ -8,6 +8,20 @@ enum LockMode: String, CaseIterable, Identifiable {
     var symbol: String { self == .clean ? "sparkles" : "pawprint.fill" }
 }
 
+/// Auto follows the macOS light/dark setting (and switches with it); Light and Dark pin one look.
+enum Appearance: String, CaseIterable, Identifiable {
+    case auto, light, dark
+    var id: String { rawValue }
+    var title: String { rawValue.capitalized }
+    var nsAppearance: NSAppearance? {
+        switch self {
+        case .auto: return nil
+        case .light: return NSAppearance(named: .aqua)
+        case .dark: return NSAppearance(named: .darkAqua)
+        }
+    }
+}
+
 /// What happened during the last lock, shown after the keyboard is released.
 struct LockSummary {
     let mode: LockMode
@@ -36,6 +50,7 @@ final class KeyboardBlocker: ObservableObject {
     @Published var timerSeconds = 0 { didSet { save(timerSeconds, Keys.timer) } }
     @Published var unlockPhrase = "unlock" { didSet { save(unlockPhrase, Keys.phrase) } }
     @Published var pawDetection = true { didSet { save(pawDetection, Keys.paw) } }
+    @Published var appearance: Appearance = .auto { didSet { save(appearance.rawValue, Keys.appearance) } }
 
     static let timerChoices = [0, 30, 60, 120]
     static let shortcutLabel = "⌃⌥⌘L"
@@ -43,6 +58,7 @@ final class KeyboardBlocker: ObservableObject {
 
     private enum Keys {
         static let mode = "mode", timer = "timerSeconds", phrase = "unlockPhrase", paw = "pawDetection"
+        static let appearance = "appearance"
     }
 
     private var persists = false
@@ -60,6 +76,7 @@ final class KeyboardBlocker: ObservableObject {
         timerSeconds = defaults.object(forKey: Keys.timer) as? Int ?? 0
         unlockPhrase = defaults.string(forKey: Keys.phrase) ?? "unlock"
         pawDetection = defaults.object(forKey: Keys.paw) as? Bool ?? true
+        appearance = Appearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .auto
         hasPermission = AXIsProcessTrusted()
         persists = true
 

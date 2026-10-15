@@ -29,8 +29,10 @@ struct PawsOffScene: App {
         Window("Paws Off", id: "main") {
             ContentView()
                 .environmentObject(blocker)
-                .preferredColorScheme(.dark)
                 .background(WindowConfigurator())
+                // Set on the app (not .preferredColorScheme) so Auto reliably goes back to following
+                // the system, live, and the Settings sheet and menu bar menu match the window.
+                .onChange(of: blocker.appearance, initial: true) { NSApp.appearance = blocker.appearance.nsAppearance }
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)

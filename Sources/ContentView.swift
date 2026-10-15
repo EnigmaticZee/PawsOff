@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var pulse = false
     @State private var hovering = false
     @State private var showSettings = false
+    @Environment(\.ink) private var ink
 
     private var locked: Bool { blocker.isActive }
     private var shownMode: LockMode { locked ? blocker.activeMode : blocker.mode }
@@ -21,7 +22,7 @@ struct ContentView: View {
                 Text(statusLabel)
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .tracking(3)
-                    .foregroundStyle(.white.opacity(0.55))
+                    .foregroundStyle(ink.text(0.55))
                     .contentTransition(.opacity)
                     .padding(.top, 20)
 
@@ -34,12 +35,12 @@ struct ContentView: View {
                 VStack(spacing: 8) {
                     Text(title)
                         .font(.system(size: 26, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(ink.primary)
                         .contentTransition(.opacity)
 
                     Text(subtitle)
                         .font(.system(size: 13, weight: .regular, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.6))
+                        .foregroundStyle(ink.text(0.6))
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: 300)
                         .fixedSize(horizontal: false, vertical: true)
@@ -63,7 +64,7 @@ struct ContentView: View {
             Button { showSettings = true } label: {
                 Image(systemName: "gearshape")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(ink.text(0.5))
                     .padding(8)
                     .contentShape(Rectangle())
             }
@@ -131,14 +132,14 @@ struct ContentView: View {
 
     private var background: some View {
         ZStack {
-            LinearGradient(colors: [Palette.backgroundTop, Palette.backgroundBottom], startPoint: .top, endPoint: .bottom)
+            LinearGradient(colors: ink.background, startPoint: .top, endPoint: .bottom)
             Circle()
-                .fill(accent[0].opacity(0.35))
+                .fill(accent[0].opacity(0.35 * ink.glow))
                 .frame(width: 320, height: 320)
                 .blur(radius: 110)
                 .offset(x: -90, y: -130)
             Circle()
-                .fill(accent[1].opacity(0.35))
+                .fill(accent[1].opacity(0.35 * ink.glow))
                 .frame(width: 300, height: 300)
                 .blur(radius: 110)
                 .offset(x: 110, y: 140)
@@ -169,13 +170,11 @@ struct ContentView: View {
                 Circle()
                     .fill(LinearGradient(colors: accent, startPoint: .topLeading, endPoint: .bottomTrailing))
                     .frame(width: 190, height: 190)
-                    .shadow(color: accent[1].opacity(0.55), radius: 40, y: 14)
+                    .shadow(color: accent[1].opacity(0.55 * ink.glow), radius: 40, y: 14)
 
-                Circle()
-                    .fill(.ultraThinMaterial)
-                    .environment(\.colorScheme, .dark)
+                glass
                     .frame(width: 168, height: 168)
-                    .overlay(Circle().stroke(.white.opacity(0.18), lineWidth: 1))
+                    .overlay(Circle().stroke(.white.opacity(ink.dark ? 0.18 : 0.35), lineWidth: 1))
 
                 VStack(spacing: 10) {
                     Image(systemName: icon)
@@ -197,12 +196,28 @@ struct ContentView: View {
         .onHover { hovering = $0 }
     }
 
+    /// Frosted centre of the big button: tinted dark glass, or bright milky glass in light mode.
+    @ViewBuilder
+    private var glass: some View {
+        if ink.dark {
+            Circle()
+                .fill(.ultraThinMaterial)
+                .environment(\.colorScheme, .dark)
+        } else {
+            Circle()
+                .fill(LinearGradient(colors: [.white.opacity(0.2), .white.opacity(0.08)], startPoint: .top, endPoint: .bottom))
+                .overlay(Circle().fill(LinearGradient(
+                    stops: [.init(color: .white.opacity(0.33), location: 0), .init(color: .white.opacity(0), location: 0.55)],
+                    startPoint: .top, endPoint: .bottom)))
+        }
+    }
+
     private func countdownRing(start: Date, end: Date) -> some View {
         TimelineView(.animation(minimumInterval: 0.1)) { context in
             let total = end.timeIntervalSince(start)
             let left = max(0, end.timeIntervalSince(context.date))
             ZStack {
-                Circle().stroke(.white.opacity(0.08), lineWidth: 3)
+                Circle().stroke(ink.stroke(0.08), lineWidth: 3)
                 Circle()
                     .trim(from: 0, to: total > 0 ? left / total : 0)
                     .stroke(
@@ -243,7 +258,7 @@ struct ContentView: View {
         HStack(spacing: 6) {
             Image(systemName: "timer")
                 .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.white.opacity(0.45))
+                .foregroundStyle(ink.text(0.45))
             ForEach(KeyboardBlocker.timerChoices, id: \.self) { seconds in
                 Button(seconds == 0 ? "No timer" : seconds < 60 ? "\(seconds) s" : "\(seconds / 60) min") {
                     blocker.timerSeconds = seconds
@@ -260,15 +275,15 @@ struct ContentView: View {
                 Text("Unlock phrase")
                 Text(blocker.trimmedPhrase.isEmpty ? "off" : blocker.trimmedPhrase)
                     .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.white.opacity(0.9))
+                    .foregroundStyle(ink.text(0.9))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(.white.opacity(0.1)))
+                    .background(RoundedRectangle(cornerRadius: 6).fill(ink.fill(0.1)))
                 Image(systemName: "pencil")
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(ink.text(0.4))
             }
             .font(.system(size: 12, weight: .medium, design: .rounded))
-            .foregroundStyle(.white.opacity(0.65))
+            .foregroundStyle(ink.text(0.65))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -282,7 +297,7 @@ struct ContentView: View {
                 .contentTransition(.numericText())
                 .animation(.snappy, value: blocker.keysCaught)
             if let end = blocker.endsAt {
-                Text("·").foregroundStyle(.white.opacity(0.4))
+                Text("·").foregroundStyle(ink.text(0.4))
                 TimelineView(.periodic(from: .now, by: 1)) { context in
                     let left = Int(max(0, end.timeIntervalSince(context.date)).rounded(.up))
                     Text(String(format: "%d:%02d left", left / 60, left % 60)).monospacedDigit()
@@ -290,11 +305,11 @@ struct ContentView: View {
             }
         }
         .font(.system(size: 12, weight: .medium, design: .rounded))
-        .foregroundStyle(.white.opacity(0.75))
+        .foregroundStyle(ink.text(0.75))
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background(Capsule().fill(.white.opacity(0.08)))
-        .overlay(Capsule().stroke(.white.opacity(0.12), lineWidth: 1))
+        .background(Capsule().fill(ink.fill(0.08)))
+        .overlay(Capsule().stroke(ink.stroke(0.12), lineWidth: 1))
     }
 
     @ViewBuilder
@@ -306,7 +321,7 @@ struct ContentView: View {
                 Button("Already switched on? Reset and ask again") { blocker.resetPermission() }
                     .buttonStyle(.plain)
                     .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.45))
+                    .foregroundStyle(ink.text(0.45))
                     .underline()
             }
         } else if locked {
@@ -324,7 +339,7 @@ struct ContentView: View {
             Text(text)
         }
         .font(.system(size: 11, weight: .medium, design: .rounded))
-        .foregroundStyle(.white.opacity(0.4))
+        .foregroundStyle(ink.text(0.4))
     }
 
     private static func format(_ seconds: TimeInterval) -> String {
@@ -346,20 +361,20 @@ struct ContentView: View {
                 Text(headline)
             }
             .font(.system(size: 12, weight: .semibold, design: .rounded))
-            .foregroundStyle(.white.opacity(0.85))
+            .foregroundStyle(ink.text(0.85))
             Text(detail)
                 .font(.system(size: 11, weight: .regular, design: .rounded))
-                .foregroundStyle(.white.opacity(0.5))
+                .foregroundStyle(ink.text(0.5))
                 .multilineTextAlignment(.center)
             if let reason = s.reason {
                 Text("\(reason), so it unlocked by itself")
                     .font(.system(size: 11, weight: .regular, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.5))
+                    .foregroundStyle(ink.text(0.5))
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 9)
-        .background(RoundedRectangle(cornerRadius: 14).fill(.white.opacity(0.07)))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white.opacity(0.12), lineWidth: 1))
+        .background(RoundedRectangle(cornerRadius: 14).fill(ink.fill(0.07)))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(ink.stroke(0.12), lineWidth: 1))
     }
 }
