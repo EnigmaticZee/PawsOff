@@ -1,41 +1,38 @@
 import SwiftUI
 
-/// Colours shared by the window and the app icon (Tools/make-icon.swift mirrors these).
-enum Palette {
-    static let backgroundTop = Color(red: 0.06, green: 0.06, blue: 0.10)
-    static let backgroundBottom = Color(red: 0.10, green: 0.08, blue: 0.16)
-    static let idle = [Color(red: 0.98, green: 0.55, blue: 0.47), Color(red: 0.76, green: 0.40, blue: 0.98)]
-    static let locked = [Color(red: 0.36, green: 0.92, blue: 0.78), Color(red: 0.20, green: 0.58, blue: 0.98)]
-}
-
 struct ContentView: View {
     @EnvironmentObject var blocker: KeyboardBlocker
     @State private var pulse = false
     @State private var hovering = false
+    @State private var showSettings = false
 
-    private var accent: [Color] { blocker.isActive ? Palette.locked : Palette.idle }
+    private var locked: Bool { blocker.isActive }
+    private var shownMode: LockMode { locked ? blocker.activeMode : blocker.mode }
+    private var accent: [Color] { locked ? Palette.locked : Palette.idle }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topTrailing) {
             background
 
             VStack(spacing: 0) {
-                Spacer(minLength: 36)
+                ModePicker(mode: $blocker.mode, shown: shownMode, disabled: locked || !blocker.hasPermission)
+                    .padding(.top, 46)
 
-                Text(blocker.isActive ? "KEYBOARD LOCKED" : "KEYBOARD ACTIVE")
+                Text(statusLabel)
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .tracking(3)
                     .foregroundStyle(.white.opacity(0.55))
                     .contentTransition(.opacity)
+                    .padding(.top, 20)
 
-                Spacer(minLength: 28)
+                Spacer(minLength: 16)
 
                 bigButton
 
-                Spacer(minLength: 28)
+                Spacer(minLength: 20)
 
                 VStack(spacing: 8) {
-                    Text(blocker.isActive ? "Wipe away." : "Ready to clean?")
+                    Text(title)
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
                         .contentTransition(.opacity)
@@ -44,36 +41,93 @@ struct ContentView: View {
                         .font(.system(size: 13, weight: .regular, design: .rounded))
                         .foregroundStyle(.white.opacity(0.6))
                         .multilineTextAlignment(.center)
-                        .frame(maxWidth: 280)
+                        .frame(maxWidth: 300)
                         .fixedSize(horizontal: false, vertical: true)
                         .contentTransition(.opacity)
                 }
 
-                Spacer(minLength: 24)
+                Spacer(minLength: 16)
+
+                detailRow
+                    .frame(height: 34)
+
+                Spacer(minLength: 12)
 
                 footer
-                    .padding(.bottom, 22)
+                    .frame(minHeight: 44)
+                    .padding(.bottom, 20)
             }
-            .padding(.horizontal, 28)
+            .padding(.horizontal, 24)
+            .frame(maxWidth: .infinity)
+
+            Button { showSettings = true } label: {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.5))
+                    .padding(8)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help("Settings")
+            .padding(.top, 4)
+            .padding(.trailing, 8)
+            .opacity(locked ? 0 : 1)
+            .disabled(locked)
         }
-        .frame(width: 380, height: 540)
+        .frame(width: 380, height: 620)
+        .sheet(isPresented: $showSettings) {
+            SettingsView().environmentObject(blocker)
+        }
         .animation(.spring(response: 0.5, dampingFraction: 0.8), value: blocker.isActive)
+        .animation(.easeInOut(duration: 0.25), value: blocker.mode)
         .animation(.easeInOut(duration: 0.25), value: blocker.hasPermission)
         .onAppear { pulse = true }
+    }
+
+    // MARK: Copy
+
+    private var statusLabel: String {
+        if locked { return blocker.pawTriggered ? "PAWS DETECTED" : "KEYBOARD LOCKED" }
+        return "KEYBOARD ACTIVE"
+    }
+
+    private var title: String {
+        if !blocker.hasPermission { return "Welcome to Paws Off" }
+        if locked {
+            if blocker.pawTriggered { return "Caught a paw." }
+            return blocker.activeMode == .clean ? "Wipe away." : "Paws off."
+        }
+        return blocker.mode == .clean ? "Ready to clean?" : "Stepping away?"
+    }
+
+    private var unlockHint: String {
+        let phrase = blocker.trimmedPhrase
+        return phrase.isEmpty
+            ? "Click the button when you're back."
+            : "Type “\(phrase)” or click the button when you're back."
     }
 
     private var subtitle: String {
         if !blocker.hasPermission {
             return "Paws Off needs Accessibility access to pause your keyboard."
         }
-        if blocker.isActive {
-            return "Every key is ignored. Click the button with your trackpad or mouse when you're done."
+        if locked {
+            if blocker.pawTriggered {
+                return "Something walked across your keyboard, so it's locked now. " + unlockHint
+            }
+            if blocker.activeMode == .clean {
+                return blocker.endsAt != nil
+                    ? "Every key is ignored. It unlocks by itself when the timer runs out."
+                    : "Every key is ignored. Click the button with your trackpad when you're done."
+            }
+            return "Nothing gets typed while you're gone. " + unlockHint
         }
-        if let reason = blocker.lastAutoReleaseReason {
-            return "\(reason) — keyboard was released automatically so you can log back in."
-        }
-        return "Tap the button to pause all key presses while you wipe down your keyboard."
+        return blocker.mode == .clean
+            ? "Lock the keyboard while you wipe it down. Your trackpad stays on so you can unlock."
+            : "Leave your Mac running without curious paws typing into it."
     }
+
+    // MARK: Pieces
 
     private var background: some View {
         ZStack {
@@ -87,7 +141,7 @@ struct ContentView: View {
                 .fill(accent[1].opacity(0.35))
                 .frame(width: 300, height: 300)
                 .blur(radius: 110)
-                .offset(x: 110, y: 120)
+                .offset(x: 110, y: 140)
         }
         .ignoresSafeArea()
     }
@@ -97,16 +151,20 @@ struct ContentView: View {
             if blocker.hasPermission { blocker.toggle() } else { blocker.requestPermission() }
         } label: {
             ZStack {
-                // Breathing halo while locked
-                Circle()
-                    .stroke(LinearGradient(colors: accent, startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2)
-                    .frame(width: 214, height: 214)
-                    .scaleEffect(blocker.isActive && pulse ? 1.12 : 1.0)
-                    .opacity(blocker.isActive ? (pulse ? 0 : 0.8) : 0)
-                    .animation(
-                        blocker.isActive ? .easeOut(duration: 1.8).repeatForever(autoreverses: false) : .default,
-                        value: pulse && blocker.isActive
-                    )
+                if locked, let end = blocker.endsAt, let start = blocker.lockedAt {
+                    countdownRing(start: start, end: end)
+                } else {
+                    // Breathing halo while locked
+                    Circle()
+                        .stroke(LinearGradient(colors: accent, startPoint: .topLeading, endPoint: .bottomTrailing), lineWidth: 2)
+                        .frame(width: 214, height: 214)
+                        .scaleEffect(locked && pulse ? 1.12 : 1.0)
+                        .opacity(locked ? (pulse ? 0 : 0.8) : 0)
+                        .animation(
+                            locked ? .easeOut(duration: 1.8).repeatForever(autoreverses: false) : .default,
+                            value: pulse && locked
+                        )
+                }
 
                 Circle()
                     .fill(LinearGradient(colors: accent, startPoint: .topLeading, endPoint: .bottomTrailing))
@@ -131,6 +189,7 @@ struct ContentView: View {
                         .foregroundStyle(.white.opacity(0.85))
                 }
             }
+            .frame(width: 240, height: 240)
             .scaleEffect(hovering ? 1.03 : 1)
             .animation(.spring(response: 0.3, dampingFraction: 0.7), value: hovering)
         }
@@ -138,14 +197,104 @@ struct ContentView: View {
         .onHover { hovering = $0 }
     }
 
+    private func countdownRing(start: Date, end: Date) -> some View {
+        TimelineView(.animation(minimumInterval: 0.1)) { context in
+            let total = end.timeIntervalSince(start)
+            let left = max(0, end.timeIntervalSince(context.date))
+            ZStack {
+                Circle().stroke(.white.opacity(0.08), lineWidth: 3)
+                Circle()
+                    .trim(from: 0, to: total > 0 ? left / total : 0)
+                    .stroke(
+                        LinearGradient(colors: accent, startPoint: .topLeading, endPoint: .bottomTrailing),
+                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+            }
+            .frame(width: 212, height: 212)
+        }
+    }
+
     private var icon: String {
         if !blocker.hasPermission { return "lock.shield" }
-        return blocker.isActive ? "keyboard.badge.ellipsis" : "keyboard"
+        if locked { return blocker.activeMode == .away ? "pawprint.fill" : "keyboard.badge.ellipsis" }
+        return blocker.mode == .away ? "pawprint" : "keyboard"
     }
 
     private var buttonLabel: String {
         if !blocker.hasPermission { return "GRANT ACCESS" }
-        return blocker.isActive ? "UNLOCK" : "LOCK"
+        return locked ? "UNLOCK" : "LOCK"
+    }
+
+    @ViewBuilder
+    private var detailRow: some View {
+        if !blocker.hasPermission {
+            Color.clear
+        } else if locked {
+            lockedInfo
+        } else if blocker.mode == .clean {
+            timerChips
+        } else {
+            phraseRow
+        }
+    }
+
+    private var timerChips: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "timer")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.white.opacity(0.45))
+            ForEach(KeyboardBlocker.timerChoices, id: \.self) { seconds in
+                Button(seconds == 0 ? "No timer" : seconds < 60 ? "\(seconds) s" : "\(seconds / 60) min") {
+                    blocker.timerSeconds = seconds
+                }
+                .buttonStyle(ChipStyle(selected: blocker.timerSeconds == seconds))
+            }
+        }
+    }
+
+    private var phraseRow: some View {
+        Button { showSettings = true } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "character.cursor.ibeam")
+                Text("Unlock phrase")
+                Text(blocker.trimmedPhrase.isEmpty ? "off" : blocker.trimmedPhrase)
+                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(RoundedRectangle(cornerRadius: 6).fill(.white.opacity(0.1)))
+                Image(systemName: "pencil")
+                    .foregroundStyle(.white.opacity(0.4))
+            }
+            .font(.system(size: 12, weight: .medium, design: .rounded))
+            .foregroundStyle(.white.opacity(0.65))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var lockedInfo: some View {
+        HStack(spacing: 8) {
+            Image(systemName: blocker.activeMode == .away ? "pawprint.fill" : "sparkles")
+            Text("\(blocker.keysCaught) key\(blocker.keysCaught == 1 ? "" : "s") caught")
+                .monospacedDigit()
+                .contentTransition(.numericText())
+                .animation(.snappy, value: blocker.keysCaught)
+            if let end = blocker.endsAt {
+                Text("·").foregroundStyle(.white.opacity(0.4))
+                TimelineView(.periodic(from: .now, by: 1)) { context in
+                    let left = Int(max(0, end.timeIntervalSince(context.date)).rounded(.up))
+                    Text(String(format: "%d:%02d left", left / 60, left % 60)).monospacedDigit()
+                }
+            }
+        }
+        .font(.system(size: 12, weight: .medium, design: .rounded))
+        .foregroundStyle(.white.opacity(0.75))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(Capsule().fill(.white.opacity(0.08)))
+        .overlay(Capsule().stroke(.white.opacity(0.12), lineWidth: 1))
     }
 
     @ViewBuilder
@@ -153,47 +302,49 @@ struct ContentView: View {
         if !blocker.hasPermission {
             Button("Open Accessibility Settings") { blocker.openAccessibilitySettings() }
                 .buttonStyle(PillStyle())
-        } else if blocker.isActive {
-            HStack(spacing: 8) {
-                Image(systemName: "sparkles")
-                Text("\(blocker.keysCaught) key\(blocker.keysCaught == 1 ? "" : "s") caught")
-                    .monospacedDigit()
-                    .contentTransition(.numericText())
-                    .animation(.snappy, value: blocker.keysCaught)
-            }
-            .font(.system(size: 12, weight: .medium, design: .rounded))
-            .foregroundStyle(.white.opacity(0.75))
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
-            .background(Capsule().fill(.white.opacity(0.08)))
-            .overlay(Capsule().stroke(.white.opacity(0.12), lineWidth: 1))
+        } else if locked {
+            hint("lock.open", "Releases by itself if your Mac locks or sleeps")
+        } else if let summary = blocker.lastSummary {
+            summaryCard(summary)
         } else {
-            HStack(spacing: 6) {
-                Image(systemName: "lock.open")
-                Text("Auto-unlocks if your Mac locks or sleeps")
-            }
-            .font(.system(size: 11, weight: .medium, design: .rounded))
-            .foregroundStyle(.white.opacity(0.4))
+            hint("keyboard", "Press \(KeyboardBlocker.shortcutLabel) to lock from anywhere")
         }
     }
-}
 
-struct PressableStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.95 : 1)
-            .animation(.spring(response: 0.25, dampingFraction: 0.6), value: configuration.isPressed)
+    private func hint(_ symbol: String, _ text: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: symbol)
+            Text(text)
+        }
+        .font(.system(size: 11, weight: .medium, design: .rounded))
+        .foregroundStyle(.white.opacity(0.4))
     }
-}
 
-struct PillStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
+    private func summaryCard(_ s: LockSummary) -> some View {
+        let headline = s.pawTriggered ? "Paws detected while you were away"
+            : s.mode == .away ? "Welcome back" : "All clean"
+        let detail = "\(s.keys) key\(s.keys == 1 ? "" : "s") stopped in \(formatDuration(s.duration))"
+
+        return VStack(spacing: 3) {
+            HStack(spacing: 6) {
+                Image(systemName: s.pawTriggered ? "pawprint.fill" : "checkmark.circle.fill")
+                Text(headline)
+            }
             .font(.system(size: 12, weight: .semibold, design: .rounded))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 9)
-            .background(Capsule().fill(.white.opacity(configuration.isPressed ? 0.2 : 0.12)))
-            .overlay(Capsule().stroke(.white.opacity(0.2), lineWidth: 1))
+            .foregroundStyle(.white.opacity(0.85))
+            Text(detail)
+                .font(.system(size: 11, weight: .regular, design: .rounded))
+                .foregroundStyle(.white.opacity(0.5))
+                .multilineTextAlignment(.center)
+            if let reason = s.reason {
+                Text("\(reason), so it unlocked by itself")
+                    .font(.system(size: 11, weight: .regular, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.5))
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 9)
+        .background(RoundedRectangle(cornerRadius: 14).fill(.white.opacity(0.07)))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(.white.opacity(0.12), lineWidth: 1))
     }
 }

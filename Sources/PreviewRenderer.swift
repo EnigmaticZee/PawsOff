@@ -6,22 +6,26 @@ import SwiftUI
 enum PreviewRenderer {
     static func renderAll(to dir: URL) {
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        let states: [(String, KeyboardBlocker)] = [
-            ("1-needs-permission", .preview(permission: false)),
-            ("2-ready", .preview()),
-            ("3-locked", .preview(active: true, caught: 42)),
-            ("4-auto-released", .preview(reason: "Screen locked")),
-        ]
-        for (name, blocker) in states {
-            let view = ContentView().environmentObject(blocker).environment(\.colorScheme, .dark)
-            let renderer = ImageRenderer(content: view)
-            renderer.scale = 2
-            guard let image = renderer.nsImage,
-                  let tiff = image.tiffRepresentation,
-                  let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:])
-            else { continue }
-            try? png.write(to: dir.appendingPathComponent("\(name).png"))
+        for (index, state) in KeyboardBlocker.PreviewState.allCases.enumerated() {
+            let view = ContentView()
+                .environmentObject(KeyboardBlocker.preview(state))
+                .environment(\.colorScheme, .dark)
+            write(view, to: dir.appendingPathComponent("\(index + 1)-\(state.rawValue).png"))
         }
+        let settings = SettingsView()
+            .environmentObject(KeyboardBlocker.preview(.cleanReady))
+            .environment(\.colorScheme, .dark)
+        write(settings, to: dir.appendingPathComponent("\(KeyboardBlocker.PreviewState.allCases.count + 1)-settings.png"))
         print("Rendered previews to \(dir.path)")
+    }
+
+    private static func write(_ view: some View, to url: URL) {
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 2
+        guard let image = renderer.nsImage,
+              let tiff = image.tiffRepresentation,
+              let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:])
+        else { return }
+        try? png.write(to: url)
     }
 }

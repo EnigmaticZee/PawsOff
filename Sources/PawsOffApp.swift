@@ -2,7 +2,8 @@ import SwiftUI
 import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+    // Keep running in the menu bar (and keep the shortcut and paw detection alive) when the window closes.
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
 }
 
 @main
@@ -11,7 +12,9 @@ struct PawsOffApp {
         // `PawsOff --render-previews <dir>` writes PNGs of every UI state and exits.
         let args = CommandLine.arguments
         if let i = args.firstIndex(of: "--render-previews"), i + 1 < args.count {
-            PreviewRenderer.renderAll(to: URL(fileURLWithPath: args[i + 1]))
+            MainActor.assumeIsolated {
+                PreviewRenderer.renderAll(to: URL(fileURLWithPath: args[i + 1]))
+            }
             exit(0)
         }
         PawsOffScene.main()
@@ -23,7 +26,7 @@ struct PawsOffScene: App {
     @StateObject private var blocker = KeyboardBlocker()
 
     var body: some Scene {
-        WindowGroup {
+        Window("Paws Off", id: "main") {
             ContentView()
                 .environmentObject(blocker)
                 .preferredColorScheme(.dark)
@@ -31,6 +34,12 @@ struct PawsOffScene: App {
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
+
+        MenuBarExtra {
+            MenuBarContent().environmentObject(blocker)
+        } label: {
+            Image(systemName: blocker.isActive ? "pawprint.fill" : "pawprint")
+        }
     }
 }
 
