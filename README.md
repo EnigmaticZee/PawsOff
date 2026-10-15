@@ -12,8 +12,9 @@ Wipe it down without typing gibberish — or step away without your cat writing 
 ![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-0A84FF)
 ![Version](https://img.shields.io/badge/version-1.2.0-8A63D2)
 ![No network](https://img.shields.io/badge/network-none-2EA44F)
+![License: MIT](https://img.shields.io/badge/license-MIT-F2C14E)
 
-[Features](#-features) · [Screenshots](#-screenshots) · [Install](#-install) · [How it works](#-how-it-works) · [FAQ](#-faq) · [Development](#-development)
+[Features](#-features) · [Screenshots](#-screenshots) · [Install](#-install) · [How it works](#-how-it-works) · [FAQ](#-faq) · [Development](#-development) · [License](#-license)
 
 <br>
 
@@ -206,6 +207,14 @@ Tools/make-readme-art.sh      # refresh the images in this README
 
 **Releasing:** `./build.sh <version>`, add an entry to [docs/HISTORY.md](docs/HISTORY.md), update the version badge above, commit, then `git tag v<version>`.
 
+## 🤝 Contributing
+
+Issues and pull requests are welcome. Please read [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) first. The one rule that matters most: **there must always be a way to unlock.**
+
+## 📄 License
+
+[MIT](LICENSE) © 2026 Zaid
+
 <br>
 
 ---
@@ -213,7 +222,5 @@ Tools/make-readme-art.sh      # refresh the images in this README
 <div align="center">
 
 Made with 🐾 by **Zaid**
-
-<sub>© Zaid. All rights reserved.</sub>
 
 </div>
