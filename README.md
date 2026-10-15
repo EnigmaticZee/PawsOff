@@ -85,6 +85,10 @@ For leaving your computer running near curious pets.
 </tr>
 </table>
 
+### 🪟 On Windows
+
+<img src="docs/images/windows.png" alt="Paws Off on Windows: Clean, Away locked and Away with a summary" width="100%">
+
 <br>
 
 ## 📦 Install
