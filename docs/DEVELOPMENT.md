@@ -28,7 +28,8 @@ native versions that share one design and one set of rules:
 - The Mac settings button is a borderless item in a real `NSToolbar` (`Sources/TitleBar.swift`, unified
   compact style), so macOS sets its alignment with the window buttons, its inset from the corner and its
   hover state; don't move it into the SwiftUI layout or position it by hand. Its glyph is sized
-  (`glyphPointSize`) to the window buttons' 14 pt height, like icons in Apple's own toolbars. The toolbar's height is
+  (`glyphPointSize`) to about 15 pt tall: optically level with the 14 pt window buttons (outline icons
+  need ~10% more size than solid shapes). Check with `--snapshot-window` after changing it. The toolbar's height is
   measured at runtime (`WindowMetrics`) so the window stays 620 pt on every macOS version. `WindowConfigurator`
   also drops the app from the Dock while the window is closed (`.accessory`) and the menu bar's "Show"
   brings it back (`.regular`).
