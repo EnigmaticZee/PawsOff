@@ -181,8 +181,8 @@ namespace PawsOff
             else
             {
                 BottomIcon.Text = ""; // keyboard
-                BottomText.Text = $"{KeyboardBlocker.ShortcutLabel} locks from anywhere";
-                BottomText.ToolTip = null;
+                BottomText.Text = $"{KeyboardBlocker.ShortcutLabel} to lock";
+                BottomText.ToolTip = "Locks and unlocks from any app";
             }
         }
 
