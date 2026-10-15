@@ -107,7 +107,11 @@ jobs:
           $p.WaitForExit()
           if ($p.ExitCode -ne 0) { throw "Install failed: $($p.ExitCode)" }
           Start-Sleep 3
-          if (-not (Get-Process PawsOff -ErrorAction SilentlyContinue)) { throw "Paws Off didn't start after a silent install (automatic updates rely on that)" }
+          if (-not (Get-Process PawsOff -ErrorAction SilentlyContinue)) {
+            Get-WinEvent -FilterHashtable @{ LogName = 'Application'; StartTime = (Get-Date).AddMinutes(-5) } -ErrorAction SilentlyContinue |
+              Where-Object { $_.ProviderName -in '.NET Runtime', 'Application Error' } | Select-Object -First 3 | Format-List TimeCreated, ProviderName, Message
+            throw "Paws Off didn't start after a silent install (automatic updates rely on that)"
+          }
           $dir = "$env:LOCALAPPDATA\Programs\Paws Off"
           if (-not (Test-Path "$dir\PawsOff.exe")) { throw "PawsOff.exe was not installed" }
           if (-not (Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Paws Off.lnk")) { throw "Start menu shortcut missing" }

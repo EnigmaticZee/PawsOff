@@ -1,5 +1,19 @@
 # Version history
 
+## Unreleased
+- **Paws Off now lives in your menu bar (Mac) and system tray (Windows).** Click the paw for a compact
+  panel with everything in it; right-click for quick actions: lock for cleaning, lock while away,
+  unlock, open the window or quit.
+- **A smaller window**, showing the same compact card. Choose **Start in → Menu bar / Tray** (the
+  default) or **Window** in Settings.
+- **Settings now open inside the card**, at the same size, with one tidy row per setting.
+- **Automatic updates** on both platforms: Paws Off checks for new versions about once a day and
+  installs them for you. You can turn this off in Settings.
+- **Windows: paw stats** (rotating one-liners, kept on your PC) and the **custom timer** (No timer,
+  2 min or any length from 2:01), matching the Mac.
+- **Install with Homebrew** on Mac: `brew install --cask enigmaticzee/tap/paws-off`.
+- A one-time tip shows where Paws Off lives the first time it starts in the menu bar or tray.
+
 ## 1.6.0 — 2026-10-15
 - **Mac: your paw stats.** Paws Off keeps lifetime totals on your Mac (never sent anywhere) and shows
   them as rotating one-liners, like "≈ 486 words typed by paws, never sent". Reset them in Settings.
