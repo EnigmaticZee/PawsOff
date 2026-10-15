@@ -1,7 +1,7 @@
 name: Build
 
 # Every push builds both apps and their installers. Pushing a version tag (v1.5.0) also publishes a
-# GitHub Release with the Mac DMG, the Windows installer and the portable Windows app attached.
+# GitHub Release with one download per platform: the Mac DMG and the Windows installer.
 on:
   push:
     branches: ["**"]
@@ -45,7 +45,6 @@ jobs:
           $version = (Get-Content VERSION -Raw).Trim()
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /Q "/DAppVersion=$version" "/DAppExe=$PWD\out\PawsOff.exe" windows\installer\PawsOff.iss
           if ($LASTEXITCODE -ne 0) { throw "ISCC failed" }
-          Copy-Item out/PawsOff.exe dist/PawsOff-Windows-Portable.exe
           Get-ChildItem dist
       - name: Screenshot the installer wizard
         shell: pwsh
@@ -88,9 +87,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: PawsOff-Windows
-          path: |
-            dist/PawsOff-Windows-Setup.exe
-            dist/PawsOff-Windows-Portable.exe
+          path: dist/PawsOff-Windows-Setup.exe
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
@@ -136,8 +133,7 @@ jobs:
             echo "| Platform | File | Size |"
             echo "| --- | --- | --- |"
             echo "| 🍎 **Mac** · macOS 14+, Apple Silicon & Intel | [PawsOff-mac.dmg]($DL/PawsOff-mac.dmg) | $(size PawsOff-mac.dmg) |"
-            echo "| 🪟 **Windows** · 10 & 11, installer | [PawsOff-Windows-Setup.exe]($DL/PawsOff-Windows-Setup.exe) | $(size PawsOff-Windows-Setup.exe) |"
-            echo "| 🪟 **Windows** · portable, no install | [PawsOff-Windows-Portable.exe]($DL/PawsOff-Windows-Portable.exe) | $(size PawsOff-Windows-Portable.exe) |"
+            echo "| 🪟 **Windows** · 10 & 11 | [PawsOff-Windows-Setup.exe]($DL/PawsOff-Windows-Setup.exe) | $(size PawsOff-Windows-Setup.exe) |"
             echo
             echo "## Installing"
             echo
@@ -150,7 +146,7 @@ jobs:
             echo "## Checksums (SHA-256)"
             echo
             echo '```'
-            (cd dist && sha256sum PawsOff-mac.dmg PawsOff-Windows-Setup.exe PawsOff-Windows-Portable.exe)
+            (cd dist && sha256sum PawsOff-mac.dmg PawsOff-Windows-Setup.exe)
             echo '```'
             if [ -n "$PREV" ]; then
               echo
@@ -162,5 +158,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/PawsOff-mac.dmg dist/PawsOff-Windows-Setup.exe dist/PawsOff-Windows-Portable.exe \
+          gh release create "$GITHUB_REF_NAME" dist/PawsOff-mac.dmg dist/PawsOff-Windows-Setup.exe \
             --title "Paws Off ${GITHUB_REF_NAME}" --notes-file notes.md --latest

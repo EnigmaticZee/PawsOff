@@ -126,8 +126,6 @@ Click **Already switched on? Reset and ask again** in Paws Off. This clears an o
 2. Click through the short setup. It installs just for you (no admin rights) and can add a desktop shortcut or start Paws Off when you sign in.
 3. Paws Off appears with a paw in the system tray. Closing the window keeps it running there. Uninstall any time from **Settings → Apps**.
 
-Prefer no installer? The [portable PawsOff-Windows-Portable.exe](https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Portable.exe) runs from anywhere.
-
 <br>
 
 ## 🔍 How it works
