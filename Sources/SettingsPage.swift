@@ -8,6 +8,7 @@ struct SettingsPage: View {
 
     @EnvironmentObject var blocker: KeyboardBlocker
     @StateObject private var loginItem = LaunchAtLogin()
+    @ObservedObject private var updater = Updater.shared
     @Environment(\.ink) private var ink
     @Environment(\.isPreviewRender) private var isPreviewRender
 
@@ -60,6 +61,16 @@ struct SettingsPage: View {
                 divider
                 row("Shortcut", help: "Locks and unlocks from any app.") {
                     Keycap(text: KeyboardBlocker.shortcutLabel)
+                }
+                divider
+                row("Updates", help: "Checks GitHub about once a day and offers new versions. Nothing else is sent.") {
+                    HStack(spacing: 8) {
+                        Button("Check") { updater.checkForUpdates() }
+                            .buttonStyle(ChipStyle(selected: false))
+                            .fixedSize()
+                        Toggle("", isOn: $updater.automaticallyChecks).toggleStyle(GlowSwitchStyle()).fixedSize()
+                            .help("Check for updates automatically")
+                    }
                 }
                 divider
                 row("Paw stats", help: statsHelp) {

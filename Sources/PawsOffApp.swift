@@ -11,9 +11,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         // Paws Off starts as a menu bar app (LSUIElement), so nothing flashes in the Dock. The window
         // opens when the user chose it, and always while keyboard access still needs granting.
+        NSApp.mainMenu = AppMenu.make()
+        MenuBarController.shared.install()
+        _ = Updater.shared // starts the automatic update checks
+
         let snapshot = CommandLine.arguments.contains("--snapshot-window")
         if snapshot || blocker.launchPlace == .window || !blocker.hasPermission {
             MainWindow.show()
+        } else {
+            // Started quietly in the menu bar: the first time, point at the paw.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { MenuBarController.shared.showTipIfNeeded() }
         }
     }
 
@@ -52,22 +59,10 @@ struct PawsOffApp {
                 exit(0)
             }
         }
-        PawsOffScene.main()
-    }
-}
-
-struct PawsOffScene: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @ObservedObject private var blocker = KeyboardBlocker.shared
-
-    var body: some Scene {
-        // The card one click away in the menu bar. The window (same card) is opened by MainWindow.
-        MenuBarExtra {
-            CardView(place: .panel)
-                .environmentObject(blocker)
-        } label: {
-            Image(systemName: blocker.isActive ? "pawprint.circle.fill" : "pawprint.fill")
-        }
-        .menuBarExtraStyle(.window)
+        // Plain AppKit app: the menu bar paw and the window are both created by the app delegate.
+        let app = NSApplication.shared
+        let delegate = AppDelegate()
+        app.delegate = delegate
+        app.run()
     }
 }

@@ -33,6 +33,7 @@ namespace PawsOff
             this.isPanel = isPanel;
             blocker.Changed += Refresh;
             ThemeManager.Changed += Refresh;
+            Updater.Changed += Refresh;
             ticker.Tick += (s, e) => UpdateTicking();
             ticker.Start();
             if (showingSettings) OpenSettings(animate: false);
@@ -44,6 +45,7 @@ namespace PawsOff
         {
             blocker.Changed -= Refresh;
             ThemeManager.Changed -= Refresh;
+            Updater.Changed -= Refresh;
             ticker.Stop();
         }
 
@@ -85,8 +87,23 @@ namespace PawsOff
             PhraseRow.Visibility = Show(!locked && mode == LockMode.Away);
             LockedInfo.Visibility = Show(locked);
             LockedInfoIcon.Data = (Geometry)FindResource(mode == LockMode.Away ? "PawGeometry" : "SparkleGeometry");
-            foreach (var chip in TimerChips.Children.OfType<Button>())
-                SetSelected(chip, int.Parse((string)chip.Tag) == blocker.Settings.TimerSeconds, segmented: false);
+            foreach (var chip in PresetChips.Children.OfType<Button>())
+                SetSelected(chip, !blocker.TimerIsCustom && int.Parse((string)chip.Tag) == blocker.Settings.TimerSeconds, segmented: false);
+            SetSelected(CustomChip, false, segmented: false);
+            CustomChip.Visibility = Show(!blocker.TimerIsCustom);
+            CustomEditor.Visibility = Show(blocker.TimerIsCustom);
+            if (blocker.TimerIsCustom && !CustomBox.IsKeyboardFocused) CustomBox.Text = KeyboardBlocker.Clock(blocker.Settings.CustomSeconds);
+            if (Updater.Busy) UpdateButton.Content = "Checking…";
+            else if (Updater.AvailableVersion != null) UpdateButton.Content = $"Update to {Updater.AvailableVersion}";
+            else UpdateButton.Content = "Check";
+            UpdateButton.IsEnabled = !Updater.Busy;
+            SetSelected(UpdateButton, Updater.AvailableVersion != null, segmented: false);
+            var stats = blocker.Stats;
+            StatsText.Text = $"{stats.KeysStopped:N0} keys";
+            ResetStatsButton.Visibility = Show(!stats.IsEmpty);
+            StatsRow.ToolTip = stats.IsEmpty
+                ? "Kept only on this PC. Lock the keyboard to start counting."
+                : $"{stats.KeysStopped:N0} keys stopped, {stats.PawKeys:N0} of them by paws, {stats.PawAmbushes:N0} paw ambushes. Kept only on this PC.";
             foreach (var choice in ThemeButtons.Children.OfType<Button>())
                 SetSelected(choice, (string)choice.Tag == blocker.Settings.Theme.ToString(), segmented: true);
             foreach (var choice in StartButtons.Children.OfType<Button>())
@@ -178,12 +195,38 @@ namespace PawsOff
                 BottomText.Text = $"{headline} · {s.Keys} key{(s.Keys == 1 ? "" : "s")} stopped";
                 BottomText.ToolTip = s.Reason == null ? $"Stopped in {Format(s.Duration)}" : $"{s.Reason}, so it unlocked by itself";
             }
+            else if (StatsLines(blocker.Stats) is var lines && lines.Count > 0)
+            {
+                // Rotates every 6 seconds through the lifetime one-liners.
+                BottomPaw.Visibility = Visibility.Visible;
+                BottomIcon.Visibility = Visibility.Collapsed;
+                BottomText.Text = lines[(int)(DateTime.Now.Ticks / TimeSpan.TicksPerSecond / 6 % lines.Count)];
+                BottomText.ToolTip = BottomText.Text;
+            }
             else
             {
-                BottomIcon.Text = ""; // keyboard
+                BottomIcon.Text = "\uE765"; // keyboard
                 BottomText.Text = $"{KeyboardBlocker.ShortcutLabel} to lock";
                 BottomText.ToolTip = "Locks and unlocks from any app";
             }
+        }
+
+        /// Short, quirky one-liners built from the lifetime totals. Only lines with a number above 0 show.
+        public static System.Collections.Generic.List<string> StatsLines(PawStats s)
+        {
+            string Plural(int x, string one, string many) => x == 1 ? one : many;
+            var lines = new System.Collections.Generic.List<string>();
+            if (s.PawKeys > 0)
+            {
+                lines.Add($"{s.PawKeys:N0} {Plural(s.PawKeys, "key", "keys")} your cat didn't get to type");
+                if (s.PawKeys >= 5) lines.Add($"≈ {s.PawKeys / 5:N0} {Plural(s.PawKeys / 5, "word", "words")} typed by paws, never sent");
+                lines.Add($"{s.PawKeys:N0} {Plural(s.PawKeys, "keystroke", "keystrokes")} of cat poetry, unpublished");
+            }
+            if (s.PawAmbushes > 0) lines.Add($"{s.PawAmbushes:N0} keyboard {Plural(s.PawAmbushes, "ambush", "ambushes")} foiled");
+            if (s.AwaySessions > 0) lines.Add($"{s.AwaySessions:N0} {Plural(s.AwaySessions, "time", "times")} the pets were left unsupervised");
+            if (s.CleanSessions > 0) lines.Add($"{s.CleanSessions:N0} spotless {Plural(s.CleanSessions, "wipe-down", "wipe-downs")}, zero typos");
+            if (s.KeysStopped > 0) lines.Add($"{s.KeysStopped:N0} {Plural(s.KeysStopped, "key", "keys")} pressed and politely ignored");
+            return lines;
         }
 
         static string Format(TimeSpan t)
@@ -236,9 +279,11 @@ namespace PawsOff
 
         public void OpenSettings(bool animate = true)
         {
+            CancelCustom();
             PhraseBox.Text = blocker.Settings.UnlockPhrase;
             PawSwitch.IsChecked = blocker.Settings.PawDetection;
             LoginSwitch.IsChecked = blocker.Settings.LaunchAtLogin;
+            AutoUpdateSwitch.IsChecked = blocker.Settings.AutoUpdate;
             ShortcutText.Text = KeyboardBlocker.ShortcutLabel;
             var v = Assembly.GetExecutingAssembly().GetName().Version;
             CreditText.Text = $"Made by Zaid · v{v.Major}.{v.Minor}.{v.Build}";
@@ -313,6 +358,14 @@ namespace PawsOff
 
         void OnQuit(object sender, RoutedEventArgs e) => QuitRequested?.Invoke();
 
+        async void OnUpdateButton(object sender, RoutedEventArgs e)
+        {
+            if (Updater.AvailableVersion != null) await Updater.InstallAsync();
+            else await Updater.CheckAsync(blocker.Settings, force: true);
+        }
+
+        void OnAutoUpdateSwitch(object sender, RoutedEventArgs e) => blocker.Settings.AutoUpdate = AutoUpdateSwitch.IsChecked == true;
+
         // MARK: Actions
 
         void OnBigButton(object sender, RoutedEventArgs e) => blocker.Toggle();
@@ -330,13 +383,58 @@ namespace PawsOff
 
         void SetMode(LockMode mode)
         {
+            CancelCustom();
             blocker.Settings.Mode = mode;
             Refresh();
         }
 
         void OnChip(object sender, RoutedEventArgs e)
         {
-            blocker.Settings.TimerSeconds = int.Parse((string)((Button)sender).Tag);
+            blocker.SelectTimer(int.Parse((string)((Button)sender).Tag));
+            Refresh();
+        }
+
+        void OnCustomChip(object sender, RoutedEventArgs e)
+        {
+            blocker.SelectCustomTimer();
+            Refresh();
+            CustomBox.Text = KeyboardBlocker.Clock(blocker.Settings.CustomSeconds);
+            CustomBox.Focus();
+            CustomBox.SelectAll();
+        }
+
+        void OnCustomStep(object sender, RoutedEventArgs e)
+        {
+            blocker.StepCustom(up: (string)((Button)sender).Tag == "up");
+            CustomBox.Text = KeyboardBlocker.Clock(blocker.Settings.CustomSeconds);
+        }
+
+        void OnCustomKey(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter) CommitCustom();
+            if (e.Key == Key.Escape) CancelCustom();
+        }
+
+        void OnCustomCommit(object sender, KeyboardFocusChangedEventArgs e) => CommitCustom();
+
+        void CommitCustom()
+        {
+            if (KeyboardBlocker.ParseClock(CustomBox.Text) is int seconds) blocker.SetCustomSeconds(seconds);
+            CustomBox.Text = KeyboardBlocker.Clock(blocker.Settings.CustomSeconds);
+        }
+
+        /// Clicking elsewhere (or changing mode) cancels a custom length being set: back to No timer.
+        void CancelCustom()
+        {
+            if (!blocker.TimerIsCustom || blocker.IsActive) return;
+            blocker.SelectTimer(0);
+            Keyboard.ClearFocus();
+            Refresh();
+        }
+
+        void OnResetStats(object sender, RoutedEventArgs e)
+        {
+            blocker.ResetStats();
             Refresh();
         }
 
@@ -344,6 +442,7 @@ namespace PawsOff
 
         void OnBackgroundClick(object sender, MouseButtonEventArgs e)
         {
+            CancelCustom();
             // Let the window be dragged from empty space (the pop-up stays put).
             if (!isPanel && e.ButtonState == MouseButtonState.Pressed) Window.GetWindow(this)?.DragMove();
         }

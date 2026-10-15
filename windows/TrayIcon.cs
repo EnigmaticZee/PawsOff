@@ -42,6 +42,7 @@ namespace PawsOff
                 new Forms.ToolStripMenuItem("Quit Paws Off", null, (s, e) => quit()),
             });
             menu.Opening += (s, e) => Update();
+            icon.BalloonTipClicked += (s, e) => { var action = balloonClicked; balloonClicked = null; action?.Invoke(); };
             icon.ContextMenuStrip = menu;
             icon.MouseClick += (s, e) =>
             {
@@ -51,12 +52,22 @@ namespace PawsOff
             blocker.Changed += Update;
             blocker.PawsDetected += () =>
             {
+                balloonClicked = null;
                 string phrase = blocker.Settings.TrimmedPhrase;
                 icon.ShowBalloonTip(4000, "Paws detected 🐾",
                     phrase.Length > 0 ? $"Keyboard locked. Type “{phrase}” to release it." : "Keyboard locked. Click Unlock to release it.",
                     Forms.ToolTipIcon.None);
             };
             Update();
+        }
+
+        Action balloonClicked;
+
+        /// A one-off tray notification; clicking it runs the given action.
+        public void Announce(string title, string text, Action onClick = null)
+        {
+            balloonClicked = onClick;
+            icon.ShowBalloonTip(5000, title, text, Forms.ToolTipIcon.None);
         }
 
         void Update()

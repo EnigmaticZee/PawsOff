@@ -10,6 +10,18 @@ namespace PawsOff
     /// Where Paws Off opens when it starts. The tray icon is always there.
     public enum StartPlace { Tray, Window }
 
+    /// Lifetime totals, kept only on this PC (registry) and never sent anywhere.
+    public sealed class PawStats
+    {
+        public int KeysStopped;   // every key swallowed, any mode
+        public int PawKeys;       // keys swallowed in Away mode: the pets' share
+        public int PawAmbushes;   // times paw detection locked the keyboard
+        public int CleanSessions;
+        public int AwaySessions;
+
+        public bool IsEmpty => KeysStopped == 0 && CleanSessions == 0 && AwaySessions == 0;
+    }
+
     /// User settings, stored in HKCU\Software\PawsOff. Preview instances never touch the registry.
     public sealed class Settings
     {
@@ -24,6 +36,10 @@ namespace PawsOff
         bool pawDetection = true;
         ThemeChoice theme = ThemeChoice.Auto;
         StartPlace startIn = StartPlace.Tray;
+        int customSeconds = 180;
+        bool autoUpdate = true;
+        DateTime lastUpdateCheck = DateTime.MinValue;
+        string lastAnnouncedVersion = "";
 
         /// True the very first time Paws Off runs (nothing saved yet).
         public bool IsFirstRun { get; private set; }
@@ -39,7 +55,11 @@ namespace PawsOff
             {
                 if (key == null) { s.IsFirstRun = true; return s; }
                 if (Enum.TryParse(key.GetValue("Mode") as string, out LockMode m)) s.mode = m;
-                if (key.GetValue("TimerSeconds") is int t) s.timerSeconds = t;
+                if (key.GetValue("TimerSeconds") is int t) s.timerSeconds = t == 120 ? 120 : 0; // older 30 s / 1 min choices: back to the default
+                if (key.GetValue("CustomSeconds") is int cs) s.customSeconds = cs;
+                if (key.GetValue("AutoUpdate") is int au) s.autoUpdate = au != 0;
+                if (DateTime.TryParse(key.GetValue("LastUpdateCheck") as string, null, System.Globalization.DateTimeStyles.RoundtripKind, out var luc)) s.lastUpdateCheck = luc;
+                if (key.GetValue("LastAnnouncedVersion") is string lav) s.lastAnnouncedVersion = lav;
                 if (key.GetValue("UnlockPhrase") is string p) s.unlockPhrase = p;
                 if (key.GetValue("PawDetection") is int paw) s.pawDetection = paw != 0;
                 if (Enum.TryParse(key.GetValue("Theme") as string, out ThemeChoice th)) s.theme = th;
@@ -70,6 +90,73 @@ namespace PawsOff
         {
             get => pawDetection;
             set { pawDetection = value; Save("PawDetection", value ? 1 : 0); }
+        }
+
+        /// Check GitHub for new versions about once a day.
+        public bool AutoUpdate
+        {
+            get => autoUpdate;
+            set { autoUpdate = value; Save("AutoUpdate", value ? 1 : 0); }
+        }
+
+        public DateTime LastUpdateCheck
+        {
+            get => lastUpdateCheck;
+            set { lastUpdateCheck = value; Save("LastUpdateCheck", value.ToString("o")); }
+        }
+
+        /// The "Paws Off lives in your tray" tip is shown once.
+        public bool ShownTrayTip
+        {
+            get
+            {
+                using (var key = Registry.CurrentUser.OpenSubKey(KeyPath))
+                    return key?.GetValue("ShownTrayTip") is int shown && shown != 0;
+            }
+            set => Save("ShownTrayTip", value ? 1 : 0);
+        }
+
+        /// So each new version is announced in the tray only once.
+        public string LastAnnouncedVersion
+        {
+            get => lastAnnouncedVersion;
+            set { lastAnnouncedVersion = value ?? ""; Save("LastAnnouncedVersion", lastAnnouncedVersion); }
+        }
+
+        /// Last custom auto-unlock length the user entered (seconds).
+        public int CustomSeconds
+        {
+            get => customSeconds;
+            set { customSeconds = value; Save("CustomSeconds", value); }
+        }
+
+        public PawStats LoadStats()
+        {
+            var stats = new PawStats();
+            if (!persists) return stats;
+            using (var key = Registry.CurrentUser.OpenSubKey(KeyPath + @"\Stats"))
+            {
+                if (key == null) return stats;
+                stats.KeysStopped = key.GetValue("KeysStopped") as int? ?? 0;
+                stats.PawKeys = key.GetValue("PawKeys") as int? ?? 0;
+                stats.PawAmbushes = key.GetValue("PawAmbushes") as int? ?? 0;
+                stats.CleanSessions = key.GetValue("CleanSessions") as int? ?? 0;
+                stats.AwaySessions = key.GetValue("AwaySessions") as int? ?? 0;
+            }
+            return stats;
+        }
+
+        public void SaveStats(PawStats stats)
+        {
+            if (!persists) return;
+            using (var key = Registry.CurrentUser.CreateSubKey(KeyPath + @"\Stats"))
+            {
+                key.SetValue("KeysStopped", stats.KeysStopped);
+                key.SetValue("PawKeys", stats.PawKeys);
+                key.SetValue("PawAmbushes", stats.PawAmbushes);
+                key.SetValue("CleanSessions", stats.CleanSessions);
+                key.SetValue("AwaySessions", stats.AwaySessions);
+            }
         }
 
         public StartPlace StartIn

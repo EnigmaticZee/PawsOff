@@ -20,10 +20,15 @@ for arch in $ARCHS; do
   mkdir -p build
   xcrun swiftc -O -swift-version 5 -parse-as-library \
     -target "$arch-apple-macos14.0" \
+    -F Vendor/Sparkle -framework Sparkle -Xlinker -rpath -Xlinker @executable_path/../Frameworks \
     Sources/*.swift -o "build/PawsOff-$arch"
   SLICES+=("build/PawsOff-$arch")
 done
 lipo -create $SLICES -output "$APP/Contents/MacOS/PawsOff"
+
+# Sparkle (automatic updates), bundled in Vendor/Sparkle. See docs/DEVELOPMENT.md.
+mkdir -p "$APP/Contents/Frameworks"
+ditto Vendor/Sparkle/Sparkle.framework "$APP/Contents/Frameworks/Sparkle.framework"
 
 # Icon is committed in Assets/; regenerate it with Tools/make-icon.swift (see README).
 cp Assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
@@ -45,6 +50,11 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSHumanReadableCopyright</key><string>Made by Zaid</string>
+  <!-- Updates: Sparkle reads the feed from the latest GitHub release and only installs updates
+       signed with the matching private key (kept in the release workflow's secrets). -->
+  <key>SUFeedURL</key><string>https://github.com/EnigmaticZee/PawsOff/releases/latest/download/appcast.xml</string>
+  <key>SUPublicEDKey</key><string>AWihztekrNYm4LajURAnfH/LVfMNto0710fljAbVhP8=</string>
+  <key>SUEnableAutomaticChecks</key><true/>
   <!-- Starts as a menu bar app (no Dock icon); the window brings the Dock icon back while open. -->
   <key>LSUIElement</key><true/>
 </dict>
@@ -53,5 +63,10 @@ PLIST
 
 # Ad-hoc signature with a stable requirement: macOS ties the Accessibility grant to the
 # designated requirement, and the default ad-hoc one (cdhash) changes on every build.
+# Sign Sparkle's helpers inside-out, then the app.
+SPARKLE="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
+for part in "$SPARKLE"/XPCServices/*.xpc "$SPARKLE/Autoupdate" "$SPARKLE/Updater.app" "$APP/Contents/Frameworks/Sparkle.framework"; do
+  codesign --force --sign - "$part"
+done
 codesign --force --sign - -r='designated => identifier "local.pawsoff"' "$APP"
 echo "Built $APP $VERSION ($BUILD_NUMBER)"

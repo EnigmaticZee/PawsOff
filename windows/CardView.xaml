@@ -94,10 +94,22 @@
             <Grid Grid.Row="4" Height="30" Margin="0,14,0,0">
                 <StackPanel x:Name="TimerChips" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock FontFamily="{StaticResource Icons}" Text="&#xE916;" FontSize="12" Foreground="{DynamicResource TextFaint}" VerticalAlignment="Center" Margin="0,0,6,0" />
-                    <Button Tag="0" Content="No timer" Style="{StaticResource Capsule}" Click="OnChip" />
-                    <Button Tag="30" Content="30 s" Style="{StaticResource Capsule}" Margin="5,0,0,0" Click="OnChip" />
-                    <Button Tag="60" Content="1 min" Style="{StaticResource Capsule}" Margin="5,0,0,0" Click="OnChip" />
-                    <Button Tag="120" Content="2 min" Style="{StaticResource Capsule}" Margin="5,0,0,0" Click="OnChip" />
+                    <StackPanel x:Name="PresetChips" Orientation="Horizontal">
+                        <Button Tag="0" Content="No timer" Style="{StaticResource Capsule}" Click="OnChip" />
+                        <Button Tag="120" Content="2 min" Style="{StaticResource Capsule}" Margin="5,0,0,0" Click="OnChip" />
+                    </StackPanel>
+                    <Button x:Name="CustomChip" Content="Custom" Style="{StaticResource Capsule}" Margin="5,0,0,0" Click="OnCustomChip" />
+                    <!-- Custom chip turned into an inline "− 2:30 +" entry -->
+                    <Border x:Name="CustomEditor" Margin="5,0,0,0" CornerRadius="14" Padding="3" Background="{DynamicResource SelectedFill}"
+                            BorderBrush="{DynamicResource SelectedStroke}" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="CustomMinus" Style="{StaticResource BarIcon}" Content="&#xE738;" FontSize="9" Width="20" Height="20" Click="OnCustomStep" Tag="down" />
+                            <TextBox x:Name="CustomBox" Width="38" Background="Transparent" BorderThickness="0" TextAlignment="Center" VerticalAlignment="Center"
+                                     FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextBody}" CaretBrush="{DynamicResource TextBody}"
+                                     KeyDown="OnCustomKey" LostKeyboardFocus="OnCustomCommit" />
+                            <Button x:Name="CustomPlus" Style="{StaticResource BarIcon}" Content="&#xE710;" FontSize="9" Width="20" Height="20" Click="OnCustomStep" Tag="up" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
                 <Button x:Name="PhraseRow" Style="{StaticResource Plain}" Click="OnSettings" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
@@ -206,6 +218,24 @@
                           ToolTip="Starts quietly in the tray when you sign in, so the shortcut and paw detection are always ready.">
                         <TextBlock Text="Launch at sign-in" Style="{StaticResource RowTitle}" />
                         <CheckBox x:Name="LoginSwitch" Style="{StaticResource Switch}" HorizontalAlignment="Right" VerticalAlignment="Center" Click="OnLoginSwitch" />
+                    </Grid>
+                    <Rectangle Height="1" Fill="{DynamicResource Stroke1}" Margin="10,0" />
+                    <Grid Height="40" Margin="10,0" Background="Transparent"
+                          ToolTip="Checks GitHub about once a day and offers new versions. Nothing else is sent.">
+                        <TextBlock Text="Updates" Style="{StaticResource RowTitle}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <Button x:Name="UpdateButton" Content="Check" Style="{StaticResource Capsule}" Click="OnUpdateButton" Margin="0,0,8,0" />
+                            <CheckBox x:Name="AutoUpdateSwitch" Style="{StaticResource Switch}" VerticalAlignment="Center" Click="OnAutoUpdateSwitch"
+                                      ToolTip="Check for updates automatically" />
+                        </StackPanel>
+                    </Grid>
+                    <Rectangle Height="1" Fill="{DynamicResource Stroke1}" Margin="10,0" />
+                    <Grid x:Name="StatsRow" Height="40" Margin="10,0" Background="Transparent">
+                        <TextBlock Text="Paw stats" Style="{StaticResource RowTitle}" />
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <TextBlock x:Name="StatsText" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <Button x:Name="ResetStatsButton" Content="Reset" Style="{StaticResource Capsule}" Click="OnResetStats" />
+                        </StackPanel>
                     </Grid>
                     <Rectangle Height="1" Fill="{DynamicResource Stroke1}" Margin="10,0" />
                     <Grid Height="40" Margin="10,0" Background="Transparent" ToolTip="Locks and unlocks from any app.">

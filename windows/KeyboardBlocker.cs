@@ -27,7 +27,9 @@ namespace PawsOff
     /// swallows every key. Locking the PC, sleeping or signing out releases the keyboard.
     public sealed class KeyboardBlocker : IDisposable
     {
-        public static readonly int[] TimerChoices = { 0, 30, 60, 120 };
+        public static readonly int[] TimerChoices = { 0, 120 };
+        /// Custom lengths start just above the 2 min preset and go up to 99:59.
+        public const int CustomMin = 121, CustomMax = 5999;
         public const string ShortcutLabel = "Ctrl+Alt+Shift+L";
 
         public event Action Changed;
@@ -41,6 +43,10 @@ namespace PawsOff
         public DateTime? LockedAt { get; private set; }
         public DateTime? EndsAt { get; private set; }
         public LockSummary LastSummary { get; private set; }
+        /// A custom length is a one-off choice: not saved as the selection, and back to No timer
+        /// once that lock ends.
+        public bool TimerIsCustom { get; private set; }
+        public PawStats Stats { get; private set; }
 
         readonly Dispatcher dispatcher;
         readonly LowLevelKeyboardProc hookProc; // kept in a field so the GC can't collect it
@@ -55,6 +61,7 @@ namespace PawsOff
         {
             Settings = settings;
             this.dispatcher = dispatcher;
+            Stats = settings.LoadStats();
             if (dispatcher == null) return;
 
             hookProc = HookCallback;
@@ -86,10 +93,11 @@ namespace PawsOff
             var now = DateTime.Now;
             LockedAt = now;
 
-            if (ActiveMode == LockMode.Clean && Settings.TimerSeconds > 0)
+            int timer = EffectiveTimerSeconds;
+            if (ActiveMode == LockMode.Clean && timer > 0)
             {
-                EndsAt = now.AddSeconds(Settings.TimerSeconds);
-                unlockTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(Settings.TimerSeconds) };
+                EndsAt = now.AddSeconds(timer);
+                unlockTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(timer) };
                 unlockTimer.Tick += (s, e) => Stop();
                 unlockTimer.Start();
             }
@@ -115,13 +123,67 @@ namespace PawsOff
                 PawTriggered = PawTriggered,
                 Reason = reason,
             };
+            Stats.KeysStopped += KeysCaught;
+            if (ActiveMode == LockMode.Away) { Stats.PawKeys += KeysCaught; Stats.AwaySessions++; }
+            else Stats.CleanSessions++;
+            if (PawTriggered) Stats.PawAmbushes++;
+            Settings.SaveStats(Stats);
+
             IsActive = false;
             LockedAt = null;
             EndsAt = null;
             PawTriggered = false;
             typed = "";
             heldKeys.Clear();
+            if (TimerIsCustom) SelectTimer(0);
             Notify();
+        }
+
+        // MARK: Timer choices
+
+        /// Picks one of the preset lengths (0 = no timer).
+        public void SelectTimer(int seconds)
+        {
+            TimerIsCustom = false;
+            Settings.TimerSeconds = seconds;
+        }
+
+        /// Switches to a custom length, starting from the last one entered. It isn't saved as the
+        /// selection, so a restart is back on the saved preset.
+        public void SelectCustomTimer()
+        {
+            TimerIsCustom = true;
+        }
+
+        /// Seconds the next Clean lock runs for (0 = until unlocked).
+        public int EffectiveTimerSeconds => TimerIsCustom ? Settings.CustomSeconds : Settings.TimerSeconds;
+
+        public void SetCustomSeconds(int seconds) => Settings.CustomSeconds = Math.Min(Math.Max(seconds, CustomMin), CustomMax);
+
+        /// − / + move to the previous or next whole minute (2:01 → 3:00 → 4:00, and back down to 2:01).
+        public void StepCustom(bool up)
+        {
+            int s = Settings.CustomSeconds;
+            SetCustomSeconds(up ? (s / 60 + 1) * 60 : (s % 60 == 0 ? s - 60 : s / 60 * 60));
+        }
+
+        public void ResetStats()
+        {
+            Stats = new PawStats();
+            Settings.SaveStats(Stats);
+        }
+
+        /// "2:01", "15:00"
+        public static string Clock(int seconds) => $"{seconds / 60}:{seconds % 60:00}";
+
+        /// Accepts "5" (minutes) or "2:15" (minutes:seconds).
+        public static int? ParseClock(string text)
+        {
+            var parts = (text ?? "").Trim().Split(':');
+            if (parts.Length < 1 || parts.Length > 2 || !int.TryParse(parts[0], out int minutes)) return null;
+            int seconds = 0;
+            if (parts.Length == 2 && (!int.TryParse(parts[1], out seconds) || seconds < 0 || seconds > 59)) return null;
+            return minutes * 60 + seconds;
         }
 
         /// UI work never runs inside the hook callback: Windows drops hooks that answer slowly.
@@ -283,7 +345,7 @@ namespace PawsOff
 
         public static readonly string[] PreviewStates =
         {
-            "cleanReady", "cleanTimer", "awayReady", "awayLocked", "pawsDetected", "backFromAway", "autoReleased",
+            "cleanReady", "cleanCustom", "withStats", "cleanTimer", "awayReady", "awayLocked", "pawsDetected", "backFromAway", "autoReleased",
         };
 
         public static KeyboardBlocker Preview(string state)
@@ -301,10 +363,17 @@ namespace PawsOff
             switch (state)
             {
                 case "cleanReady":
-                    b.Settings.TimerSeconds = 60;
+                    b.Settings.TimerSeconds = 120;
+                    break;
+                case "cleanCustom":
+                    b.Settings.CustomSeconds = 150;
+                    b.SelectCustomTimer();
+                    break;
+                case "withStats":
+                    b.Stats = new PawStats { KeysStopped = 3118, PawKeys = 2431, PawAmbushes = 9, CleanSessions = 14, AwaySessions = 22 };
                     break;
                 case "cleanTimer":
-                    b.Settings.TimerSeconds = 60;
+                    b.Settings.TimerSeconds = 120;
                     Lock(LockMode.Clean, 18, 20);
                     b.EndsAt = now.AddSeconds(40);
                     break;

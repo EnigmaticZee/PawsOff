@@ -83,3 +83,5 @@ Root: HKCU; Subkey: "Software\PawsOff"; Flags: uninsdeletekey
 
 [Run]
 Filename: "{app}\PawsOff.exe"; Description: "Open Paws Off now"; Flags: nowait postinstall skipifsilent
+; After an automatic update (run with /SILENT by the app), start Paws Off again.
+Filename: "{app}\PawsOff.exe"; Flags: nowait skipifnotsilent

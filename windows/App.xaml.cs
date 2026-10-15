@@ -57,6 +57,22 @@ namespace PawsOff
             panel.Card.OpenWindowRequested += () => { panel.HidePanel(); ShowWindow(); };
             tray = new TrayIcon(blocker, ShowWindow, panel.Toggle, Quit);
 
+            // Automatic updates: check now (if it's been a day) and once a day after that.
+            Updater.QuitApp = Quit;
+            Updater.Found += version => tray.Announce($"Paws Off {version} is available",
+                "Open Paws Off's settings to update.", () => { ShowWindow(); window.Card.OpenSettings(); });
+            _ = Updater.CheckAsync(settings);
+
+            // The first time Paws Off starts in the tray, say where it lives.
+            if (!args.Contains("--minimized") && !settings.IsFirstRun && settings.StartIn == StartPlace.Tray && !settings.ShownTrayTip)
+            {
+                settings.ShownTrayTip = true;
+                tray.Announce("Paws Off lives in your system tray", "Click the paw to lock your keyboard. Right-click for quick actions.");
+            }
+            var daily = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromHours(6) };
+            daily.Tick += (s, e) => _ = Updater.CheckAsync(settings);
+            daily.Start();
+
             // Signing in (--minimized) starts quietly. Otherwise open where the user chose: the window,
             // or the tray pop-up so it's clear where Paws Off lives. The very first run opens the window.
             if (!args.Contains("--minimized"))
