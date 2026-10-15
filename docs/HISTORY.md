@@ -1,5 +1,15 @@
 # Version history
 
+## 1.4.0 — 2026-10-15
+- **Windows: light mode.** Appearance setting with Auto (default, follows the Windows light/dark
+  setting and switches live), Light and Dark.
+- Windows: redesigned paw icon, sparkles for Clean, a text-cursor icon for the unlock phrase, and drawn
+  icons in the summary card (no more text symbols).
+- Windows: frosted-glass centre on the big button, Windows 11-style caption buttons (Close turns red on
+  hover), semibold headings and more room under the title bar.
+- Windows: Settings is now a full page that slides in, with the title and switch on one line so
+  descriptions no longer wrap awkwardly.
+
 ## 1.3.0 — 2026-10-15
 - **Windows app**: same look and features (Clean/Away, timer, unlock phrase, paw detection, tray icon,
   launch at sign-in). Single .exe, no install, no admin rights. Shortcut: Ctrl+Alt+Shift+L.

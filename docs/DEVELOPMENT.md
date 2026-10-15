@@ -32,6 +32,9 @@ native versions that share one design and one set of rules:
   The hook callback must stay fast and never touch UI directly (Windows silently removes slow hooks):
   state changes are synchronous, UI updates go through `Notify()` → `Dispatcher.BeginInvoke`.
   Auto-release observers live in `WatchForLockAndSleep()`; same rule as Mac, never remove one.
+- Windows UI colours come from `windows/Theme.cs` (light and dark) via DynamicResource keys; never
+  hard-code a colour in XAML that should change with the theme. Use plain "Segoe UI": WPF mis-spaces
+  the Windows 11 variable font (Segoe UI Variable). CI renders every screen in both themes.
 - Keep both apps in step: a feature or copy change on one side should land on the other (or be noted in
   HISTORY as platform-specific). Colours mirror `Palette`. Windows preview states are
   `KeyboardBlocker.PreviewStates`; CI renders them as the `windows-previews` artifact — check those PNGs

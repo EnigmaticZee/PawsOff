@@ -4,7 +4,7 @@
         Title="Paws Off" Width="380" Height="620"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
-        FontFamily="Segoe UI Variable Text, Segoe UI"
+        FontFamily="Segoe UI"
         Foreground="{DynamicResource TextBody}"
         Icon="Assets/PawsOff.ico"
         UseLayoutRounding="True">
@@ -12,7 +12,7 @@
     <!-- Colours come from Theme.cs (DynamicResource), so light and dark swap live. -->
     <Window.Resources>
         <FontFamily x:Key="Icons">Segoe MDL2 Assets</FontFamily>
-        <FontFamily x:Key="Display">Segoe UI Variable Display, Segoe UI</FontFamily>
+        <FontFamily x:Key="Display">Segoe UI</FontFamily>
 
         <!-- Paw print: four angled toes and a rounded pad (100x100 box). -->
         <GeometryGroup x:Key="PawGeometry" FillRule="Nonzero">
