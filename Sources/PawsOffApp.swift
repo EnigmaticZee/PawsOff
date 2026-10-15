@@ -22,7 +22,8 @@ struct PawsOffApp {
         if let i = args.firstIndex(of: "--snapshot-window"), i + 1 < args.count {
             let path = args[i + 1]
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                if let frame = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil })?.contentView?.superview,
+                if let frame = NSApp.windows.filter({ $0.isVisible && $0.contentView != nil })
+                    .max(by: { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height })?.contentView?.superview,
                    let rep = frame.bitmapImageRepForCachingDisplay(in: frame.bounds) {
                     frame.cacheDisplay(in: frame.bounds, to: rep)
                     try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: path))
@@ -42,7 +43,7 @@ struct PawsOffScene: App {
         Window("Paws Off", id: "main") {
             ContentView()
                 .environmentObject(blocker)
-                .background(WindowConfigurator())
+                .background(WindowConfigurator(blocker: blocker))
                 // Set on the app (not .preferredColorScheme) so Auto reliably goes back to following
                 // the system, live, and the Settings sheet and menu bar menu match the window.
                 .onChange(of: blocker.appearance, initial: true) { NSApp.appearance = blocker.appearance.nsAppearance }
@@ -56,20 +57,4 @@ struct PawsOffScene: App {
             Image(systemName: blocker.isActive ? "pawprint.circle.fill" : "pawprint.fill")
         }
     }
-}
-
-/// Transparent title bar, draggable anywhere, no zoom button.
-struct WindowConfigurator: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async {
-            guard let window = view.window else { return }
-            window.isMovableByWindowBackground = true
-            window.titlebarAppearsTransparent = true
-            window.backgroundColor = .clear
-            window.standardWindowButton(.zoomButton)?.isHidden = true
-        }
-        return view
-    }
-    func updateNSView(_ nsView: NSView, context: Context) {}
 }

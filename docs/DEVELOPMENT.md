@@ -25,6 +25,12 @@ native versions that share one design and one set of rules:
 - After ANY UI change: `./build.sh && "Paws Off.app/Contents/MacOS/PawsOff" --render-previews <dir>` and
   look at the PNGs (light and dark; handy when you can't screenshot the live window). Add a case
   to `KeyboardBlocker.PreviewState` when you add a UI state. TextFields render as yellow boxes off-screen.
+- The Mac settings button is a native title-bar accessory (`Sources/TitleBar.swift`), so macOS keeps it
+  aligned with the window buttons; don't move it back into the SwiftUI layout. `WindowConfigurator`
+  also drops the app from the Dock while the window is closed (`.accessory`) and the menu bar's "Show"
+  brings it back (`.regular`).
+- Paw stats (`PawStats`) live only in UserDefaults; never send them anywhere without a new, explicit
+  opt-in.
 - The Mac window is 620 pt tall *including* its 32 pt hidden title bar: content runs up underneath it
   (see `windowHeight`/`titleBarHeight` in ContentView). Off-screen previews draw stand-in window buttons
   so the top edge can be judged. To check the real window, run

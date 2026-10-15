@@ -147,7 +147,7 @@ struct GlowSwitchStyle: ToggleStyle {
             Spacer(minLength: 8)
             Capsule()
                 .fill(configuration.isOn
-                      ? AnyShapeStyle(LinearGradient(colors: Palette.locked, startPoint: .leading, endPoint: .trailing))
+                      ? AnyShapeStyle(LinearGradient(colors: Palette.idle, startPoint: .leading, endPoint: .trailing))
                       : AnyShapeStyle(ink.fill(0.14)))
                 .frame(width: 38, height: 22)
                 .overlay(alignment: configuration.isOn ? .trailing : .leading) {

@@ -55,6 +55,15 @@ struct SettingsView: View {
                 Keycap(text: KeyboardBlocker.shortcutLabel)
             }
 
+            HStack(alignment: .top) {
+                label("Your paw stats", statsDetail)
+                Spacer()
+                if !blocker.stats.isEmpty {
+                    Button("Reset") { blocker.resetStats() }
+                        .buttonStyle(ChipStyle(selected: false))
+                }
+            }
+
             HStack {
                 Text(credit)
                     .font(.system(size: 11, weight: .medium, design: .rounded))
@@ -77,7 +86,13 @@ struct SettingsView: View {
         return version.map { "Made by Zaid · v\($0)" } ?? "Made by Zaid"
     }
 
-    private func label(_ title: String, _ detail: String) -> some View {
+    private var statsDetail: String {
+        let s = blocker.stats
+        if s.isEmpty { return "Kept only on this Mac. Lock the keyboard to start counting." }
+        return "\(s.keysStopped.formatted()) keys stopped, \(s.pawKeys.formatted()) of them by paws. Kept only on this Mac."
+    }
+
+        private func label(_ title: String, _ detail: String) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
                 .font(.system(size: 13, weight: .semibold, design: .rounded))

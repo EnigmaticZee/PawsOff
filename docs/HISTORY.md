@@ -1,10 +1,18 @@
 # Version history
 
 ## Unreleased
-- Mac: tidier top of the window. Settings now sits level with the window buttons, at a comfortable
-  size, and the empty band above the Clean/Away switch is gone. Spacing is balanced top to bottom.
-- Mac: auto-unlock timer is now No timer, 1 min, 2 min or **Custom**: pick Custom and set any length
-  from 1 to 99 minutes right in the row. (Windows keeps its current timer choices for now.)
+- Mac: tidier top of the window. The settings button is now a native title-bar button, lined up with
+  the window buttons, and the empty band above the Clean/Away switch is gone. Spacing follows one
+  even rhythm from the timer row down.
+- Mac: auto-unlock timer is now No timer, 2 min or **Custom**: set any length from 2:01 right in the row
+  (type "5" or "3:30", or use − / +). Clicking elsewhere cancels it, and a custom length is a one-off:
+  the timer goes back to No timer after that lock.
+- Mac: **your paw stats.** Paws Off keeps lifetime totals on your Mac (never sent anywhere) and shows
+  them as rotating one-liners, like "≈ 486 words typed by paws, never sent". Reset them in Settings.
+- Mac: switches use the app's own pink-to-violet colours.
+- Mac: closing the window removes Paws Off from the Dock; it keeps running in the menu bar and comes
+  back to the Dock when you open the window again.
+- (Windows keeps its current timer choices for now.)
 
 ## 1.5.0 — 2026-10-15
 - **Mac: light mode.** Appearance setting in Settings with Auto (default, follows the macOS light/dark

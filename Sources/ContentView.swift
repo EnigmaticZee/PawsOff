@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var pulse = false
     @State private var hovering = false
     @State private var showSettings = false
+    @State private var customText = ""
     @FocusState private var customFieldFocused: Bool
     @Environment(\.ink) private var ink
     @Environment(\.isPreviewRender) private var isPreviewRender
@@ -21,9 +22,13 @@ struct ContentView: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             background
+                // Clicking empty space cancels a custom timer that's being set.
+                .contentShape(Rectangle())
+                .onTapGesture { cancelCustomTimer() }
 
-            // Top, middle and bottom groups with equal flexible space between them, so the button
-            // sits in the optical centre and the layout doesn't jump between states.
+            // Spacing follows one rhythm: the top group hangs from the title bar, everything else
+            // stacks from the bottom edge with even 20 pt gaps, and the one flexible space sits
+            // above the button. The footer has a fixed height, so nothing jumps between states.
             VStack(spacing: 0) {
                 ModePicker(mode: $blocker.mode, shown: shownMode, disabled: locked || !blocker.hasPermission)
                     .padding(.top, titleBarHeight + 14)
@@ -35,7 +40,7 @@ struct ContentView: View {
                     .contentTransition(.opacity)
                     .padding(.top, 16)
 
-                Spacer(minLength: 4)
+                Spacer(minLength: 0)
 
                 bigButton
 
@@ -57,32 +62,19 @@ struct ContentView: View {
 
                 detailRow
                     .frame(height: 34)
-                    .padding(.top, 18)
-
-                Spacer(minLength: 4)
+                    .padding(.top, 20)
 
                 footer
-                    .frame(height: 64)
-                    .padding(.bottom, 16)
+                    .frame(height: 64, alignment: .top)
+                    .padding(.top, 20)
+                    .padding(.bottom, 12)
             }
             .padding(.horizontal, 24)
             .frame(maxWidth: .infinity)
 
-            // Settings sits in the title bar, level with the window buttons.
-            Button { showSettings = true } label: {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundStyle(ink.text(0.55))
-                    .frame(width: 30, height: titleBarHeight)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .help("Settings")
-            .padding(.trailing, 10)
-            .opacity(locked ? 0 : 1)
-            .disabled(locked)
-
-            if isPreviewRender { previewWindowButtons }
+            // The settings button itself is a native title-bar accessory (see SettingsTitlebarButton);
+            // renders only show stand-ins for the title-bar controls.
+            if isPreviewRender { previewTitleBar }
         }
         // Off-screen renders have no title bar, so they get the full height directly. In the real
         // window the frame covers the area below the title bar and the content extends up into it.
@@ -90,6 +82,15 @@ struct ContentView: View {
         .frame(width: 380, height: isPreviewRender ? windowHeight : windowHeight - titleBarHeight)
         .sheet(isPresented: $showSettings) {
             SettingsView().environmentObject(blocker)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .pawsOffOpenSettings)) { _ in
+            cancelCustomTimer()
+            showSettings = true
+        }
+        .onChange(of: blocker.mode) { cancelCustomTimer() }
+        // A custom length is a one-off: once that lock ends, go back to No timer.
+        .onChange(of: blocker.isActive) { _, active in
+            if !active && blocker.timerIsCustom { blocker.selectTimer(0) }
         }
         .animation(.spring(response: 0.5, dampingFraction: 0.8), value: blocker.isActive)
         .animation(.easeInOut(duration: 0.25), value: blocker.mode)
@@ -273,6 +274,7 @@ struct ContentView: View {
                 .foregroundStyle(ink.text(0.45))
             ForEach(KeyboardBlocker.timerChoices, id: \.self) { seconds in
                 Button(seconds == 0 ? "No timer" : "\(seconds / 60) min") {
+                    customFieldFocused = false
                     blocker.selectTimer(seconds)
                 }
                 .buttonStyle(ChipStyle(selected: !blocker.timerIsCustom && blocker.timerSeconds == seconds))
@@ -282,26 +284,21 @@ struct ContentView: View {
         .animation(.spring(response: 0.3, dampingFraction: 0.85), value: blocker.timerIsCustom)
     }
 
-    /// "Custom" chip that turns into an inline "− 5 min +" entry when chosen.
+    /// "Custom" chip that turns into an inline "− 2:30 +" entry when chosen.
     @ViewBuilder
     private var customTimerChip: some View {
-        if blocker.timerIsCustom {
-            HStack(spacing: 1) {
-                stepButton("minus") { blocker.setCustomMinutes(blocker.customMinutes - 1) }
-                    .disabled(blocker.customMinutes <= KeyboardBlocker.customMinutesRange.lowerBound)
-                minutesEntry
-                Text("min")
-                    .lineLimit(1)
-                    .fixedSize()
-                    .padding(.trailing, 2)
-                stepButton("plus") { blocker.setCustomMinutes(blocker.customMinutes + 1) }
-                    .disabled(blocker.customMinutes >= KeyboardBlocker.customMinutesRange.upperBound)
+        if blocker.timerIsCustom && !locked {
+            HStack(spacing: 2) {
+                stepButton("minus") { blocker.stepCustom(up: false); customText = KeyboardBlocker.clock(blocker.customSeconds) }
+                    .disabled(blocker.customSeconds <= KeyboardBlocker.customRange.lowerBound)
+                customEntry
+                stepButton("plus") { blocker.stepCustom(up: true); customText = KeyboardBlocker.clock(blocker.customSeconds) }
+                    .disabled(blocker.customSeconds >= KeyboardBlocker.customRange.upperBound)
             }
             .font(.system(size: 11, weight: .semibold, design: .rounded))
             .foregroundStyle(ink.text(0.95))
             .fixedSize()
-            .padding(.horizontal, 3)
-            .padding(.vertical, 3)
+            .padding(3)
             .background(Capsule().fill(ink.selectedFill(0.16)))
             .overlay(Capsule().stroke(ink.selectedStroke(0.25), lineWidth: 1))
             .shadow(color: .black.opacity(ink.dark ? 0 : 0.06), radius: 2, y: 1)
@@ -309,26 +306,41 @@ struct ContentView: View {
         } else {
             Button("Custom") {
                 blocker.selectCustomTimer()
+                customText = KeyboardBlocker.clock(blocker.customSeconds)
                 customFieldFocused = true
             }
             .buttonStyle(ChipStyle(selected: false))
         }
     }
 
+    /// Minutes:seconds entry, e.g. "2:30" or just "5".
     @ViewBuilder
-    private var minutesEntry: some View {
+    private var customEntry: some View {
         if isPreviewRender {
-            Text("\(blocker.customMinutes)")
+            Text(KeyboardBlocker.clock(blocker.customSeconds))
                 .monospacedDigit()
-                .frame(width: 20)
+                .frame(width: 38)
         } else {
-            TextField("", value: Binding(get: { blocker.customMinutes }, set: { blocker.setCustomMinutes($0) }), format: .number)
+            TextField("m:ss", text: $customText)
                 .textFieldStyle(.plain)
                 .multilineTextAlignment(.center)
                 .monospacedDigit()
-                .frame(width: 20)
+                .frame(width: 38)
                 .focused($customFieldFocused)
+                .onSubmit(commitCustomText)
+                .onChange(of: customFieldFocused) { _, focused in if !focused { commitCustomText() } }
         }
+    }
+
+    private func commitCustomText() {
+        if let seconds = KeyboardBlocker.parseClock(customText) { blocker.setCustomSeconds(seconds) }
+        customText = KeyboardBlocker.clock(blocker.customSeconds)
+    }
+
+    private func cancelCustomTimer() {
+        guard blocker.timerIsCustom, !locked else { return }
+        customFieldFocused = false
+        blocker.selectTimer(0)
     }
 
     private func stepButton(_ symbol: String, action: @escaping () -> Void) -> some View {
@@ -343,15 +355,20 @@ struct ContentView: View {
         .buttonStyle(.plain)
     }
 
-    /// Stand-ins for the close and minimise buttons, drawn only in off-screen renders so the
-    /// title-bar spacing can be judged.
-    private var previewWindowButtons: some View {
-        HStack(spacing: 10) {
-            Circle().fill(Color(red: 1.0, green: 0.37, blue: 0.34))
-            Circle().fill(Color(red: 1.0, green: 0.74, blue: 0.18))
+    /// Stand-ins for the window buttons and the settings accessory, drawn only in off-screen
+    /// renders so the title bar can be judged (positions match the real window).
+    private var previewTitleBar: some View {
+        ZStack {
+            HStack(spacing: 9) {
+                Circle().fill(Color(red: 1.0, green: 0.37, blue: 0.34))
+                Circle().fill(Color(red: 1.0, green: 0.74, blue: 0.18))
+            }
+            .frame(width: 37, height: 14)
+            .position(x: 9 + 18.5, y: titleBarHeight / 2)
+            SettingsTitlebarButton()
+                .position(x: 380 - SettingsTitlebarButton.trailingInset - SettingsTitlebarButton.size / 2, y: titleBarHeight / 2)
+                .opacity(locked ? 0 : 1)
         }
-        .frame(width: 34, height: 12)
-        .position(x: 7 + 17, y: titleBarHeight / 2)
     }
 
     private var phraseRow: some View {
@@ -412,11 +429,63 @@ struct ContentView: View {
             }
         } else if locked {
             hint("lock.open", "Releases by itself if your Mac locks or sleeps")
-        } else if let summary = blocker.lastSummary {
+        } else {
+            // Re-evaluated every few seconds: rotates the stats line and retires the summary card.
+            TimelineView(.periodic(from: .now, by: 6)) { context in
+                idleFooter(at: context.date)
+            }
+        }
+    }
+
+    /// Last session's card for a minute after unlocking, then your lifetime paw stats (rotating
+    /// jokes), or the shortcut hint until there are any stats.
+    @ViewBuilder
+    private func idleFooter(at date: Date) -> some View {
+        let lines = Self.statsLines(blocker.stats)
+        if let summary = blocker.lastSummary, date.timeIntervalSince(summary.endedAt) < 60 {
             summaryCard(summary)
+        } else if !lines.isEmpty {
+            let line = lines[Int(date.timeIntervalSince1970 / 6) % lines.count]
+            HStack(spacing: 7) {
+                Image(systemName: "pawprint.fill")
+                    .foregroundStyle(LinearGradient(colors: Palette.idle, startPoint: .topLeading, endPoint: .bottomTrailing))
+                Text(line)
+                    .id(line)
+                    .transition(.opacity)
+            }
+            .font(.system(size: 12, weight: .medium, design: .rounded))
+            .foregroundStyle(ink.text(0.6))
+            .animation(.easeInOut(duration: 0.5), value: line)
+            .padding(.top, 12)
         } else {
             hint("keyboard", "Press \(KeyboardBlocker.shortcutLabel) to lock from anywhere")
+                .padding(.top, 12)
         }
+    }
+
+    /// Short, quirky one-liners built from the lifetime totals. Only lines with a number > 0 show.
+    static func statsLines(_ s: PawStats) -> [String] {
+        func n(_ x: Int) -> String { x.formatted() }
+        func plural(_ x: Int, _ one: String, _ many: String) -> String { x == 1 ? one : many }
+        var lines: [String] = []
+        if s.pawKeys > 0 {
+            lines.append("\(n(s.pawKeys)) \(plural(s.pawKeys, "key", "keys")) your cat didn't get to type")
+            if s.pawKeys >= 5 { lines.append("≈ \(n(s.pawKeys / 5)) \(plural(s.pawKeys / 5, "word", "words")) typed by paws, never sent") }
+            lines.append("\(n(s.pawKeys)) \(plural(s.pawKeys, "keystroke", "keystrokes")) of cat poetry, unpublished")
+        }
+        if s.pawAmbushes > 0 {
+            lines.append("\(n(s.pawAmbushes)) keyboard \(plural(s.pawAmbushes, "ambush", "ambushes")) foiled")
+        }
+        if s.awaySessions > 0 {
+            lines.append("\(n(s.awaySessions)) \(plural(s.awaySessions, "time", "times")) the pets were left unsupervised")
+        }
+        if s.cleanSessions > 0 {
+            lines.append("\(n(s.cleanSessions)) spotless \(plural(s.cleanSessions, "wipe-down", "wipe-downs")), zero typos")
+        }
+        if s.keysStopped > 0 {
+            lines.append("\(n(s.keysStopped)) \(plural(s.keysStopped, "key", "keys")) pressed and politely ignored")
+        }
+        return lines
     }
 
     private func hint(_ symbol: String, _ text: String) -> some View {

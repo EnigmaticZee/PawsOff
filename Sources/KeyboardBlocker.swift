@@ -29,6 +29,18 @@ struct LockSummary {
     let keys: Int
     let pawTriggered: Bool
     let reason: String? // set when released automatically (screen locked, sleep, ...)
+    var endedAt = Date()
+}
+
+/// Lifetime totals, kept only on this Mac (UserDefaults) and never sent anywhere.
+struct PawStats: Codable, Equatable {
+    var keysStopped = 0    // every key swallowed, any mode
+    var pawKeys = 0        // keys swallowed in Away mode: the pets' share
+    var pawAmbushes = 0    // times paw detection locked the keyboard
+    var cleanSessions = 0
+    var awaySessions = 0
+
+    var isEmpty: Bool { keysStopped == 0 && cleanSessions == 0 && awaySessions == 0 }
 }
 
 /// Owns one session-level CGEventTap for the app's lifetime. While unlocked it passes every
@@ -48,27 +60,25 @@ final class KeyboardBlocker: ObservableObject {
     // Settings, persisted in UserDefaults
     @Published var mode: LockMode = .clean { didSet { save(mode.rawValue, Keys.mode) } }
     @Published var timerSeconds = 0 { didSet { save(timerSeconds, Keys.timer) } }
-    /// Custom auto-unlock length in minutes, used when `timerIsCustom` is on.
-    @Published var customMinutes = 5 {
-        didSet {
-            save(customMinutes, Keys.customMinutes)
-            if timerIsCustom { timerSeconds = customMinutes * 60 }
-        }
-    }
-    @Published private(set) var timerIsCustom = false { didSet { save(timerIsCustom, Keys.timerIsCustom) } }
+    /// Last custom auto-unlock length (seconds). Custom is a one-off choice: it isn't remembered as
+    /// the selection, and the app goes back to No timer once that lock ends.
+    @Published private(set) var customSeconds = 180 { didSet { save(customSeconds, Keys.customSeconds) } }
+    @Published private(set) var timerIsCustom = false
+    @Published private(set) var stats = PawStats() { didSet { saveStats() } }
     @Published var unlockPhrase = "unlock" { didSet { save(unlockPhrase, Keys.phrase) } }
     @Published var pawDetection = true { didSet { save(pawDetection, Keys.paw) } }
     @Published var appearance: Appearance = .auto { didSet { save(appearance.rawValue, Keys.appearance) } }
 
-    static let timerChoices = [0, 60, 120]
-    static let customMinutesRange = 1...99
+    static let timerChoices = [0, 120]
+    /// Custom lengths start just above the 2 min preset and go up to 99:59.
+    static let customRange = 121...5999
     static let shortcutLabel = "⌃⌥⌘L"
     private static let shortcutKeyCode: Int64 = 37 // kVK_ANSI_L
 
     private enum Keys {
         static let mode = "mode", timer = "timerSeconds", phrase = "unlockPhrase", paw = "pawDetection"
         static let appearance = "appearance"
-        static let customMinutes = "customMinutes", timerIsCustom = "timerIsCustom"
+        static let customSeconds = "customSeconds", stats = "pawStats"
     }
 
     private var persists = false
@@ -87,12 +97,12 @@ final class KeyboardBlocker: ObservableObject {
         unlockPhrase = defaults.string(forKey: Keys.phrase) ?? "unlock"
         pawDetection = defaults.object(forKey: Keys.paw) as? Bool ?? true
         appearance = Appearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .auto
-        customMinutes = min(max(defaults.object(forKey: Keys.customMinutes) as? Int ?? 5, 1), 99)
-        timerIsCustom = defaults.bool(forKey: Keys.timerIsCustom)
-        if timerIsCustom {
-            timerSeconds = customMinutes * 60
-        } else if !Self.timerChoices.contains(timerSeconds) {
-            timerSeconds = 60 // e.g. the old 30 s choice
+        customSeconds = Self.clampCustom(defaults.object(forKey: Keys.customSeconds) as? Int ?? 180)
+        if !Self.timerChoices.contains(timerSeconds) {
+            timerSeconds = 0 // old 30 s / 1 min choices, or a past custom length: back to the default
+        }
+        if let data = defaults.data(forKey: Keys.stats), let saved = try? JSONDecoder().decode(PawStats.self, from: data) {
+            stats = saved
         }
         hasPermission = AXIsProcessTrusted()
         persists = true
@@ -110,14 +120,39 @@ final class KeyboardBlocker: ObservableObject {
         timerSeconds = seconds
     }
 
-    /// Switches to the custom length, keeping the last minutes the user entered.
+    /// Switches to a custom length, starting from the last one the user entered.
     func selectCustomTimer() {
         timerIsCustom = true
-        timerSeconds = customMinutes * 60
+        timerSeconds = customSeconds
     }
 
-    func setCustomMinutes(_ minutes: Int) {
-        customMinutes = min(max(minutes, Self.customMinutesRange.lowerBound), Self.customMinutesRange.upperBound)
+    func setCustomSeconds(_ seconds: Int) {
+        customSeconds = Self.clampCustom(seconds)
+        if timerIsCustom { timerSeconds = customSeconds }
+    }
+
+    /// − / + move to the previous or next whole minute (2:01 → 3:00 → 4:00, and back down to 2:01).
+    func stepCustom(up: Bool) {
+        let s = customSeconds
+        setCustomSeconds(up ? (s / 60 + 1) * 60 : (s % 60 == 0 ? s - 60 : s / 60 * 60))
+    }
+
+    func resetStats() { stats = PawStats() }
+
+    static func clampCustom(_ seconds: Int) -> Int {
+        min(max(seconds, customRange.lowerBound), customRange.upperBound)
+    }
+
+    /// "2:01", "15:00"
+    static func clock(_ seconds: Int) -> String { String(format: "%d:%02d", seconds / 60, seconds % 60) }
+
+    /// Accepts "5" (minutes) or "2:15" (minutes:seconds).
+    static func parseClock(_ text: String) -> Int? {
+        let parts = text.trimmingCharacters(in: .whitespaces).split(separator: ":", omittingEmptySubsequences: false)
+        guard (1...2).contains(parts.count), let minutes = Int(parts[0]) else { return nil }
+        let seconds = parts.count == 2 ? Int(parts[1]) : 0
+        guard let seconds, (0..<60).contains(seconds) else { return nil }
+        return minutes * 60 + seconds
     }
 
     var trimmedPhrase: String { unlockPhrase.trimmingCharacters(in: .whitespaces).lowercased() }
@@ -162,6 +197,16 @@ final class KeyboardBlocker: ObservableObject {
             pawTriggered: pawTriggered,
             reason: reason
         )
+        var totals = stats
+        totals.keysStopped += keysCaught
+        if activeMode == .away {
+            totals.pawKeys += keysCaught
+            totals.awaySessions += 1
+        } else {
+            totals.cleanSessions += 1
+        }
+        if pawTriggered { totals.pawAmbushes += 1 }
+        stats = totals
         isActive = false
         lockedAt = nil
         endsAt = nil
@@ -318,6 +363,10 @@ final class KeyboardBlocker: ObservableObject {
         }
     }
 
+    private func saveStats() {
+        if persists, let data = try? JSONEncoder().encode(stats) { UserDefaults.standard.set(data, forKey: Keys.stats) }
+    }
+
     private func save(_ value: Any, _ key: String) {
         if persists { UserDefaults.standard.set(value, forKey: key) }
     }
@@ -362,7 +411,7 @@ final class KeyboardBlocker: ObservableObject {
 
 extension KeyboardBlocker {
     enum PreviewState: String, CaseIterable {
-        case needsPermission, cleanReady, cleanCustom, cleanTimer, awayReady, awayLocked, pawsDetected, backFromAway, autoReleased
+        case needsPermission, cleanReady, cleanCustom, withStats, cleanTimer, awayReady, awayLocked, pawsDetected, backFromAway, autoReleased
     }
 
     static func preview(_ state: PreviewState) -> KeyboardBlocker {
@@ -380,12 +429,15 @@ extension KeyboardBlocker {
         case .needsPermission:
             break
         case .cleanReady:
-            b.timerSeconds = 60
+            b.timerSeconds = 120
         case .cleanCustom:
-            b.customMinutes = 5
+            b.setCustomSeconds(150)
             b.selectCustomTimer()
+        case .withStats:
+            b.stats = PawStats(keysStopped: 3_118, pawKeys: 2_431, pawAmbushes: 9, cleanSessions: 14, awaySessions: 22)
         case .cleanTimer:
             b.timerSeconds = 60
+            b.stats = PawStats(keysStopped: 40, cleanSessions: 2)
             lock(.clean, keys: 18, since: 20)
             b.endsAt = now.addingTimeInterval(40)
         case .awayReady:

@@ -40,6 +40,7 @@ struct MenuBarContent: View {
     }
 
     private func showWindow() {
+        NSApp.setActivationPolicy(.regular) // back in the Dock while the window is open
         openWindow(id: "main")
         NSApp.activate()
     }
