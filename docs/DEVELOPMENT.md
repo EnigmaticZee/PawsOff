@@ -24,6 +24,8 @@ with `swiftc` via `build.sh`. Read `README.md` first, then these rules before ch
 - Keep the stable signing requirement in `build.sh` (`designated => identifier "local.pawsoff"`); the
   default ad-hoc requirement is a per-build cdhash, which silently invalidates the Accessibility grant.
   A Developer ID signature (for sharing) replaces this.
+- README images come from `Tools/make-readme-art.sh`; rerun it after UI changes and update the version
+  badge in README.md on release.
 - Bump the version with `./build.sh <version>`, log it in `docs/HISTORY.md`, commit, and tag `vX.Y.Z`.
 
 ## Not verified
