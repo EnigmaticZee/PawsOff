@@ -2,6 +2,7 @@
 # Builds "Paws Off.app" into the project root.
 # Usage: ./build.sh            (uses the version in VERSION)
 #        ./build.sh 1.1.0      (sets VERSION to 1.1.0, then builds)
+#        UNIVERSAL=1 ./build.sh (Apple Silicon + Intel, used for releases)
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -13,9 +14,16 @@ APP="Paws Off.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
-xcrun swiftc -O -swift-version 5 -parse-as-library \
-  -target "$(uname -m)-apple-macos14.0" \
-  Sources/*.swift -o "$APP/Contents/MacOS/PawsOff"
+if [[ "${UNIVERSAL:-0}" == 1 ]]; then ARCHS=(arm64 x86_64); else ARCHS=($(uname -m)); fi
+SLICES=()
+for arch in $ARCHS; do
+  mkdir -p build
+  xcrun swiftc -O -swift-version 5 -parse-as-library \
+    -target "$arch-apple-macos14.0" \
+    Sources/*.swift -o "build/PawsOff-$arch"
+  SLICES+=("build/PawsOff-$arch")
+done
+lipo -create $SLICES -output "$APP/Contents/MacOS/PawsOff"
 
 # Icon is committed in Assets/; regenerate it with Tools/make-icon.swift (see README).
 cp Assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"

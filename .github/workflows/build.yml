@@ -1,0 +1,90 @@
+name: Build
+
+# Every push builds both apps. Pushing a version tag (v1.3.0) also publishes a GitHub Release
+# with PawsOff-mac.dmg and PawsOff-Windows.exe attached.
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # build number = commit count
+      - name: Build universal app and DMG
+        run: Tools/make-dmg.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PawsOff-mac
+          path: dist/PawsOff-mac.dmg
+          if-no-files-found: error
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: dotnet publish windows/PawsOff.csproj -c Release -o out
+      - name: Render UI previews
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath out/PawsOff.exe -ArgumentList '--render-previews', "$PWD\previews" -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw "Preview render failed with exit code $($p.ExitCode)" }
+          Get-ChildItem previews
+      - name: Name the download
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item out/PawsOff.exe dist/PawsOff-Windows.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PawsOff-Windows
+          path: dist/PawsOff-Windows.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-previews
+          path: previews
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [macos, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: PawsOff-*
+          path: dist
+          merge-multiple: true
+      - name: Write release notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          {
+            echo "## Download"
+            echo
+            echo "| | |"
+            echo "| --- | --- |"
+            echo "| 🍎 **Mac** (macOS 14+, Apple Silicon & Intel) | [PawsOff-mac.dmg](https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/PawsOff-mac.dmg) |"
+            echo "| 🪟 **Windows** (10 & 11) | [PawsOff-Windows.exe](https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/PawsOff-Windows.exe) |"
+            echo
+            echo "First launch: see [Install](https://github.com/${GITHUB_REPOSITORY}#-install) for the one-time security prompt on each platform."
+            echo
+            echo "## What's new"
+            echo
+            awk -v v="$VERSION" '$0 ~ "^## "v" " {on=1; next} /^## / {on=0} on' docs/HISTORY.md
+          } > notes.md
+          cat notes.md
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/PawsOff-mac.dmg dist/PawsOff-Windows.exe \
+            --title "Paws Off ${GITHUB_REF_NAME}" --notes-file notes.md --latest

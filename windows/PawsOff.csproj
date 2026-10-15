@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- .NET Framework 4.8 ships with Windows 10 and 11, so the app is a single small .exe
+       with nothing to install. Build on Windows: dotnet publish windows/PawsOff.csproj -c Release -o out -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>PawsOff</AssemblyName>
+    <RootNamespace>PawsOff</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <ApplicationIcon>Assets\PawsOff.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)../VERSION').Trim())</Version>
+    <Product>Paws Off</Product>
+    <Company>Zaid</Company>
+    <Copyright>Made by Zaid</Copyright>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\PawsOff.ico" />
+  </ItemGroup>
+
+</Project>

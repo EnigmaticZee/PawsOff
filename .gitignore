@@ -3,3 +3,6 @@
 build/
 *.iconset/
 .DS_Store
+dist/
+windows/bin/
+windows/obj/
