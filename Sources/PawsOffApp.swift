@@ -17,6 +17,19 @@ struct PawsOffApp {
             }
             exit(0)
         }
+        // `PawsOff --snapshot-window <file.png>` launches normally, photographs its own window
+        // (title bar included) and quits. Unlike the off-screen previews this shows the real layout.
+        if let i = args.firstIndex(of: "--snapshot-window"), i + 1 < args.count {
+            let path = args[i + 1]
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                if let frame = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil })?.contentView?.superview,
+                   let rep = frame.bitmapImageRepForCachingDisplay(in: frame.bounds) {
+                    frame.cacheDisplay(in: frame.bounds, to: rep)
+                    try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: path))
+                }
+                exit(0)
+            }
+        }
         PawsOffScene.main()
     }
 }

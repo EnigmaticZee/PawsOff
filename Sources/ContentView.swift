@@ -5,7 +5,14 @@ struct ContentView: View {
     @State private var pulse = false
     @State private var hovering = false
     @State private var showSettings = false
+    @FocusState private var customFieldFocused: Bool
     @Environment(\.ink) private var ink
+    @Environment(\.isPreviewRender) private var isPreviewRender
+
+    /// The window is 620 pt tall in total. Its hidden title bar (32 pt) is part of that: the
+    /// content runs up underneath it, and the window buttons sit centred in it.
+    private let windowHeight: CGFloat = 620
+    private let titleBarHeight: CGFloat = 32
 
     private var locked: Bool { blocker.isActive }
     private var shownMode: LockMode { locked ? blocker.activeMode : blocker.mode }
@@ -15,22 +22,22 @@ struct ContentView: View {
         ZStack(alignment: .topTrailing) {
             background
 
+            // Top, middle and bottom groups with equal flexible space between them, so the button
+            // sits in the optical centre and the layout doesn't jump between states.
             VStack(spacing: 0) {
                 ModePicker(mode: $blocker.mode, shown: shownMode, disabled: locked || !blocker.hasPermission)
-                    .padding(.top, 46)
+                    .padding(.top, titleBarHeight + 14)
 
                 Text(statusLabel)
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
                     .tracking(3)
                     .foregroundStyle(ink.text(0.55))
                     .contentTransition(.opacity)
-                    .padding(.top, 20)
+                    .padding(.top, 16)
 
-                Spacer(minLength: 16)
+                Spacer(minLength: 4)
 
                 bigButton
-
-                Spacer(minLength: 20)
 
                 VStack(spacing: 8) {
                     Text(title)
@@ -46,36 +53,41 @@ struct ContentView: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .contentTransition(.opacity)
                 }
-
-                Spacer(minLength: 16)
+                .padding(.top, 2)
 
                 detailRow
                     .frame(height: 34)
+                    .padding(.top, 18)
 
-                Spacer(minLength: 12)
+                Spacer(minLength: 4)
 
                 footer
-                    .frame(minHeight: 44)
-                    .padding(.bottom, 20)
+                    .frame(height: 64)
+                    .padding(.bottom, 16)
             }
             .padding(.horizontal, 24)
             .frame(maxWidth: .infinity)
 
+            // Settings sits in the title bar, level with the window buttons.
             Button { showSettings = true } label: {
                 Image(systemName: "gearshape")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(ink.text(0.5))
-                    .padding(8)
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundStyle(ink.text(0.55))
+                    .frame(width: 30, height: titleBarHeight)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .help("Settings")
-            .padding(.top, 4)
-            .padding(.trailing, 8)
+            .padding(.trailing, 10)
             .opacity(locked ? 0 : 1)
             .disabled(locked)
+
+            if isPreviewRender { previewWindowButtons }
         }
-        .frame(width: 380, height: 620)
+        // Off-screen renders have no title bar, so they get the full height directly. In the real
+        // window the frame covers the area below the title bar and the content extends up into it.
+        .ignoresSafeArea()
+        .frame(width: 380, height: isPreviewRender ? windowHeight : windowHeight - titleBarHeight)
         .sheet(isPresented: $showSettings) {
             SettingsView().environmentObject(blocker)
         }
@@ -260,12 +272,86 @@ struct ContentView: View {
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(ink.text(0.45))
             ForEach(KeyboardBlocker.timerChoices, id: \.self) { seconds in
-                Button(seconds == 0 ? "No timer" : seconds < 60 ? "\(seconds) s" : "\(seconds / 60) min") {
-                    blocker.timerSeconds = seconds
+                Button(seconds == 0 ? "No timer" : "\(seconds / 60) min") {
+                    blocker.selectTimer(seconds)
                 }
-                .buttonStyle(ChipStyle(selected: blocker.timerSeconds == seconds))
+                .buttonStyle(ChipStyle(selected: !blocker.timerIsCustom && blocker.timerSeconds == seconds))
             }
+            customTimerChip
         }
+        .animation(.spring(response: 0.3, dampingFraction: 0.85), value: blocker.timerIsCustom)
+    }
+
+    /// "Custom" chip that turns into an inline "− 5 min +" entry when chosen.
+    @ViewBuilder
+    private var customTimerChip: some View {
+        if blocker.timerIsCustom {
+            HStack(spacing: 1) {
+                stepButton("minus") { blocker.setCustomMinutes(blocker.customMinutes - 1) }
+                    .disabled(blocker.customMinutes <= KeyboardBlocker.customMinutesRange.lowerBound)
+                minutesEntry
+                Text("min")
+                    .lineLimit(1)
+                    .fixedSize()
+                    .padding(.trailing, 2)
+                stepButton("plus") { blocker.setCustomMinutes(blocker.customMinutes + 1) }
+                    .disabled(blocker.customMinutes >= KeyboardBlocker.customMinutesRange.upperBound)
+            }
+            .font(.system(size: 11, weight: .semibold, design: .rounded))
+            .foregroundStyle(ink.text(0.95))
+            .fixedSize()
+            .padding(.horizontal, 3)
+            .padding(.vertical, 3)
+            .background(Capsule().fill(ink.selectedFill(0.16)))
+            .overlay(Capsule().stroke(ink.selectedStroke(0.25), lineWidth: 1))
+            .shadow(color: .black.opacity(ink.dark ? 0 : 0.06), radius: 2, y: 1)
+            .transition(.opacity.combined(with: .scale(scale: 0.9)))
+        } else {
+            Button("Custom") {
+                blocker.selectCustomTimer()
+                customFieldFocused = true
+            }
+            .buttonStyle(ChipStyle(selected: false))
+        }
+    }
+
+    @ViewBuilder
+    private var minutesEntry: some View {
+        if isPreviewRender {
+            Text("\(blocker.customMinutes)")
+                .monospacedDigit()
+                .frame(width: 20)
+        } else {
+            TextField("", value: Binding(get: { blocker.customMinutes }, set: { blocker.setCustomMinutes($0) }), format: .number)
+                .textFieldStyle(.plain)
+                .multilineTextAlignment(.center)
+                .monospacedDigit()
+                .frame(width: 20)
+                .focused($customFieldFocused)
+        }
+    }
+
+    private func stepButton(_ symbol: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(ink.text(0.6))
+                .frame(width: 20, height: 20)
+                .background(Circle().fill(ink.fill(0.08)))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    /// Stand-ins for the close and minimise buttons, drawn only in off-screen renders so the
+    /// title-bar spacing can be judged.
+    private var previewWindowButtons: some View {
+        HStack(spacing: 10) {
+            Circle().fill(Color(red: 1.0, green: 0.37, blue: 0.34))
+            Circle().fill(Color(red: 1.0, green: 0.74, blue: 0.18))
+        }
+        .frame(width: 34, height: 12)
+        .position(x: 7 + 17, y: titleBarHeight / 2)
     }
 
     private var phraseRow: some View {

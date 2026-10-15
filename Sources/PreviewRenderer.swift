@@ -13,6 +13,7 @@ enum PreviewRenderer {
                 let view = ContentView()
                     .environmentObject(KeyboardBlocker.preview(state))
                     .environment(\.colorScheme, scheme)
+                    .environment(\.isPreviewRender, true)
                 write(view, to: dir.appendingPathComponent("\(theme)-\(index + 1)-\(state.rawValue).png"))
             }
             let settings = SettingsView()

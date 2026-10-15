@@ -35,6 +35,9 @@ struct Ink: Equatable {
 
 extension EnvironmentValues {
     var ink: Ink { Ink(dark: colorScheme == .dark) }
+    /// True inside PreviewRenderer: swaps AppKit-backed controls (which render as yellow boxes
+    /// off-screen) for plain drawings, and draws stand-in window buttons.
+    @Entry var isPreviewRender = false
 }
 
 /// Segmented switch with a sliding selection pill (Clean / Away, and Appearance in Settings).

@@ -48,17 +48,27 @@ final class KeyboardBlocker: ObservableObject {
     // Settings, persisted in UserDefaults
     @Published var mode: LockMode = .clean { didSet { save(mode.rawValue, Keys.mode) } }
     @Published var timerSeconds = 0 { didSet { save(timerSeconds, Keys.timer) } }
+    /// Custom auto-unlock length in minutes, used when `timerIsCustom` is on.
+    @Published var customMinutes = 5 {
+        didSet {
+            save(customMinutes, Keys.customMinutes)
+            if timerIsCustom { timerSeconds = customMinutes * 60 }
+        }
+    }
+    @Published private(set) var timerIsCustom = false { didSet { save(timerIsCustom, Keys.timerIsCustom) } }
     @Published var unlockPhrase = "unlock" { didSet { save(unlockPhrase, Keys.phrase) } }
     @Published var pawDetection = true { didSet { save(pawDetection, Keys.paw) } }
     @Published var appearance: Appearance = .auto { didSet { save(appearance.rawValue, Keys.appearance) } }
 
-    static let timerChoices = [0, 30, 60, 120]
+    static let timerChoices = [0, 60, 120]
+    static let customMinutesRange = 1...99
     static let shortcutLabel = "⌃⌥⌘L"
     private static let shortcutKeyCode: Int64 = 37 // kVK_ANSI_L
 
     private enum Keys {
         static let mode = "mode", timer = "timerSeconds", phrase = "unlockPhrase", paw = "pawDetection"
         static let appearance = "appearance"
+        static let customMinutes = "customMinutes", timerIsCustom = "timerIsCustom"
     }
 
     private var persists = false
@@ -77,6 +87,13 @@ final class KeyboardBlocker: ObservableObject {
         unlockPhrase = defaults.string(forKey: Keys.phrase) ?? "unlock"
         pawDetection = defaults.object(forKey: Keys.paw) as? Bool ?? true
         appearance = Appearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .auto
+        customMinutes = min(max(defaults.object(forKey: Keys.customMinutes) as? Int ?? 5, 1), 99)
+        timerIsCustom = defaults.bool(forKey: Keys.timerIsCustom)
+        if timerIsCustom {
+            timerSeconds = customMinutes * 60
+        } else if !Self.timerChoices.contains(timerSeconds) {
+            timerSeconds = 60 // e.g. the old 30 s choice
+        }
         hasPermission = AXIsProcessTrusted()
         persists = true
 
@@ -86,6 +103,22 @@ final class KeyboardBlocker: ObservableObject {
 
     /// For off-screen renders: no tap, no observers, never touches UserDefaults.
     private init(previewOnly: Void) {}
+
+    /// Picks one of the preset timer lengths (0 = no timer).
+    func selectTimer(_ seconds: Int) {
+        timerIsCustom = false
+        timerSeconds = seconds
+    }
+
+    /// Switches to the custom length, keeping the last minutes the user entered.
+    func selectCustomTimer() {
+        timerIsCustom = true
+        timerSeconds = customMinutes * 60
+    }
+
+    func setCustomMinutes(_ minutes: Int) {
+        customMinutes = min(max(minutes, Self.customMinutesRange.lowerBound), Self.customMinutesRange.upperBound)
+    }
 
     var trimmedPhrase: String { unlockPhrase.trimmingCharacters(in: .whitespaces).lowercased() }
 
@@ -329,7 +362,7 @@ final class KeyboardBlocker: ObservableObject {
 
 extension KeyboardBlocker {
     enum PreviewState: String, CaseIterable {
-        case needsPermission, cleanReady, cleanTimer, awayReady, awayLocked, pawsDetected, backFromAway, autoReleased
+        case needsPermission, cleanReady, cleanCustom, cleanTimer, awayReady, awayLocked, pawsDetected, backFromAway, autoReleased
     }
 
     static func preview(_ state: PreviewState) -> KeyboardBlocker {
@@ -348,6 +381,9 @@ extension KeyboardBlocker {
             break
         case .cleanReady:
             b.timerSeconds = 60
+        case .cleanCustom:
+            b.customMinutes = 5
+            b.selectCustomTimer()
         case .cleanTimer:
             b.timerSeconds = 60
             lock(.clean, keys: 18, since: 20)

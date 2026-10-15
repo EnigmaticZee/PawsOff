@@ -1,5 +1,11 @@
 # Version history
 
+## Unreleased
+- Mac: tidier top of the window. Settings now sits level with the window buttons, at a comfortable
+  size, and the empty band above the Clean/Away switch is gone. Spacing is balanced top to bottom.
+- Mac: auto-unlock timer is now No timer, 1 min, 2 min or **Custom**: pick Custom and set any length
+  from 1 to 99 minutes right in the row. (Windows keeps its current timer choices for now.)
+
 ## 1.5.0 — 2026-10-15
 - **Mac: light mode.** Appearance setting in Settings with Auto (default, follows the macOS light/dark
   setting and switches live), Light and Dark, matching the Windows app: soft lilac background, white

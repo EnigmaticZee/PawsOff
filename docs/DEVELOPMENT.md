@@ -25,6 +25,11 @@ native versions that share one design and one set of rules:
 - After ANY UI change: `./build.sh && "Paws Off.app/Contents/MacOS/PawsOff" --render-previews <dir>` and
   look at the PNGs (light and dark; handy when you can't screenshot the live window). Add a case
   to `KeyboardBlocker.PreviewState` when you add a UI state. TextFields render as yellow boxes off-screen.
+- The Mac window is 620 pt tall *including* its 32 pt hidden title bar: content runs up underneath it
+  (see `windowHeight`/`titleBarHeight` in ContentView). Off-screen previews draw stand-in window buttons
+  so the top edge can be judged. To check the real window, run
+  `"Paws Off.app/Contents/MacOS/PawsOff" --snapshot-window <file.png>`: it photographs its own window
+  (title bar included, no screen-recording permission needed; blur effects don't show in it).
 - Keep the stable signing requirement in `build.sh` (`designated => identifier "local.pawsoff"`); the
   default ad-hoc requirement is a per-build cdhash, which silently invalidates the Accessibility grant.
   A Developer ID signature (for sharing) replaces this.
