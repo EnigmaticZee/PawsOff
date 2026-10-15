@@ -54,6 +54,8 @@ To install, drag `Paws Off.app` into `/Applications`.
 
 Log every version in [docs/HISTORY.md](docs/HISTORY.md), commit, and tag it: `git tag v1.2.0`.
 
+Read [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) before changing code: it lists the rules that keep the app safe (there must always be a way to unlock).
+
 ## Checking the UI without a screen
 
 ```sh

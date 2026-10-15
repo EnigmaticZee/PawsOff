@@ -22,6 +22,10 @@ struct MenuBarContent: View {
         Divider()
 
         Button("Show Paws Off") { showWindow() }
+        Button("About Paws Off") {
+            NSApp.orderFrontStandardAboutPanel(nil)
+            NSApp.activate()
+        }
         Button("Quit Paws Off") { NSApp.terminate(nil) }
             .keyboardShortcut("q")
     }
@@ -37,6 +41,6 @@ struct MenuBarContent: View {
 
     private func showWindow() {
         openWindow(id: "main")
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
     }
 }

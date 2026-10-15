@@ -288,7 +288,8 @@ final class KeyboardBlocker: ObservableObject {
     }
 
     deinit {
-        stop()
+        unlockTimer?.invalidate()
+        permissionTimer?.invalidate()
         if let tap {
             CGEvent.tapEnable(tap: tap, enable: false)
             CFMachPortInvalidate(tap)

@@ -1,5 +1,10 @@
 # Version history
 
+## 1.1.1 — 2026-10-15
+- "Made by Zaid" credit in Settings and the About window (new About item in the menu bar menu).
+- Development notes moved to docs/DEVELOPMENT.md.
+- Small cleanups: modern window activation, timers released on quit.
+
 ## 1.1.0 — 2026-10-15
 - Renamed Spotless → **Paws Off**; new paw print icon.
 - Clean / Away modes in one app.

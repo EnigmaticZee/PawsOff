@@ -8,14 +8,6 @@ enum Palette {
     static let locked = [Color(red: 0.36, green: 0.92, blue: 0.78), Color(red: 0.20, green: 0.58, blue: 0.98)]
 }
 
-func formatDuration(_ seconds: TimeInterval) -> String {
-    let f = DateComponentsFormatter()
-    f.allowedUnits = seconds < 60 ? [.second] : [.hour, .minute]
-    f.unitsStyle = .short
-    f.maximumUnitCount = 2
-    return f.string(from: max(1, seconds)) ?? ""
-}
-
 /// Clean / Away segmented switch with a sliding selection pill.
 struct ModePicker: View {
     @Binding var mode: LockMode

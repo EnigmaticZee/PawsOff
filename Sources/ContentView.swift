@@ -320,10 +320,18 @@ struct ContentView: View {
         .foregroundStyle(.white.opacity(0.4))
     }
 
+    private static func format(_ seconds: TimeInterval) -> String {
+        let f = DateComponentsFormatter()
+        f.allowedUnits = seconds < 60 ? [.second] : [.hour, .minute]
+        f.unitsStyle = .short
+        f.maximumUnitCount = 2
+        return f.string(from: max(1, seconds)) ?? ""
+    }
+
     private func summaryCard(_ s: LockSummary) -> some View {
         let headline = s.pawTriggered ? "Paws detected while you were away"
             : s.mode == .away ? "Welcome back" : "All clean"
-        let detail = "\(s.keys) key\(s.keys == 1 ? "" : "s") stopped in \(formatDuration(s.duration))"
+        let detail = "\(s.keys) key\(s.keys == 1 ? "" : "s") stopped in \(Self.format(s.duration))"
 
         return VStack(spacing: 3) {
             HStack(spacing: 6) {

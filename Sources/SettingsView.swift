@@ -34,6 +34,9 @@ struct SettingsView: View {
             }
 
             HStack {
+                Text(credit)
+                    .font(.system(size: 11, weight: .medium, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.4))
                 Spacer()
                 Button("Done") { dismiss() }
                     .buttonStyle(PillStyle())
@@ -46,6 +49,11 @@ struct SettingsView: View {
             LinearGradient(colors: [Palette.backgroundBottom, Palette.backgroundTop], startPoint: .top, endPoint: .bottom)
         )
         .preferredColorScheme(.dark)
+    }
+
+    private var credit: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        return version.map { "Made by Zaid · v\($0)" } ?? "Made by Zaid"
     }
 
     private func label(_ title: String, _ detail: String) -> some View {
