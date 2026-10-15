@@ -46,6 +46,8 @@ native versions that share one design and one set of rules:
   into `Assets/installer` (rerun it after brand changes). The DMG layout lives in `Tools/dmg-settings.py`
   (icon positions must match the arrow in the art). The Windows wizard is `windows/installer/PawsOff.iss`;
   CI screenshots it (`installer-screens` artifact) and tests a silent install and uninstall.
+- `docs/HISTORY.md` entries are published verbatim as the release notes, so write them for users: what
+  changed for them, no build or tooling details.
 - Releases: bump with `./build.sh <version>` (writes `VERSION`, which both apps read), log it in
   `docs/HISTORY.md`, commit, tag `vX.Y.Z`, push the tag (the README release badge updates by itself). The
   `release` job in `.github/workflows/build.yml` builds and attaches both downloads.
