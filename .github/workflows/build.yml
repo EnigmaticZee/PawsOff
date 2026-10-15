@@ -61,7 +61,7 @@ jobs:
             $bmp.Save("installer-screens\$name.png")
           }
           $setup = Start-Process dist\PawsOff-Windows-Setup.exe -PassThru
-          Start-Sleep 6; Shot "1-welcome"
+          Start-Sleep 15; Shot "1-welcome"
           $shell = New-Object -ComObject WScript.Shell
           $shell.AppActivate($setup.Id) | Out-Null; Start-Sleep 1
           $shell.SendKeys("{ENTER}"); Start-Sleep 3; Shot "2-options"
