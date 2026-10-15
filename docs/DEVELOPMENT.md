@@ -37,7 +37,7 @@ native versions that share one design and one set of rules:
   `KeyboardBlocker.PreviewStates`; CI renders them as the `windows-previews` artifact — check those PNGs
   after any Windows UI change.
 - Releases: bump with `./build.sh <version>` (writes `VERSION`, which both apps read), log it in
-  `docs/HISTORY.md`, update the README version badge, commit, tag `vX.Y.Z`, push the tag. The
+  `docs/HISTORY.md`, commit, tag `vX.Y.Z`, push the tag (the README release badge updates by itself). The
   `release` job in `.github/workflows/build.yml` builds and attaches both downloads.
 - Bump the version with `./build.sh <version>`, log it in `docs/HISTORY.md`, commit, and tag `vX.Y.Z`.
 
