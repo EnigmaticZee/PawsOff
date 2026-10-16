@@ -43,4 +43,10 @@ xattr -dr com.apple.quarantine "$dest/$APP" 2>/dev/null || true
 
 echo "🐾 Installed in $dest. Opening Paws Off…"
 open "$dest/$APP"
-echo "Look for the paw in your menu bar. Click Grant Access once to let it pause your keyboard."
+cat <<'NEXT'
+
+One last step, so Paws Off can pause your keyboard:
+  1. In the Paws Off window, click Grant Access.
+  2. Click Open System Settings, then switch on Paws Off (Touch ID or password).
+  3. Done: look for the paw in your menu bar. Click it to lock your keyboard.
+NEXT

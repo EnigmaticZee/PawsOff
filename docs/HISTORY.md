@@ -1,5 +1,14 @@
 # Version history
 
+## 2.0.7 — 2026-10-15
+A friendlier first hello.
+
+- **Mac: the installer walks you through opening Paws Off the first time.** macOS asks you to
+  confirm apps from smaller developers once, and finding that button is a bit of a treasure hunt.
+  The install window now shows three short steps, with a little picture of each button to click.
+- **The one-line installers end with clear next steps**, so you know exactly what to do once
+  Paws Off opens.
+
 ## 2.0.6 — 2026-10-15
 A quiet one. Nothing to see here, and that's the point.
 

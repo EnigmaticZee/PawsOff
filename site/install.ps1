@@ -17,4 +17,7 @@ $p = Start-Process -FilePath $setup -ArgumentList '/SILENT', '/NORESTART', '/CLO
 $p.WaitForExit()
 Remove-Item $setup -ErrorAction SilentlyContinue
 if ($p.ExitCode -ne 0) { throw "The installer stopped with code $($p.ExitCode)." }
-Write-Host 'Done. Paws Off is in your system tray, by the clock: click the paw.'
+Write-Host ''
+Write-Host 'Done! Paws Off is running in your system tray, by the clock.'
+Write-Host '  - Click the paw to lock your keyboard; click Unlock (or type your unlock word) to get it back.'
+Write-Host '  - Tip: if the paw is hidden, click the ^ arrow next to the clock and drag it onto the taskbar.'

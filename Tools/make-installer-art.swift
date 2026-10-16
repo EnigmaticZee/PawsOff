@@ -78,58 +78,120 @@ func saveBMP(_ rep: NSBitmapImageRep, _ name: String) {
     try! Data(bytes).write(to: out.appendingPathComponent(name))
 }
 
-// MARK: Mac DMG window (660 x 400 points). Finder places the icons at y = 200 from the top.
-let dmgW: CGFloat = 660, dmgH: CGFloat = 400
-for scale in [1, 2] as [CGFloat] {
-    let rep = render(dmgW, dmgH, scale: scale) {
-        brandBackground(NSRect(x: 0, y: 0, width: dmgW, height: dmgH))
+// MARK: Mac DMG window. Finder places the icons at y = 200 from the top (Tools/dmg-settings.py).
+// Two versions:
+// - dmg-background: today's, 660 x 520. Below the drag arrow, a step-by-step guide to the one-time
+//   "Open Anyway" prompt (the app isn't notarized yet).
+// - dmg-background-notarized: the clean 660 x 400 window with no guide, for once the app is notarized
+//   (Tools/make-dmg.sh: NOTARIZED=1).
 
-        // Title block: icon + name, centred as one unit
-        let title = "Paws Off"
-        let titleFont = rounded(22, .bold)
-        let tw = (title as NSString).size(withAttributes: [.font: titleFont]).width
-        let iconSize: CGFloat = 26, gap: CGFloat = 9
-        let left = dmgW / 2 - (iconSize + gap + tw) / 2
-        icon(in: NSRect(x: left, y: dmgH - 64, width: iconSize, height: iconSize))
-        (title as NSString).draw(at: NSPoint(x: left + iconSize + gap, y: dmgH - 65), withAttributes: [.font: titleFont, .foregroundColor: ink])
-        text("Drag the app into Applications to install", rounded(13, .medium), ink.withAlphaComponent(0.6), centerX: dmgW / 2, y: dmgH - 92)
-
-        // Arrow between the two icons (icon centres at x = 170 and 490, y = 200 from top)
-        let y = dmgH - 200
-        let shaft = NSBezierPath()
-        shaft.move(to: NSPoint(x: 262, y: y))
-        shaft.line(to: NSPoint(x: 392, y: y))
-        shaft.lineWidth = 3
-        shaft.lineCapStyle = .round
-        let head = NSBezierPath()
-        head.move(to: NSPoint(x: 380, y: y + 11))
-        head.line(to: NSPoint(x: 394, y: y))
-        head.line(to: NSPoint(x: 380, y: y - 11))
-        head.lineWidth = 3
-        head.lineCapStyle = .round
-        head.lineJoinStyle = .round
-        NSGraphicsContext.saveGraphicsState()
-        let outline = shaft.copy() as! NSBezierPath
-        outline.append(head)
-        let stroked = NSBezierPath()
-        stroked.append(outline)
-        // Gradient stroke: clip to a widened outline by drawing the gradient through a stroke mask.
-        if let ctx = NSGraphicsContext.current?.cgContext {
-            ctx.saveGState()
-            ctx.setLineWidth(3); ctx.setLineCap(.round); ctx.setLineJoin(.round)
-            ctx.addPath(stroked.cgPath)
-            ctx.replacePathWithStrokedPath()
-            ctx.clip()
-            NSGradient(starting: coral, ending: violet)!.draw(in: NSRect(x: 255, y: y - 14, width: 145, height: 28), angle: 0)
-            ctx.restoreGState()
-        }
-        NSGraphicsContext.restoreGraphicsState()
-
-        // First-launch tip
-        text("First time opening it? System Settings → Privacy & Security → Open Anyway",
-             rounded(11, .medium), ink.withAlphaComponent(0.45), centerX: dmgW / 2, y: 26)
+func paragraph(_ string: String, _ font: NSFont, _ color: NSColor, bold: [String] = [], align: NSTextAlignment = .left) -> NSAttributedString {
+    let style = NSMutableParagraphStyle(); style.alignment = align; style.lineSpacing = 2
+    let a = NSMutableAttributedString(string: string, attributes: [.font: font, .foregroundColor: color, .paragraphStyle: style])
+    for b in bold {
+        let r = (string as NSString).range(of: b)
+        if r.location != NSNotFound { a.addAttribute(.font, value: rounded(font.pointSize, .bold), range: r); a.addAttribute(.foregroundColor, value: ink, range: r) }
     }
-    save(rep, scale == 1 ? "dmg-background.png" : "dmg-background@2x.png")
+    return a
+}
+
+/// A small drawing of the button to look for, so it's easy to spot on screen.
+func mockButton(_ label: String, at origin: NSPoint, filled: Bool = false) -> CGFloat {
+    let font = NSFont.systemFont(ofSize: 11.5, weight: .medium)
+    let w = (label as NSString).size(withAttributes: [.font: font]).width + 26
+    let r = NSRect(x: origin.x, y: origin.y, width: w, height: 22)
+    let path = NSBezierPath(roundedRect: r, xRadius: 6, yRadius: 6)
+    NSGraphicsContext.saveGraphicsState()
+    let shadow = NSShadow(); shadow.shadowColor = rgb(0, 0, 0, 0.12); shadow.shadowBlurRadius = 2; shadow.shadowOffset = NSSize(width: 0, height: -1); shadow.set()
+    (filled ? coral : rgb(1, 1, 1)).setFill(); path.fill()
+    NSGraphicsContext.restoreGraphicsState()
+    if !filled { rgb(0, 0, 0, 0.12).setStroke(); path.lineWidth = 0.75; path.stroke() }
+    (label as NSString).draw(at: NSPoint(x: r.minX + 13, y: r.minY + 4), withAttributes: [.font: font, .foregroundColor: filled ? rgb(1, 1, 1) : ink])
+    return w
+}
+
+func drawDMG(width dmgW: CGFloat, height dmgH: CGFloat, guide: Bool) {
+    let dx = (dmgW - 660) / 2 // the icons and arrow stay centred in a wider window
+    brandBackground(NSRect(x: 0, y: 0, width: dmgW, height: dmgH))
+
+    // Title block: icon + name, centred as one unit
+    let title = "Paws Off"
+    let titleFont = rounded(22, .bold)
+    let tw = (title as NSString).size(withAttributes: [.font: titleFont]).width
+    let iconSize: CGFloat = 26, gap: CGFloat = 9
+    let left = dmgW / 2 - (iconSize + gap + tw) / 2
+    icon(in: NSRect(x: left, y: dmgH - 64, width: iconSize, height: iconSize))
+    (title as NSString).draw(at: NSPoint(x: left + iconSize + gap, y: dmgH - 65), withAttributes: [.font: titleFont, .foregroundColor: ink])
+    text("Drag the app into Applications to install", rounded(13, .medium), ink.withAlphaComponent(0.6), centerX: dmgW / 2, y: dmgH - 92)
+
+    // Arrow between the two icons (icon centres at x = 170 and 490, y = 200 from top)
+    let y = dmgH - 200
+    let shaft = NSBezierPath()
+    shaft.move(to: NSPoint(x: 262 + dx, y: y))
+    shaft.line(to: NSPoint(x: 392 + dx, y: y))
+    let head = NSBezierPath()
+    head.move(to: NSPoint(x: 380 + dx, y: y + 11))
+    head.line(to: NSPoint(x: 394 + dx, y: y))
+    head.line(to: NSPoint(x: 380 + dx, y: y - 11))
+    let outline = NSBezierPath()
+    outline.append(shaft)
+    outline.append(head)
+    // Gradient stroke: clip to the stroked outline, then draw the gradient through it.
+    if let ctx = NSGraphicsContext.current?.cgContext {
+        ctx.saveGState()
+        ctx.setLineWidth(3); ctx.setLineCap(.round); ctx.setLineJoin(.round)
+        ctx.addPath(outline.cgPath)
+        ctx.replacePathWithStrokedPath()
+        ctx.clip()
+        NSGradient(starting: coral, ending: violet)!.draw(in: NSRect(x: 255 + dx, y: y - 14, width: 145, height: 28), angle: 0)
+        ctx.restoreGState()
+    }
+    guard guide else { return }
+
+    // The guide: a soft panel with three numbered steps, each with the button to look for.
+    let panel = NSRect(x: 24, y: 24, width: dmgW - 48, height: dmgH - 290 - 24)
+    let panelPath = NSBezierPath(roundedRect: panel, xRadius: 16, yRadius: 16)
+    rgb(1, 1, 1, 0.72).setFill(); panelPath.fill()
+    rgb(0, 0, 0, 0.06).setStroke(); panelPath.lineWidth = 1; panelPath.stroke()
+    paragraph("First time opening Paws Off? macOS asks you to confirm once:", rounded(14, .bold), ink)
+        .draw(at: NSPoint(x: panel.minX + 20, y: panel.maxY - 34))
+
+    let steps: [(text: String, bold: [String], button: String, filled: Bool, after: String)] = [
+        ("Open Paws Off in Applications. When macOS blocks it, click", ["Paws Off"], "Done", false, ""),
+        ("Go to System Settings → Privacy & Security and click", ["System Settings → Privacy & Security"], "Open Anyway", false, "Near the bottom. Then confirm with your password."),
+        ("Click Grant Access, then switch on Paws Off in the list.", ["Grant Access"], "Grant Access", true, "That's it: look for the paw in your menu bar."),
+    ]
+    let colW = (panel.width - 40 - 2 * 20) / 3
+    for (i, step) in steps.enumerated() {
+        let x = panel.minX + 20 + CGFloat(i) * (colW + 20)
+        let top = panel.maxY - 52
+        // number badge
+        let badge = NSBezierPath(ovalIn: NSRect(x: x, y: top - 22, width: 22, height: 22))
+        NSGradient(starting: coral, ending: violet)!.draw(in: badge, angle: -45)
+        text("\(i + 1)", rounded(12, .bold), .white, centerX: x + 11, y: top - 19)
+        // text, wrapped to the column
+        let body = paragraph(step.text, rounded(12, .regular), ink.withAlphaComponent(0.75), bold: step.bold)
+        let size = body.boundingRect(with: NSSize(width: colW, height: 200), options: .usesLineFragmentOrigin).size
+        let lineHeight = paragraph("A", rounded(12, .regular), ink).boundingRect(with: NSSize(width: colW, height: 200), options: .usesLineFragmentOrigin).height
+        precondition(size.height < lineHeight * 2.5, "Step \(i + 1) wraps to more than two lines: widen the window or shorten it")
+        body.draw(with: NSRect(x: x, y: top - 32 - size.height, width: colW, height: size.height), options: .usesLineFragmentOrigin)
+        let buttonY = top - 32 - size.height - 30
+        _ = mockButton(step.button, at: NSPoint(x: x, y: buttonY), filled: step.filled)
+        if !step.after.isEmpty {
+            let after = paragraph(step.after, rounded(11, .regular), ink.withAlphaComponent(0.5))
+            let aSize = after.boundingRect(with: NSSize(width: colW, height: 100), options: .usesLineFragmentOrigin).size
+            let noteLine = paragraph("A", rounded(11, .regular), ink).boundingRect(with: NSSize(width: colW, height: 100), options: .usesLineFragmentOrigin).height
+            precondition(aSize.height < noteLine * 2.5, "The note under step \(i + 1) wraps to more than two lines")
+            after.draw(with: NSRect(x: x, y: buttonY - 8 - aSize.height, width: colW, height: aSize.height), options: .usesLineFragmentOrigin)
+        }
+    }
+
+}
+
+for (name, width, height, guide) in [("dmg-background", 660, 520, true), ("dmg-background-notarized", 660, 400, false)] as [(String, CGFloat, CGFloat, Bool)] {
+    for scale in [1, 2] as [CGFloat] {
+        save(render(width, height, scale: scale) { drawDMG(width: width, height: height, guide: guide) }, scale == 1 ? "\(name).png" : "\(name)@2x.png")
+    }
 }
 
 // MARK: Windows installer wizard images (Inno Setup, modern style). 24-bit BMP, no alpha.
