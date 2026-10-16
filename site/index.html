@@ -40,23 +40,43 @@
 
   .install { max-width: 640px; margin: 34px auto 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; text-align: left; }
   .tabs { display: flex; gap: 6px; background: var(--line); padding: 4px; border-radius: 999px; width: max-content; max-width: 100%; margin: 0 auto 16px; }
-  .tabs button { border: 0; background: none; color: var(--soft); font: 600 15px/1 inherit; padding: 9px 16px; border-radius: 999px; cursor: pointer; }
+  .tabs button { border: 0; background: none; color: var(--soft); font-family: inherit; font-size: 15px; font-weight: 600; line-height: 1; padding: 9px 16px; border-radius: 999px; cursor: pointer; }
   .tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
   .panel[hidden] { display: none; }
-  .cmd { display: flex; align-items: center; gap: 10px; background: var(--code); color: var(--code-ink); border-radius: 12px; padding: 12px 12px 12px 16px; }
-  .cmd code { flex: 1; font: 14px/1.4 ui-monospace, Menlo, Consolas, monospace; overflow-x: auto; white-space: nowrap; }
-  .cmd button { flex: none; border: 0; border-radius: 8px; background: var(--coral); color: #fff; font: 600 13px/1 inherit; padding: 9px 12px; cursor: pointer; }
+  .cmd { display: flex; align-items: center; gap: 12px; background: var(--code); color: var(--code-ink); border-radius: 12px; padding: 12px 12px 12px 16px; }
+  /* The command wraps instead of scrolling, so no scrollbar ever sits on top of it. */
+  .cmd code { flex: 1; min-width: 0; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: normal; overflow-wrap: anywhere; user-select: all; }
+  .cmd button { flex: none; align-self: center; border: 0; border-radius: 8px; background: var(--coral); color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1; padding: 10px 14px; cursor: pointer; min-height: 36px; }
+  .cmd button:hover { filter: brightness(1.06); }
   .hint { color: var(--soft); font-size: 14px; margin: 12px 4px 0; }
   .meta { color: var(--soft); font-size: 14px; margin-top: 14px; text-align: center; }
   .downloads { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
-  .dl { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 12px; font-weight: 650; font-size: 15px;
-    background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
-  .dl:hover { text-decoration: none; border-color: var(--coral); }
-  .dl small { color: var(--soft); font-weight: 500; }
+  .dl { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 22px; border-radius: 14px; font-weight: 800; font-size: 16px;
+    background: #1B1726; color: #FFFFFF; box-shadow: 0 6px 18px rgba(27, 23, 38, .18); transition: transform .15s ease, box-shadow .15s ease; }
+  .dl.win { background: #0B63C9; box-shadow: 0 6px 18px rgba(11, 99, 201, .25); }
+  .dl:hover { text-decoration: none; transform: translateY(-1px); box-shadow: 0 10px 24px rgba(27, 23, 38, .24); }
+  .dl svg { width: 20px; height: 20px; fill: #FFFFFF; flex: none; }
+  .dl small { color: rgba(255, 255, 255, .7); font-weight: 600; }
+  @media (prefers-color-scheme: dark) { .dl { background: #F3F0F8; color: #1B1726; } .dl svg { fill: #1B1726; } .dl small { color: rgba(27, 23, 38, .6); } .dl.win { background: #0B63C9; color: #fff; } .dl.win svg { fill: #fff; } .dl.win small { color: rgba(255, 255, 255, .75); } }
   .or { color: var(--soft); font-size: 14px; margin-top: 22px; text-align: center; }
 
   .hero { margin: 36px auto 0; }
-  .hero img { width: 100%; height: auto; display: block; border-radius: 22px; }
+
+  /* Paw detection spotlight */
+  .paws { position: relative; display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 28px; padding: 44px; overflow: hidden; }
+  .paws .trail { position: absolute; inset: 0; pointer-events: none; color: var(--coral); opacity: .14; }
+  .paws .copy { position: relative; }
+  .eyebrow { display: flex; align-items: center; gap: 8px; color: var(--coral); font-size: 14px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+  .paws h2 { text-align: left; margin: 12px 0 12px; line-height: 1.08; }
+  .paws p { color: var(--soft); margin: 0 0 22px; }
+  .draft { position: relative; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; max-width: 440px; }
+  .draft .to { font-size: 13px; font-weight: 700; color: var(--soft); }
+  .draft .mash { margin-top: 6px; font: 17px/1.4 ui-monospace, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+  .stamp { position: absolute; right: -10px; top: -14px; transform: rotate(8deg); background: #E8573F; color: #fff; font-size: 13px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; padding: 6px 11px; border-radius: 8px; box-shadow: 0 4px 12px rgba(232, 87, 63, .35); }
+  .paws .fine { font-size: 14px; margin: 16px 0 0; }
+  .paws picture img { position: relative; width: 100%; max-width: 380px; height: auto; display: block; margin: 0 auto; }
+  @media (max-width: 760px) { .paws { grid-template-columns: 1fr; padding: 28px 20px; } }
+  .hero img { width: 100%; height: auto; display: block; }
 
   section { padding: 72px 0 0; }
   h2 { font-size: clamp(28px, 4vw, 38px); font-weight: 800; text-align: center; margin: 0 0 10px; }
@@ -112,8 +132,8 @@
     </div>
     <p class="or">or download it</p>
     <div class="downloads">
-      <a class="dl" href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg">⬇ Download for Mac <small>.dmg</small></a>
-      <a class="dl" href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Setup.exe">⬇ Download for Windows <small>.exe</small></a>
+      <a class="dl" href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.37 12.6c-.03-2.7 2.2-4 2.3-4.07-1.26-1.83-3.21-2.08-3.9-2.11-1.66-.17-3.24.98-4.08.98-.85 0-2.14-.96-3.52-.93-1.81.03-3.48 1.05-4.41 2.67-1.88 3.26-.48 8.08 1.35 10.73.9 1.29 1.96 2.75 3.36 2.7 1.35-.05 1.86-.87 3.49-.87 1.63 0 2.09.87 3.51.84 1.45-.03 2.37-1.32 3.26-2.62 1.03-1.5 1.45-2.95 1.47-3.03-.03-.01-2.82-1.08-2.85-4.29zM13.7 4.67c.74-.9 1.24-2.15 1.11-3.39-1.07.04-2.36.71-3.13 1.61-.69.8-1.29 2.07-1.13 3.29 1.19.09 2.41-.61 3.15-1.51z"></path></svg>Download for Mac <small>.dmg</small></a>
+      <a class="dl win" href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Setup.exe"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4.3l8.2-1.1v7.9H2zm9.2-1.3L22 1.5v9.6H11.2zM2 12.1h8.2V20L2 18.9zm9.2 0H22v9.4l-10.8-1.5z"></path></svg>Download for Windows <small>.exe</small></a>
     </div>
     <p class="hint" style="text-align:center">Downloaded copies ask you to confirm once: on a Mac, <strong>System Settings → Privacy &amp; Security → Open Anyway</strong>; on Windows, <strong>More info → Run anyway</strong>. <a href="https://github.com/EnigmaticZee/PawsOff#-install">Step-by-step</a></p>
     <p class="meta">Free and open source · macOS 14+ (Apple Silicon &amp; Intel) · Windows 10 &amp; 11</p>
@@ -121,10 +141,31 @@
 
   <div class="hero">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="images/hero-dark.png">
-      <img src="images/hero-light.png" alt="Paws Off: ready to clean, locked with a timer running, and after catching a paw" width="1600" height="896">
+      <source media="(prefers-color-scheme: dark)" srcset="media/hero-dark.png">
+      <img src="media/hero-light.png" alt="Paws Off: ready to clean, locked with a timer running, and after catching a paw" width="1600" height="896">
     </picture>
   </div>
+
+  <section>
+    <div class="paws">
+      <svg class="trail" viewBox="0 0 1040 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g fill="currentColor"><g transform="translate(560 520) rotate(-28) scale(1.5)"><ellipse cx="-9" cy="-4" rx="3.6" ry="4.6"></ellipse><ellipse cx="-3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="9" cy="-4" rx="3.6" ry="4.6"></ellipse><path d="M0 0c-5 0-9.3 4.4-9.3 8.8 0 3 2.3 4.4 5 4 1.6-.3 2.8-1 4.3-1s2.7.7 4.3 1c2.7.4 5-1 5-4C9.3 4.4 5 0 0 0z"></path></g><g transform="translate(520 455) rotate(-28) scale(1.5)"><ellipse cx="-9" cy="-4" rx="3.6" ry="4.6"></ellipse><ellipse cx="-3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="9" cy="-4" rx="3.6" ry="4.6"></ellipse><path d="M0 0c-5 0-9.3 4.4-9.3 8.8 0 3 2.3 4.4 5 4 1.6-.3 2.8-1 4.3-1s2.7.7 4.3 1c2.7.4 5-1 5-4C9.3 4.4 5 0 0 0z"></path></g><g transform="translate(575 395) rotate(-28) scale(1.5)"><ellipse cx="-9" cy="-4" rx="3.6" ry="4.6"></ellipse><ellipse cx="-3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="9" cy="-4" rx="3.6" ry="4.6"></ellipse><path d="M0 0c-5 0-9.3 4.4-9.3 8.8 0 3 2.3 4.4 5 4 1.6-.3 2.8-1 4.3-1s2.7.7 4.3 1c2.7.4 5-1 5-4C9.3 4.4 5 0 0 0z"></path></g><g transform="translate(540 330) rotate(-28) scale(1.5)"><ellipse cx="-9" cy="-4" rx="3.6" ry="4.6"></ellipse><ellipse cx="-3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="9" cy="-4" rx="3.6" ry="4.6"></ellipse><path d="M0 0c-5 0-9.3 4.4-9.3 8.8 0 3 2.3 4.4 5 4 1.6-.3 2.8-1 4.3-1s2.7.7 4.3 1c2.7.4 5-1 5-4C9.3 4.4 5 0 0 0z"></path></g><g transform="translate(1000 70) rotate(20) scale(1.5)"><ellipse cx="-9" cy="-4" rx="3.6" ry="4.6"></ellipse><ellipse cx="-3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="9" cy="-4" rx="3.6" ry="4.6"></ellipse><path d="M0 0c-5 0-9.3 4.4-9.3 8.8 0 3 2.3 4.4 5 4 1.6-.3 2.8-1 4.3-1s2.7.7 4.3 1c2.7.4 5-1 5-4C9.3 4.4 5 0 0 0z"></path></g><g transform="translate(1025 10) rotate(20) scale(1.5)"><ellipse cx="-9" cy="-4" rx="3.6" ry="4.6"></ellipse><ellipse cx="-3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="9" cy="-4" rx="3.6" ry="4.6"></ellipse><path d="M0 0c-5 0-9.3 4.4-9.3 8.8 0 3 2.3 4.4 5 4 1.6-.3 2.8-1 4.3-1s2.7.7 4.3 1c2.7.4 5-1 5-4C9.3 4.4 5 0 0 0z"></path></g></g></svg>
+      <div class="copy">
+        <div class="eyebrow"><svg width="18" height="18" viewBox="-12 -16 24 30" fill="currentColor" aria-hidden="true"><ellipse cx="-9" cy="-4" rx="3.6" ry="4.6"></ellipse><ellipse cx="-3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="3.4" cy="-10" rx="3.6" ry="4.8"></ellipse><ellipse cx="9" cy="-4" rx="3.6" ry="4.6"></ellipse><path d="M0 0c-5 0-9.3 4.4-9.3 8.8 0 3 2.3 4.4 5 4 1.6-.3 2.8-1 4.3-1s2.7.7 4.3 1c2.7.4 5-1 5-4C9.3 4.4 5 0 0 0z"></path></svg>Paw detection</div>
+        <h2>Your cat's first email: blocked.</h2>
+        <p>Forgot to lock? When a paw lands on the keys, Paws Off spots it and locks the keyboard before anyone hits send.</p>
+        <div class="draft">
+          <div class="to">To: your boss · Subject: re: Q3 plan</div>
+          <div class="mash">jjjjjjjj;;;;;;;; fffffff mrrrp</div>
+          <div class="stamp">Not sent</div>
+        </div>
+        <p class="fine">It counts held keys (4 at once, or 2 for 3 seconds) and never reads what you type.</p>
+      </div>
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="media/caught-a-paw-dark.png">
+        <img src="media/caught-a-paw-light.png" alt="Paws Off after catching a paw: Caught a paw, 63 keys caught" width="864" height="1148">
+      </picture>
+    </div>
+  </section>
 
   <section>
     <h2>Two modes, one click</h2>
