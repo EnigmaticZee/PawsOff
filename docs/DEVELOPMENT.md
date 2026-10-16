@@ -79,7 +79,8 @@ Read `README.md` first, then these rules before changing anything.
   solid colour per surface, no gradients; tiny sizes are a plain coral paw). Never use SF Symbols in the icon or installer art
   (their licence forbids it). `Tools/make-icons.sh` regenerates every copy: `Assets/AppIcon.icns`,
   `windows/Assets/PawsOff.ico` (also the tray icon), `docs/images/icon.png` and the installer art.
-- **DMG first-launch guide:** while the app isn't notarized, the DMG window (660 x 520) shows three
+- **DMG first-launch guide:** while the app isn't notarized, the DMG window (660 x 596, its bottom kept clear for
+  Finder's path and status bars) shows three
   steps for the one-time "Open Anyway" prompt, each with the button to look for. Once notarized,
   build with `NOTARIZED=1 Tools/make-dmg.sh` (set it in the CI `macos` job) for the clean 660 x 400
   window (`dmg-background-notarized`), and drop the "Open Anyway" steps from the README and website.

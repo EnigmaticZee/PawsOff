@@ -14,7 +14,8 @@ command -v "$DMGBUILD" >/dev/null || { echo "dmgbuild not found: pip install dmg
 
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
-if [ "${NOTARIZED:-0}" = 1 ]; then ART=dmg-background-notarized; WIDTH=660; HEIGHT=400; else ART=dmg-background; WIDTH=660; HEIGHT=520; fi
+if [ "${NOTARIZED:-0}" = 1 ]; then ART=dmg-background-notarized; WIDTH=660; HEIGHT=400; else ART=dmg-background; WIDTH=660; HEIGHT=596; fi
+HEIGHT=$((HEIGHT + 32)) # the window's height includes its title bar; show the whole picture
 # Retina background: one TIFF holding the 1x and 2x art.
 tiffutil -cathidpicheck "Assets/installer/$ART.png" "Assets/installer/$ART@2x.png" \
   -out "$WORK/background.tiff" >/dev/null

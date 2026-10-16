@@ -1,5 +1,12 @@
 # Version history
 
+## 2.0.8 — 2026-10-15
+Room to breathe.
+
+- **Mac: the installer's steps are never cut off.** If your Finder shows its path bar and status
+  bar, they used to sit on top of the last part of the guide. The window now leaves room for them,
+  so every step stays in view.
+
 ## 2.0.7 — 2026-10-15
 A friendlier first hello.
 

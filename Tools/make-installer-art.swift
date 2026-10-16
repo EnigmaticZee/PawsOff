@@ -80,7 +80,7 @@ func saveBMP(_ rep: NSBitmapImageRep, _ name: String) {
 
 // MARK: Mac DMG window. Finder places the icons at y = 200 from the top (Tools/dmg-settings.py).
 // Two versions:
-// - dmg-background: today's, 660 x 520. Below the drag arrow, a step-by-step guide to the one-time
+// - dmg-background: today's, 660 x 596. Below the drag arrow, a step-by-step guide to the one-time
 //   "Open Anyway" prompt (the app isn't notarized yet).
 // - dmg-background-notarized: the clean 660 x 400 window with no guide, for once the app is notarized
 //   (Tools/make-dmg.sh: NOTARIZED=1).
@@ -148,8 +148,9 @@ func drawDMG(width dmgW: CGFloat, height dmgH: CGFloat, guide: Bool) {
     }
     guard guide else { return }
 
-    // The guide: a soft panel with three numbered steps, each with the button to look for.
-    let panel = NSRect(x: 24, y: 24, width: dmgW - 48, height: dmgH - 290 - 24)
+    // The guide: a soft panel with three numbered steps, each with the button to look for. The bottom
+    // 96 points stay clear: Finder may show its path bar and status bar there, over the window.
+    let panel = NSRect(x: 24, y: 96, width: dmgW - 48, height: dmgH - 290 - 96)
     let panelPath = NSBezierPath(roundedRect: panel, xRadius: 16, yRadius: 16)
     rgb(1, 1, 1, 0.72).setFill(); panelPath.fill()
     rgb(0, 0, 0, 0.06).setStroke(); panelPath.lineWidth = 1; panelPath.stroke()
@@ -188,7 +189,7 @@ func drawDMG(width dmgW: CGFloat, height dmgH: CGFloat, guide: Bool) {
 
 }
 
-for (name, width, height, guide) in [("dmg-background", 660, 520, true), ("dmg-background-notarized", 660, 400, false)] as [(String, CGFloat, CGFloat, Bool)] {
+for (name, width, height, guide) in [("dmg-background", 660, 596, true), ("dmg-background-notarized", 660, 400, false)] as [(String, CGFloat, CGFloat, Bool)] {
     for scale in [1, 2] as [CGFloat] {
         save(render(width, height, scale: scale) { drawDMG(width: width, height: height, guide: guide) }, scale == 1 ? "\(name).png" : "\(name)@2x.png")
     }
