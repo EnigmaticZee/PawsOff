@@ -106,9 +106,14 @@ Read `README.md` first, then these rules before changing anything.
   Windows installer and the appcast. Then submit to winget: `Tools/winget-submit.sh <version>`.
   Homebrew needs nothing: the tap (EnigmaticZee/homebrew-tap) always points at the latest release.
 
-## Not verified
-Version C (menu bar / tray card, both platforms): checked through off-screen renders, real-window
-snapshots (Mac) and CI install tests (Windows) only. Still to be tested by hand: actual key blocking,
-unlock phrase, shortcut, paw detection on a real keyboard, menu bar / tray clicks and right-click
-menus, Start in, launch at login/sign-in, timer auto-unlock, auto-release on lock / sleep / user
-switch, and an end-to-end automatic update on each platform.
+## What's verified, and what isn't
+- **Automatic:** Mac and Windows builds; Windows install, relaunch and uninstall; the one-line
+  installers and the Homebrew cask on clean machines (weekly); and a hands-on Windows test
+  (`.github/scripts/windows-hands-on.ps1`) that locks with the button and the shortcut, proves typing
+  is blocked, unlocks with a click, the shortcut and the unlock word, and checks CPU, memory and
+  the event log.
+- **Verified by hand (Mac, 2.0.x):** automatic updates end to end, the menu bar panel, window menus,
+  Appearance sync.
+- **Still needs hands:** everything in `docs/TESTING.md` on a real Mac and PC, especially paw
+  detection (the Windows test types with simulated keys, which paw detection ignores on purpose)
+  and auto-release on lock, sleep and user switch.
