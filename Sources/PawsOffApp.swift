@@ -27,9 +27,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         if opensWindowAtLaunch {
             MainWindow.show()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { MenuBarController.shared.showUpdatedNoteIfNeeded() }
         } else {
             // Started quietly in the menu bar: the first time, point at the paw.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { MenuBarController.shared.showTipIfNeeded() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                if !MenuBarController.shared.showUpdatedNoteIfNeeded() { MenuBarController.shared.showTipIfNeeded() }
+            }
         }
     }
 

@@ -124,23 +124,44 @@ final class MenuBarController: NSObject {
         }
     }
 
-    // MARK: First-time tip
+    // MARK: Tips
 
     /// The first time Paws Off starts quietly in the menu bar, point at the paw once.
     func showTipIfNeeded() {
         let key = "shownMenuBarTip"
-        guard !UserDefaults.standard.bool(forKey: key), let button = item?.button else { return }
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
         UserDefaults.standard.set(true, forKey: key)
+        showTip(title: "Paws Off lives here", message: "Click the paw to lock your keyboard. Right-click for quick actions.")
+    }
 
+    /// After Paws Off has updated itself, say so once, under the paw. Returns whether it did.
+    @discardableResult
+    func showUpdatedNoteIfNeeded() -> Bool {
+        let defaults = UserDefaults.standard, key = "lastRunVersion"
+        let current = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        // Versions before 2.0.2 didn't record this; their update checks did leave a timestamp.
+        let previous = defaults.string(forKey: key) ?? (defaults.object(forKey: "SULastCheckTime") != nil ? "" : nil)
+        defaults.set(current, forKey: key)
+        guard let previous, previous != current else { return false }
+        showTip(title: "Updated to Paws Off \(current)", message: "Paws Off updated itself. See what's new on the release page.",
+                link: URL(string: "https://github.com/EnigmaticZee/PawsOff/releases/tag/v\(current)"))
+        return true
+    }
+
+    private func showTip(title: String, message: String, link: URL? = nil) {
+        guard let button = item?.button else { return }
         let tip = NSPopover()
         tip.behavior = .transient
-        tip.contentViewController = NSHostingController(rootView: MenuBarTip { tip.performClose(nil) })
+        tip.contentViewController = NSHostingController(rootView: MenuBarTip(title: title, message: message, link: link) { tip.performClose(nil) })
         tip.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
     }
 }
 
-/// "Paws Off lives here" bubble, shown once under the menu bar paw.
+/// A small bubble under the menu bar paw: "Paws Off lives here" once, and "Updated to …" after an update.
 struct MenuBarTip: View {
+    var title: String
+    var message: String
+    var link: URL?
     var dismiss: () -> Void
 
     var body: some View {
@@ -148,14 +169,17 @@ struct MenuBarTip: View {
             HStack(spacing: 8) {
                 Image(systemName: "pawprint.fill")
                     .foregroundStyle(LinearGradient(colors: Palette.idle, startPoint: .topLeading, endPoint: .bottomTrailing))
-                Text("Paws Off lives here")
+                Text(title)
                     .font(.system(size: 13, weight: .bold, design: .rounded))
             }
-            Text("Click the paw to lock your keyboard. Right-click for quick actions.")
+            Text(message)
                 .font(.system(size: 12, design: .rounded))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             HStack {
+                if let link {
+                    Button("What's New") { NSWorkspace.shared.open(link); dismiss() }
+                }
                 Spacer()
                 Button("Got it", action: dismiss)
                     .keyboardShortcut(.defaultAction)

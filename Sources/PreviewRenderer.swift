@@ -26,6 +26,11 @@ enum PreviewRenderer {
                 .environment(\.colorScheme, scheme)
                 .environment(\.isPreviewRender, true)
             write(settings, to: dir.appendingPathComponent("\(theme)-\(count + 1)-settings.png"))
+            let updated = MenuBarTip(title: "Updated to Paws Off 2.0.2", message: "Paws Off updated itself. See what's new on the release page.",
+                                     link: URL(string: "https://github.com"), dismiss: {})
+                .background(scheme == .dark ? Color(white: 0.17) : Color(white: 0.97))
+                .environment(\.colorScheme, scheme)
+            write(updated, to: dir.appendingPathComponent("\(theme)-\(count + 3)-updated-note.png"))
         }
         print("Rendered previews to \(dir.path)")
     }

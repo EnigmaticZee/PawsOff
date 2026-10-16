@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -67,6 +68,18 @@ namespace PawsOff
                     "Open Paws Off's settings to update.", () => { ShowWindow(); window.Card.OpenSettings(); });
             };
             _ = Updater.CheckAsync(settings);
+
+            // After Paws Off has updated itself, say so once. Versions before 2.0.2 didn't record the
+            // version, but their update checks left a timestamp.
+            string current = Updater.Current.ToString(), previous = settings.LastRunVersion;
+            settings.LastRunVersion = current;
+            if (previous.Length == 0 && settings.LastUpdateCheck != default(DateTime)) previous = "earlier";
+            if (previous.Length > 0 && previous != current)
+            {
+                settings.ShownTrayTip = true;
+                tray.Announce($"Updated to Paws Off {current}", "Paws Off updated itself. Click to see what's new.",
+                    () => Process.Start(new ProcessStartInfo($"https://github.com/EnigmaticZee/PawsOff/releases/tag/v{current}") { UseShellExecute = true }));
+            }
 
             // The first time Paws Off starts in the tray, say where it lives.
             if (!args.Contains("--minimized") && !settings.IsFirstRun && settings.StartIn == StartPlace.Tray && !settings.ShownTrayTip)

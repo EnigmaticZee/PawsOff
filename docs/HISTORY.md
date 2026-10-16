@@ -1,5 +1,9 @@
 # Version history
 
+## 2.0.2 — 2026-10-15
+- After Paws Off updates itself, a small note under the menu bar paw (Mac) or by the tray icon (Windows)
+  says which version you're on now, with a link to what's new.
+
 ## 2.0.1 — 2026-10-15
 - **Updates now install on their own.** Paws Off checks shortly after it starts and about once a day,
   downloads new versions quietly and installs them (it restarts in a moment), never while your keyboard

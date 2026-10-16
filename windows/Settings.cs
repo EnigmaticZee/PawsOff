@@ -116,6 +116,17 @@ namespace PawsOff
             set => Save("ShownTrayTip", value ? 1 : 0);
         }
 
+        /// The version that ran last time, to say "Updated to …" once after an update. Empty before 2.0.2.
+        public string LastRunVersion
+        {
+            get
+            {
+                using (var key = Registry.CurrentUser.OpenSubKey(KeyPath))
+                    return key?.GetValue("LastRunVersion") as string ?? "";
+            }
+            set => Save("LastRunVersion", value ?? "");
+        }
+
         /// So each new version is announced in the tray only once.
         public string LastAnnouncedVersion
         {
