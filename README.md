@@ -213,7 +213,7 @@ dotnet publish windows/PawsOff.csproj -c Release -o out
 | `Vendor/Sparkle/` | [Sparkle](https://sparkle-project.org) 2.10.0, the Mac updater (MIT). |
 | `.github/workflows/build.yml` | Builds both apps on every push; publishes a Release (with the Sparkle appcast) when a `v*` tag is pushed. |
 | `packaging/winget/`, `Tools/winget-submit.sh` | winget manifests and the script that submits a release. Homebrew: [EnigmaticZee/homebrew-tap](https://github.com/EnigmaticZee/homebrew-tap). |
-| `Tools/` | Icon, installer art, DMG and README art generators. |
+| `Tools/` | Icon, installer art, DMG, README art and in-app release notes generators. |
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | **Rules to read before changing code.** |
 | [`docs/HISTORY.md`](docs/HISTORY.md) | Version history. |
 

@@ -1,41 +1,65 @@
 # Version history
 
+## 2.0.5 — 2026-10-15
+Release notes got a glow-up. You're looking at it.
+
+- **Notes, right in the update window.** This box used to load an entire GitHub page, sign-in button
+  and all, then leave you to scroll for the good bit. Now it shows just what changed, in light or dark
+  to match your Mac.
+- **Written by humans, for humans.** No "bug fixes and performance improvements" here, ever. If
+  something changed, we'll tell you what, and probably make a cat joke about it.
+
 ## 2.0.4 — 2026-10-15
-- Mac: clicking the menu bar paw again now closes its panel, like other menu bar items.
-- Mac: the panel always opens on the main screen, even if you left it in Settings.
+Two small fixes, both found the best way: by actually clicking things.
+
+- **Click the paw to open. Click it again to close.** Revolutionary, we know. Before, the second
+  click closed the panel and reopened it in the same breath, like a cat that can't decide which
+  side of the door it wants.
+- **The panel always opens on the main screen.** Left it in Settings? It used to wait there for you.
+  Now it tidies up behind itself.
 
 ## 2.0.3 — 2026-10-15
-- **A new app icon:** a coral key with a white paw, on a clean white tile.
-- Mac: the menu bar panel now drops down from the paw like the system's own panels, without the
-  little arrow.
-- Mac: the "Updated to …" note and the first-time tip now open right under the menu bar paw.
+New face, same paws.
+
+- **A new app icon:** one coral key, one white paw, on a clean white tile. No gradients were harmed
+  in the making of it (they were all let go).
+- **Mac: the panel drops straight down from the paw**, just like the system's own menu bar panels.
+  The little pointy arrow has retired with full honours.
+- **Mac: notes show up where you'd look.** "Updated to…" and the first-time tip now open right
+  under the paw, instead of wherever they fancied.
 
 ## 2.0.2 — 2026-10-15
-- After Paws Off updates itself, a small note under the menu bar paw (Mac) or by the tray icon (Windows)
-  says which version you're on now, with a link to what's new.
+Paws Off now tells you when it has updated itself. Quietly, and only once.
+
+- **A small "Updated to…" note** appears under the menu bar paw (Mac) or by the tray icon (Windows)
+  after an update, with a link to what's new. If you're reading this, it probably worked. Hi. 👋
 
 ## 2.0.1 — 2026-10-15
-- **Updates now install on their own.** Paws Off checks shortly after it starts and about once a day,
-  downloads new versions quietly and installs them (it restarts in a moment), never while your keyboard
-  is locked. Turn this off in Settings.
-- Mac: the menus at the top of the screen (Paws Off, Edit, Window) now open when you bring up the
-  window from the menu bar.
-- Mac: the menu bar panel follows your Appearance choice (Light, Dark or Auto), just like the window.
+Updates now take care of themselves.
+
+- **Updates install on their own.** Paws Off checks shortly after it starts and about once a day,
+  downloads quietly, installs, and is back in a blink. Never while your keyboard is locked. Rather do
+  it yourself? Turn it off in **Settings → Updates**.
+- **Mac: the menus at the top of the screen work again** when you open the window from the menu bar.
+  Before, they were purely decorative.
+- **Mac: the menu bar panel follows your Appearance choice.** Pick Light and it stays light, instead
+  of copying the menu bar's mood.
 
 ## 2.0.0 — 2026-10-15
-- **Paws Off now lives in your menu bar (Mac) and system tray (Windows).** Click the paw for a compact
-  panel with everything in it; right-click for quick actions: lock for cleaning, lock while away,
-  unlock, open the window or quit.
-- **A smaller window**, showing the same compact card. Choose **Start in → Menu bar / Tray** (the
-  default) or **Window** in Settings.
-- **Settings now open inside the card**, at the same size, with one tidy row per setting.
-- **Automatic updates** on both platforms: Paws Off checks for new versions about once a day and
-  installs them for you. You can turn this off in Settings.
-- **Windows: paw stats** (rotating one-liners, kept on your PC) and the **custom timer** (No timer,
-  2 min or any length from 2:01), matching the Mac.
+Paws Off moved into your menu bar. It's cosier up there.
+
+- **It lives in your menu bar (Mac) and system tray (Windows).** Click the paw for a compact panel
+  with everything in it. Right-click for the speedy stuff: lock for cleaning, lock while away,
+  unlock, open the window, quit.
+- **A smaller window**, if you like windows. It's the same compact card. Choose **Start in → Menu bar
+  / Tray** (the default) or **Window** in Settings.
+- **Settings open inside the card**, at the same size, one tidy row each. No more settings bigger than
+  the app they're setting.
+- **Automatic updates** on both platforms, so you'll never miss a paw-sitive change.
+- **Windows caught up:** paw stats (rotating one-liners, kept on your PC) and the custom timer (No
+  timer, 2 min, or any length from 2:01), just like the Mac.
 - **Install with Homebrew** on Mac: `brew install --cask enigmaticzee/tap/paws-off`.
-- A one-time tip shows where Paws Off lives the first time it starts in the menu bar or tray.
-- **A new app icon:** a white key with a paw on it, in Paws Off's coral-to-violet, on Mac and Windows.
+- **A one-time tip** shows where Paws Off is hiding the first time it starts in the menu bar or tray.
 
 ## 1.6.0 — 2026-10-15
 - **Mac: your paw stats.** Paws Off keeps lifetime totals on your Mac (never sent anywhere) and shows

@@ -83,8 +83,17 @@ Read `README.md` first, then these rules before changing anything.
   into `Assets/installer`. The DMG layout lives in `Tools/dmg-settings.py`. The Windows wizard is
   `windows/installer/PawsOff.iss`; CI screenshots it and tests a silent install and uninstall.
 - README images come from `Tools/make-readme-art.sh` (Mac) and the `windows-previews` artifact (Windows).
-- `docs/HISTORY.md` entries are published verbatim as the release notes, so write them for users: what
-  changed for them, no build or tooling details.
+- `docs/HISTORY.md` entries are the release notes, everywhere: the GitHub release page and, through
+  `Tools/release-notes-html.py`, the Mac update window (carried inside the appcast, so it never loads
+  a web page). Check one with `python3 Tools/release-notes-html.py <version>`.
+- **Release-notes voice.** Write like a friend who's a little proud of the work:
+  - Open with one short line that sets the mood ("New face, same paws.").
+  - Each bullet leads with **what changed, in bold**, then one or two sentences on why it's nicer.
+  - Be specific. "Bug fixes and improvements" is banned; if it's not worth describing, leave it out.
+  - Humour comes from the product: cats, paws, keyboards, the little dramas of a menu bar. Never at
+    the user's expense, never at the cost of clarity. One emoji per release at most.
+  - Write for users only: no build, CI or tooling details. Mark platform-specific bullets "Mac:" or
+    "Windows:".
 - **Releasing:** `./build.sh <version>` (writes `VERSION`, which both apps read), log it in
   `docs/HISTORY.md`, commit, tag `vX.Y.Z`, push the tag. The `release` job publishes the DMG, the
   Windows installer and the appcast. Then submit to winget: `Tools/winget-submit.sh <version>`.
