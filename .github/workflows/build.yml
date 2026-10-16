@@ -73,6 +73,9 @@ jobs:
         run: |
           $p = Start-Process -FilePath out/PawsOff.exe -ArgumentList '--render-previews', "$PWD\previews" -PassThru -Wait
           if ($p.ExitCode -ne 0) { throw "Preview render failed with exit code $($p.ExitCode)" }
+      - name: Hands-on test (lock, block typing, unlock, health)
+        shell: powershell
+        run: .github/scripts/windows-hands-on.ps1 -Exe out\PawsOff.exe
       - name: Build installer
         shell: pwsh
         run: |
@@ -142,6 +145,12 @@ jobs:
           name: windows-previews
           path: previews
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-hands-on
+          path: hands-on
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: always()
         with:

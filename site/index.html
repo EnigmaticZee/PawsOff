@@ -48,6 +48,12 @@
   .cmd button { flex: none; border: 0; border-radius: 8px; background: var(--coral); color: #fff; font: 600 13px/1 inherit; padding: 9px 12px; cursor: pointer; }
   .hint { color: var(--soft); font-size: 14px; margin: 12px 4px 0; }
   .meta { color: var(--soft); font-size: 14px; margin-top: 14px; text-align: center; }
+  .downloads { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
+  .dl { display: inline-flex; align-items: center; gap: 8px; padding: 12px 18px; border-radius: 12px; font-weight: 650; font-size: 15px;
+    background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+  .dl:hover { text-decoration: none; border-color: var(--coral); }
+  .dl small { color: var(--soft); font-weight: 500; }
+  .or { color: var(--soft); font-size: 14px; margin-top: 22px; text-align: center; }
 
   .hero { margin: 36px auto 0; }
   .hero img { width: 100%; height: auto; display: block; border-radius: 22px; }
@@ -93,17 +99,23 @@
       </div>
       <div class="panel" id="p-mac" role="tabpanel">
         <div class="cmd"><code>curl -fsSL https://enigmaticzee.github.io/PawsOff/install.sh | bash</code><button>Copy</button></div>
-        <p class="hint">Paste into Terminal. It installs Paws Off into Applications and opens it, without the "Open Anyway" step (it isn't notarized by Apple yet). Prefer clicking? <a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg">Download the .dmg</a> and follow <a href="https://github.com/EnigmaticZee/PawsOff#-mac">these steps</a>. <a href="install.sh">See what the command does</a>.</p>
+        <p class="hint">Paste into Terminal. It installs Paws Off into Applications and opens it, without the "Open Anyway" step (it isn't notarized by Apple yet). <a href="install.sh">See what the command does</a>.</p>
       </div>
       <div class="panel" id="p-win" role="tabpanel" hidden>
         <div class="cmd"><code>irm https://enigmaticzee.github.io/PawsOff/install.ps1 | iex</code><button>Copy</button></div>
-        <p class="hint">Paste into PowerShell. It installs Paws Off just for you (no admin rights) and starts it. Prefer clicking? <a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Setup.exe">Download the installer</a> (if SmartScreen appears: More info → Run anyway). <a href="install.ps1">See what the command does</a>.</p>
+        <p class="hint">Paste into PowerShell. It installs Paws Off just for you (no admin rights) and starts it, without the SmartScreen warning. <a href="install.ps1">See what the command does</a>.</p>
       </div>
       <div class="panel" id="p-brew" role="tabpanel" hidden>
         <div class="cmd"><code>brew install --cask enigmaticzee/tap/paws-off</code><button>Copy</button></div>
         <p class="hint">Then open Paws Off once from Applications and click <strong>Open Anyway</strong> in System Settings → Privacy &amp; Security. Paws Off updates itself after that.</p>
       </div>
     </div>
+    <p class="or">or download it</p>
+    <div class="downloads">
+      <a class="dl" href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg">⬇ Download for Mac <small>.dmg</small></a>
+      <a class="dl" href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Setup.exe">⬇ Download for Windows <small>.exe</small></a>
+    </div>
+    <p class="hint" style="text-align:center">Downloaded copies ask you to confirm once: on a Mac, <strong>System Settings → Privacy &amp; Security → Open Anyway</strong>; on Windows, <strong>More info → Run anyway</strong>. <a href="https://github.com/EnigmaticZee/PawsOff#-install">Step-by-step</a></p>
     <p class="meta">Free and open source · macOS 14+ (Apple Silicon &amp; Intel) · Windows 10 &amp; 11</p>
   </header>
 
