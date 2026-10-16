@@ -1,5 +1,5 @@
 // Draws the installer artwork: the Mac DMG window background and the Windows installer wizard images.
-// Usage: swift Tools/make-installer-art.swift <out-dir>
+// Usage (from the repo root, after the icon is built): swift Tools/make-installer-art.swift <out-dir>
 // Writes dmg-background.png + dmg-background@2x.png (660x400 window) and the Inno Setup wizard
 // bitmaps (wizard-large-*.bmp, wizard-small-*.bmp). Colours mirror Palette (light look).
 import AppKit
@@ -41,12 +41,12 @@ func text(_ s: String, _ font: NSFont, _ color: NSColor, centerX: CGFloat, y: CG
     (s as NSString).draw(at: NSPoint(x: centerX - size.width / 2, y: y), withAttributes: attrs)
 }
 
-func paw(in rect: NSRect, color: NSColor) {
-    let config = NSImage.SymbolConfiguration(pointSize: rect.height, weight: .regular).applying(.init(paletteColors: [color]))
-    if let sym = NSImage(systemSymbolName: "pawprint.fill", accessibilityDescription: nil)?.withSymbolConfiguration(config) {
-        let s = sym.size, k = min(rect.width / s.width, rect.height / s.height)
-        sym.draw(in: NSRect(x: rect.midX - s.width * k / 2, y: rect.midY - s.height * k / 2, width: s.width * k, height: s.height * k))
-    }
+/// The app icon (Assets/AppIcon.icns, from Tools/make-icon.swift). Its artwork fills 824/1024 of the
+/// image, so `rect` is grown to make the visible tile fill it.
+let appIcon = NSImage(contentsOfFile: "Assets/AppIcon.icns")!
+func icon(in rect: NSRect) {
+    let grow = rect.width * (1024.0 / 824.0 - 1) / 2
+    appIcon.draw(in: rect.insetBy(dx: -grow, dy: -grow), from: .zero, operation: .sourceOver, fraction: 1)
 }
 
 func brandBackground(_ rect: NSRect) {
@@ -84,14 +84,14 @@ for scale in [1, 2] as [CGFloat] {
     let rep = render(dmgW, dmgH, scale: scale) {
         brandBackground(NSRect(x: 0, y: 0, width: dmgW, height: dmgH))
 
-        // Title block: paw + name, centred as one unit
+        // Title block: icon + name, centred as one unit
         let title = "Paws Off"
         let titleFont = rounded(22, .bold)
         let tw = (title as NSString).size(withAttributes: [.font: titleFont]).width
-        let pawSize: CGFloat = 20, gap: CGFloat = 8
-        let left = dmgW / 2 - (pawSize + gap + tw) / 2
-        paw(in: NSRect(x: left, y: dmgH - 61, width: pawSize, height: pawSize), color: violet)
-        (title as NSString).draw(at: NSPoint(x: left + pawSize + gap, y: dmgH - 65), withAttributes: [.font: titleFont, .foregroundColor: ink])
+        let iconSize: CGFloat = 26, gap: CGFloat = 9
+        let left = dmgW / 2 - (iconSize + gap + tw) / 2
+        icon(in: NSRect(x: left, y: dmgH - 64, width: iconSize, height: iconSize))
+        (title as NSString).draw(at: NSPoint(x: left + iconSize + gap, y: dmgH - 65), withAttributes: [.font: titleFont, .foregroundColor: ink])
         text("Drag the app into Applications to install", rounded(13, .medium), ink.withAlphaComponent(0.6), centerX: dmgW / 2, y: dmgH - 92)
 
         // Arrow between the two icons (icon centres at x = 170 and 490, y = 200 from top)
@@ -138,14 +138,9 @@ func wizardLarge(_ w: CGFloat, _ h: CGFloat) {
     NSGradient(colors: [rgb(0.13, 0.11, 0.20), rgb(0.06, 0.06, 0.10)])!.draw(in: rect, angle: -90)
     glow(coral, NSPoint(x: w * 0.1, y: h * 0.85), w * 1.0, 0.45)
     glow(violet, NSPoint(x: w * 0.95, y: h * 0.25), w * 1.1, 0.45)
-    // Gradient disc with a white paw, like the app's big button
-    let d = w * 0.62, cx = w / 2, cy = h * 0.58
-    let disc = NSBezierPath(ovalIn: NSRect(x: cx - d / 2, y: cy - d / 2, width: d, height: d))
-    NSGradient(starting: coral, ending: violet)!.draw(in: disc, angle: -45)
-    let inner = NSBezierPath(ovalIn: NSRect(x: cx - d * 0.41, y: cy - d * 0.41, width: d * 0.82, height: d * 0.82))
-    rgb(0.10, 0.08, 0.16, 0.30).setFill()
-    inner.fill()
-    paw(in: NSRect(x: cx - d * 0.2, y: cy - d * 0.2, width: d * 0.4, height: d * 0.4), color: .white)
+    // The app icon
+    let d = w * 0.56, cx = w / 2, cy = h * 0.58
+    icon(in: NSRect(x: cx - d / 2, y: cy - d / 2, width: d, height: d))
     text("Paws Off", rounded(w * 0.125, .bold), .white, centerX: cx, y: h * 0.25)
     text("Made by Zaid", rounded(w * 0.06, .medium), NSColor.white.withAlphaComponent(0.6), centerX: cx, y: h * 0.19)
 }
@@ -154,9 +149,7 @@ func wizardSmall(_ s: CGFloat) {
     let rect = NSRect(x: 0, y: 0, width: s, height: s)
     NSColor.white.setFill()
     rect.fill()
-    let disc = NSBezierPath(ovalIn: rect.insetBy(dx: s * 0.06, dy: s * 0.06))
-    NSGradient(starting: coral, ending: violet)!.draw(in: disc, angle: -45)
-    paw(in: rect.insetBy(dx: s * 0.28, dy: s * 0.28), color: .white)
+    icon(in: rect.insetBy(dx: s * 0.08, dy: s * 0.08))
 }
 
 // Modern wizard image is 202x386 at 100% DPI; small image 64x64. Extra sizes for 150% and 200%.

@@ -13,6 +13,7 @@
   2 min or any length from 2:01), matching the Mac.
 - **Install with Homebrew** on Mac: `brew install --cask enigmaticzee/tap/paws-off`.
 - A one-time tip shows where Paws Off lives the first time it starts in the menu bar or tray.
+- **A new app icon:** a white key with a paw on it, in Paws Off's coral-to-violet, on Mac and Windows.
 
 ## 1.6.0 — 2026-10-15
 - **Mac: your paw stats.** Paws Off keeps lifetime totals on your Mac (never sent anywhere) and shows

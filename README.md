@@ -199,7 +199,8 @@ git clone https://github.com/EnigmaticZee/PawsOff.git && cd PawsOff
 # Mac (needs the Xcode command line tools: xcode-select --install)
 ./build.sh && open "Paws Off.app"   # build and run
 Tools/make-dmg.sh                    # universal app + dist/PawsOff-mac.dmg (needs: pip install dmgbuild)
-Tools/make-readme-art.sh             # refresh the images in this README
+Tools/make-icons.sh                  # redraw the app icon everywhere (Mac, Windows, installers, README)
+Tools/make-readme-art.sh             # refresh the screenshots in this README
 
 # Windows (needs the .NET SDK, run on Windows)
 dotnet publish windows/PawsOff.csproj -c Release -o out

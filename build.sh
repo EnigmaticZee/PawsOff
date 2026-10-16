@@ -30,7 +30,7 @@ lipo -create $SLICES -output "$APP/Contents/MacOS/PawsOff"
 mkdir -p "$APP/Contents/Frameworks"
 ditto Vendor/Sparkle/Sparkle.framework "$APP/Contents/Frameworks/Sparkle.framework"
 
-# Icon is committed in Assets/; regenerate it with Tools/make-icon.swift (see README).
+# Icon is committed in Assets/; regenerate every copy with Tools/make-icons.sh.
 cp Assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
