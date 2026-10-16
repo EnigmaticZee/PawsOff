@@ -110,8 +110,9 @@ func mockButton(_ label: String, at origin: NSPoint, filled: Bool = false) -> CG
     return w
 }
 
-func drawDMG(width dmgW: CGFloat, height dmgH: CGFloat, guide: Bool) {
-    let dx = (dmgW - 660) / 2 // the icons and arrow stay centred in a wider window
+let dmgW: CGFloat = 660
+
+func drawDMG(height dmgH: CGFloat, guide: Bool) {
     brandBackground(NSRect(x: 0, y: 0, width: dmgW, height: dmgH))
 
     // Title block: icon + name, centred as one unit
@@ -127,12 +128,12 @@ func drawDMG(width dmgW: CGFloat, height dmgH: CGFloat, guide: Bool) {
     // Arrow between the two icons (icon centres at x = 170 and 490, y = 200 from top)
     let y = dmgH - 200
     let shaft = NSBezierPath()
-    shaft.move(to: NSPoint(x: 262 + dx, y: y))
-    shaft.line(to: NSPoint(x: 392 + dx, y: y))
+    shaft.move(to: NSPoint(x: 262, y: y))
+    shaft.line(to: NSPoint(x: 392, y: y))
     let head = NSBezierPath()
-    head.move(to: NSPoint(x: 380 + dx, y: y + 11))
-    head.line(to: NSPoint(x: 394 + dx, y: y))
-    head.line(to: NSPoint(x: 380 + dx, y: y - 11))
+    head.move(to: NSPoint(x: 380, y: y + 11))
+    head.line(to: NSPoint(x: 394, y: y))
+    head.line(to: NSPoint(x: 380, y: y - 11))
     let outline = NSBezierPath()
     outline.append(shaft)
     outline.append(head)
@@ -143,7 +144,7 @@ func drawDMG(width dmgW: CGFloat, height dmgH: CGFloat, guide: Bool) {
         ctx.addPath(outline.cgPath)
         ctx.replacePathWithStrokedPath()
         ctx.clip()
-        NSGradient(starting: coral, ending: violet)!.draw(in: NSRect(x: 255 + dx, y: y - 14, width: 145, height: 28), angle: 0)
+        NSGradient(starting: coral, ending: violet)!.draw(in: NSRect(x: 255, y: y - 14, width: 145, height: 28), angle: 0)
         ctx.restoreGState()
     }
     guard guide else { return }
@@ -189,9 +190,9 @@ func drawDMG(width dmgW: CGFloat, height dmgH: CGFloat, guide: Bool) {
 
 }
 
-for (name, width, height, guide) in [("dmg-background", 660, 596, true), ("dmg-background-notarized", 660, 400, false)] as [(String, CGFloat, CGFloat, Bool)] {
+for (name, height, guide) in [("dmg-background", 596, true), ("dmg-background-notarized", 400, false)] as [(String, CGFloat, Bool)] {
     for scale in [1, 2] as [CGFloat] {
-        save(render(width, height, scale: scale) { drawDMG(width: width, height: height, guide: guide) }, scale == 1 ? "\(name).png" : "\(name)@2x.png")
+        save(render(dmgW, height, scale: scale) { drawDMG(height: height, guide: guide) }, scale == 1 ? "\(name).png" : "\(name)@2x.png")
     }
 }
 

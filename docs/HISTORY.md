@@ -1,5 +1,11 @@
 # Version history
 
+## 2.0.9 — 2026-10-15
+Spring cleaning, behind the scenes.
+
+- **A tidy-up of the tools that build the installers.** Nothing looks or works differently for you;
+  we just swept up after ourselves. Your keyboard is exactly as safe as it was in 2.0.8. 🧹
+
 ## 2.0.8 — 2026-10-15
 Room to breathe.
 
