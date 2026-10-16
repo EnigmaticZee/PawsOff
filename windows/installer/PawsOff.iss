@@ -56,7 +56,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Messages]
 WelcomeLabel1=Welcome to Paws Off
-WelcomeLabel2=Pause your keyboard with one click, so you can wipe it down without typing gibberish, or step away without your cat writing your emails.%n%nSetup will install Paws Off [ver] for you. It takes a few seconds and doesn't need admin rights.
+WelcomeLabel2=Pause your keyboard with one click, so you can wipe it down without typing gibberish, or step away without your cat writing your emails.%n%nSetup will install Paws Off {#AppVersion} for you. It takes a few seconds and doesn't need admin rights.
 FinishedHeadingLabel=Paws Off is ready
 FinishedLabel=Paws Off lives in your system tray. Press Ctrl+Alt+Shift+L in any app to lock or unlock the keyboard.
 ClickFinish=Click Finish to close Setup.

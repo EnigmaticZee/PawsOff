@@ -1,6 +1,6 @@
 # Version history
 
-## Unreleased
+## 2.0.0 — 2026-10-15
 - **Paws Off now lives in your menu bar (Mac) and system tray (Windows).** Click the paw for a compact
   panel with everything in it; right-click for quick actions: lock for cleaning, lock while away,
   unlock, open the window or quit.
