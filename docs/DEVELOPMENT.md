@@ -83,6 +83,13 @@ Read `README.md` first, then these rules before changing anything.
   into `Assets/installer`. The DMG layout lives in `Tools/dmg-settings.py`. The Windows wizard is
   `windows/installer/PawsOff.iss`; CI screenshots it and tests a silent install and uninstall.
 - README images come from `Tools/make-readme-art.sh` (Mac) and the `windows-previews` artifact (Windows).
+- **Website and one-line installers** live in `site/` and publish to GitHub Pages
+  (https://enigmaticzee.github.io/PawsOff/) via `.github/workflows/site.yml`, which copies in the
+  README images. `install.sh` / `install.ps1` always fetch the latest release; downloads made with
+  curl / Invoke-WebRequest carry no "downloaded from the internet" mark, so they open without the
+  Gatekeeper / SmartScreen prompt. `.github/workflows/installers.yml` runs both on clean machines.
+  Public copy is for first-time visitors: describe what the app does today.
+- Before a launch or big release, hand-test with `docs/TESTING.md`.
 - `docs/HISTORY.md` entries are the release notes, everywhere: the GitHub release page and, through
   `Tools/release-notes-html.py`, the Mac update window (carried inside the appcast, so it never loads
   a web page). Check one with `python3 Tools/release-notes-html.py <version>`.

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paws Off: pause your keyboard with one click</title>
+<meta name="description" content="Free for Mac and Windows. Wipe your keyboard without typing gibberish, or step away without your cat writing your emails.">
+<meta property="og:title" content="Paws Off">
+<meta property="og:description" content="Pause your keyboard with one click. Free for Mac and Windows.">
+<meta property="og:image" content="https://enigmaticzee.github.io/PawsOff/og.png">
+<meta property="og:url" content="https://enigmaticzee.github.io/PawsOff/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="images/icon.png">
+<style>
+  :root {
+    --bg: #f7f5f2; --surface: #ffffff; --ink: #1b1726; --soft: #6b6478; --line: rgba(27, 23, 38, .09);
+    --coral: #e8573f; --coral-soft: rgba(244, 110, 88, .12); --code: #1b1726; --code-ink: #f3f0f8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #16131d; --surface: #211d2b; --ink: #f3f0f8; --soft: #a49db2; --line: rgba(255, 255, 255, .1);
+      --coral: #ff8a72; --coral-soft: rgba(255, 138, 114, .14); --code: #0e0c13; --code-ink: #f3f0f8; }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  h1, h2, h3, .brand { font-family: ui-rounded, "SF Pro Rounded", -apple-system, "Segoe UI", system-ui, sans-serif; letter-spacing: -.01em; }
+  a { color: var(--coral); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; color: var(--ink); }
+  .brand img { width: 30px; height: 30px; }
+  nav a.gh { color: var(--soft); font-weight: 600; font-size: 15px; }
+
+  header { text-align: center; padding: 48px 0 28px; }
+  header img.icon { width: 120px; height: 120px; }
+  h1 { font-size: clamp(36px, 6vw, 60px); line-height: 1.04; font-weight: 900; margin: 18px 0 14px; }
+  .lede { font-size: clamp(17px, 2.2vw, 21px); color: var(--soft); max-width: 620px; margin: 0 auto; }
+
+  .install { max-width: 640px; margin: 34px auto 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 18px; text-align: left; }
+  .tabs { display: flex; gap: 6px; background: var(--line); padding: 4px; border-radius: 999px; width: max-content; max-width: 100%; margin: 0 auto 16px; }
+  .tabs button { border: 0; background: none; color: var(--soft); font: 600 15px/1 inherit; padding: 9px 16px; border-radius: 999px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+  .panel[hidden] { display: none; }
+  .cmd { display: flex; align-items: center; gap: 10px; background: var(--code); color: var(--code-ink); border-radius: 12px; padding: 12px 12px 12px 16px; }
+  .cmd code { flex: 1; font: 14px/1.4 ui-monospace, Menlo, Consolas, monospace; overflow-x: auto; white-space: nowrap; }
+  .cmd button { flex: none; border: 0; border-radius: 8px; background: var(--coral); color: #fff; font: 600 13px/1 inherit; padding: 9px 12px; cursor: pointer; }
+  .hint { color: var(--soft); font-size: 14px; margin: 12px 4px 0; }
+  .meta { color: var(--soft); font-size: 14px; margin-top: 14px; text-align: center; }
+
+  .hero { margin: 36px auto 0; }
+  .hero img { width: 100%; height: auto; display: block; border-radius: 22px; }
+
+  section { padding: 72px 0 0; }
+  h2 { font-size: clamp(28px, 4vw, 38px); font-weight: 800; text-align: center; margin: 0 0 10px; }
+  .sub { text-align: center; color: var(--soft); margin: 0 auto 34px; max-width: 560px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+  .card .tile { width: 40px; height: 40px; border-radius: 12px; background: var(--coral-soft); display: grid; place-items: center; font-size: 20px; }
+  .card h3 { font-size: 19px; margin: 14px 0 6px; }
+  .card p { margin: 0; color: var(--soft); font-size: 15.5px; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; }
+  .split img { width: 100%; height: auto; border-radius: 18px; }
+  .split ul { padding-left: 0; list-style: none; margin: 0; }
+  .split li { position: relative; padding: 0 0 14px 24px; color: var(--soft); }
+  .split li strong { color: var(--ink); }
+  .split li::before { content: ""; position: absolute; left: 4px; top: .65em; width: 8px; height: 8px; border-radius: 4px; background: var(--coral); }
+  @media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+
+  footer { text-align: center; color: var(--soft); font-size: 14px; padding: 72px 0 48px; }
+  footer a { color: var(--soft); text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <span class="brand"><img src="images/icon.png" alt="">Paws Off</span>
+    <a class="gh" href="https://github.com/EnigmaticZee/PawsOff">GitHub</a>
+  </nav>
+
+  <header>
+    <img class="icon" src="images/icon.png" alt="Paws Off icon">
+    <h1>Pause your keyboard<br>with one click.</h1>
+    <p class="lede">Wipe it down without typing gibberish, or step away without your cat writing your emails. Free for Mac and Windows.</p>
+
+    <div class="install">
+      <div class="tabs" role="tablist">
+        <button role="tab" id="t-mac" aria-controls="p-mac">Mac</button>
+        <button role="tab" id="t-win" aria-controls="p-win">Windows</button>
+        <button role="tab" id="t-brew" aria-controls="p-brew">Homebrew</button>
+      </div>
+      <div class="panel" id="p-mac" role="tabpanel">
+        <div class="cmd"><code>curl -fsSL https://enigmaticzee.github.io/PawsOff/install.sh | bash</code><button>Copy</button></div>
+        <p class="hint">Paste into Terminal. It installs Paws Off into Applications and opens it, without the "Open Anyway" step (it isn't notarized by Apple yet). Prefer clicking? <a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg">Download the .dmg</a> and follow <a href="https://github.com/EnigmaticZee/PawsOff#-mac">these steps</a>. <a href="install.sh">See what the command does</a>.</p>
+      </div>
+      <div class="panel" id="p-win" role="tabpanel" hidden>
+        <div class="cmd"><code>irm https://enigmaticzee.github.io/PawsOff/install.ps1 | iex</code><button>Copy</button></div>
+        <p class="hint">Paste into PowerShell. It installs Paws Off just for you (no admin rights) and starts it. Prefer clicking? <a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Setup.exe">Download the installer</a> (if SmartScreen appears: More info → Run anyway). <a href="install.ps1">See what the command does</a>.</p>
+      </div>
+      <div class="panel" id="p-brew" role="tabpanel" hidden>
+        <div class="cmd"><code>brew install --cask enigmaticzee/tap/paws-off</code><button>Copy</button></div>
+        <p class="hint">Then open Paws Off once from Applications and click <strong>Open Anyway</strong> in System Settings → Privacy &amp; Security. Paws Off updates itself after that.</p>
+      </div>
+    </div>
+    <p class="meta">Free and open source · macOS 14+ (Apple Silicon &amp; Intel) · Windows 10 &amp; 11</p>
+  </header>
+
+  <div class="hero">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="images/hero-dark.png">
+      <img src="images/hero-light.png" alt="Paws Off: ready to clean, locked with a timer running, and after catching a paw" width="1600" height="896">
+    </picture>
+  </div>
+
+  <section>
+    <h2>Two modes, one click</h2>
+    <p class="sub">For cleaning your keyboard, and for leaving your computer around curious paws.</p>
+    <div class="grid">
+      <div class="card"><div class="tile">🧽</div><h3>Clean mode</h3><p>Every key ignored, even media keys. Your trackpad keeps working, so you can always click Unlock. Add a timer and it unlocks itself.</p></div>
+      <div class="card"><div class="tile">🐾</div><h3>Away mode</h3><p>Lock it and walk away. Downloads and calls keep running. Type your unlock word to get back in: pets can't spell.</p></div>
+      <div class="card"><div class="tile">🐈</div><h3>Paw detection</h3><p>Forgot to lock? If a paw lands on the keyboard, Paws Off notices the pile of held keys and locks for you.</p></div>
+      <div class="card"><div class="tile">🔓</div><h3>Never locks you out</h3><p>The keyboard comes back the moment your computer locks, sleeps or switches user, so you can always type your password.</p></div>
+      <div class="card"><div class="tile">☕️</div><h3>Out of the way</h3><p>Lives in your menu bar or system tray. Click the paw, or use the shortcut from anywhere: ⌃⌥⌘L on Mac, Ctrl+Alt+Shift+L on Windows.</p></div>
+      <div class="card"><div class="tile">🌗</div><h3>Light, dark, auto</h3><p>Follows your system, or pick a side. Updates arrive on their own, so you don't have to think about it.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Private by design</h2>
+    <p class="sub">An app that can see key presses has to earn your trust. Here's the deal.</p>
+    <div class="split">
+      <ul>
+        <li><strong>Nothing you type is stored or sent.</strong> While locked it remembers only the last few characters, just enough to spot your unlock word, and forgets them on unlock.</li>
+        <li><strong>Paw detection counts keys, never reads them.</strong> It only looks at how many keys are held, and for how long.</li>
+        <li><strong>One network request: the update check.</strong> It asks GitHub whether there's a newer version. You can turn it off.</li>
+        <li><strong>Open source.</strong> Every line is on <a href="https://github.com/EnigmaticZee/PawsOff">GitHub</a>, MIT licensed. Found a problem? See the <a href="https://github.com/EnigmaticZee/PawsOff/blob/main/SECURITY.md">security policy</a>.</li>
+      </ul>
+      <img src="images/windows.png" alt="Paws Off on Windows: the window and the tray pop-up" width="1400" height="1000">
+    </div>
+  </section>
+
+  <footer>
+    Made with 🐾 by Zaid · <a href="https://github.com/EnigmaticZee/PawsOff">GitHub</a> · <a href="https://github.com/EnigmaticZee/PawsOff/releases">What's new</a> · <a href="https://github.com/EnigmaticZee/PawsOff/blob/main/LICENSE">MIT License</a>
+  </footer>
+</div>
+<script>
+  const tabs = [...document.querySelectorAll('[role=tab]')];
+  function select(id) {
+    tabs.forEach(t => {
+      const on = t.id === id;
+      t.setAttribute('aria-selected', on);
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  tabs.forEach(t => t.addEventListener('click', () => select(t.id)));
+  select(/Windows/i.test(navigator.userAgent) ? 't-win' : 't-mac');
+  document.querySelectorAll('.cmd button').forEach(b => b.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(b.previousElementSibling.textContent); b.textContent = 'Copied'; }
+    catch { b.textContent = 'Select & copy'; }
+    setTimeout(() => (b.textContent = 'Copy'), 1600);
+  }));
+</script>
+</body>
+</html>

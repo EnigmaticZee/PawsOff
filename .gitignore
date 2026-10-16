@@ -6,3 +6,6 @@ build/
 dist/
 windows/bin/
 windows/obj/
+
+# Landing page images are copied in at deploy time (.github/workflows/site.yml)
+site/images/

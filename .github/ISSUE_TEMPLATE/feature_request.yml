@@ -1,0 +1,16 @@
+name: Idea or feature request
+description: Suggest something that would make Paws Off better.
+labels: [idea]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: Tell us the problem first (what you were trying to do), then your idea.
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options: [Mac, Windows, Both]

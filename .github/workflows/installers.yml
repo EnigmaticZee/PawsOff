@@ -1,0 +1,43 @@
+name: Installers
+# Runs the one-line installers from site/ on clean Mac and Windows machines, the way visitors do,
+# and checks Paws Off ends up installed and running. On changes to them, and weekly.
+on:
+  push:
+    paths: ["site/install.sh", "site/install.ps1", ".github/workflows/installers.yml"]
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+jobs:
+  mac:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install with the one-liner
+        run: bash site/install.sh
+      - name: Check
+        run: |
+          app="/Applications/Paws Off.app"
+          test -d "$app"
+          defaults read "$app/Contents/Info" CFBundleShortVersionString
+          if xattr "$app" | grep -q com.apple.quarantine; then echo "still quarantined"; exit 1; fi
+          sleep 3
+          pgrep -x PawsOff
+          echo "Installed and running"
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install with the one-liner
+        shell: powershell
+        run: ./site/install.ps1
+      - name: Check
+        shell: powershell
+        run: |
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs\Paws Off\PawsOff.exe'
+          if (-not (Test-Path $exe)) { throw "Not installed" }
+          (Get-Item $exe).VersionInfo.ProductVersion
+          Start-Sleep -Seconds 5
+          if (-not (Get-Process PawsOff -ErrorAction SilentlyContinue)) { throw "Not running" }
+          Write-Host 'Installed and running'

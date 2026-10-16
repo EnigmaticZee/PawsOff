@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and chat
+    url: https://github.com/EnigmaticZee/PawsOff/discussions
+    about: Ask a question, share how you use Paws Off, or show off your cat.
+  - name: Report a security problem
+    url: https://github.com/EnigmaticZee/PawsOff/security/advisories/new
+    about: Please report security issues privately, not as a public issue.

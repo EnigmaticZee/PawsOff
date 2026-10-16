@@ -20,7 +20,7 @@ Wipe it down without typing gibberish — or step away without your cat writing 
 ![Network: update checks only](https://img.shields.io/badge/network-update_checks_only-2EA44F)
 [![License: MIT](https://img.shields.io/badge/license-MIT-F2C14E)](LICENSE)
 
-[Features](#-features) · [Install](#-install) · [How it works](#-how-it-works) · [FAQ](#-faq) · [Development](#%EF%B8%8F-development)
+[Website](https://enigmaticzee.github.io/PawsOff/) · [Features](#-features) · [Install](#-install) · [How it works](#-how-it-works) · [FAQ](#-faq) · [Development](#%EF%B8%8F-development)
 
 <br>
 
@@ -95,7 +95,23 @@ For leaving your computer running near curious pets.
 
 ## 📦 Install
 
-Paws Off isn't signed with a paid Apple or Microsoft developer certificate yet, so both systems ask you to confirm the first time you open it. It's open source: you can read every line, or [build it yourself](#%EF%B8%8F-development).
+### ⚡ Quickest: one line
+
+**Mac** (paste into Terminal):
+
+```sh
+curl -fsSL https://enigmaticzee.github.io/PawsOff/install.sh | bash
+```
+
+**Windows** (paste into PowerShell):
+
+```powershell
+irm https://enigmaticzee.github.io/PawsOff/install.ps1 | iex
+```
+
+Each downloads the latest release from this page, installs it (just for you, no admin rights on Windows) and opens Paws Off, without the security prompts below. Curious what they do? Read [`install.sh`](site/install.sh) and [`install.ps1`](site/install.ps1); they're short. On a Mac, click **Grant Access** once to let it pause your keyboard.
+
+Paws Off isn't signed with a paid Apple or Microsoft developer certificate yet, so if you download it the usual way, both systems ask you to confirm the first time you open it. It's open source: you can read every line, or [build it yourself](#%EF%B8%8F-development).
 
 ### 🍎 Mac
 
@@ -122,7 +138,7 @@ xattr -dr com.apple.quarantine "/Applications/Paws Off.app"
 <summary>The Accessibility switch is on, but nothing gets locked</summary>
 <br>
 
-Open the Paws Off window and click **Already switched on? Reset and ask again**. This clears an old permission, for example one left by an earlier version, and asks again.
+Open the Paws Off window and click **Already switched on? Reset and ask again**. This clears a stuck permission (it can happen after moving or reinstalling the app) and asks again.
 
 </details>
 
@@ -167,9 +183,15 @@ Then do steps 2–4 above once: open the app, click **Open Anyway**, and give it
 ## ❓ FAQ
 
 <details>
-<summary><b>Where did the window go?</b></summary>
+<summary><b>Is this a keylogger?</b></summary>
 <br>
-Paws Off starts in your menu bar (Mac) or system tray (Windows). Click the 🐾 for the panel, or the window button in its bottom bar to open the window. To have the window open every time, choose <b>Start in → Window</b> in ⚙️ Settings.
+No. It has to see key presses to block them, but it never records what you type: while locked it keeps only the last few characters, just enough to spot your unlock phrase, and forgets them on unlock. It sends nothing anywhere except the update check. It's open source, so you can read every line; see <a href="#-how-it-works">How it works</a> and <a href="SECURITY.md">SECURITY.md</a>.
+</details>
+
+<details>
+<summary><b>Why does macOS say "Paws Off" can't be opened?</b></summary>
+<br>
+Paws Off isn't notarized by Apple yet (that needs a paid developer account, and it's on the way). macOS asks you to confirm any app like that once: <b>System Settings → Privacy & Security → Open Anyway</b>. Or install with the <a href="#-quickest-one-line">one-line installer</a>, which skips the prompt.
 </details>
 
 <details>
@@ -185,9 +207,9 @@ No. The system handles those keys itself. If one is pressed, your computer locks
 </details>
 
 <details>
-<summary><b>Paw detection triggered while I was gaming or typing fast.</b></summary>
+<summary><b>Can paw detection go off while I'm gaming or typing fast?</b></summary>
 <br>
-Holding four or more letter keys at once looks like a paw. Turn <b>Paw detection</b> off in ⚙️ Settings. Locking by hand keeps working.
+It can: holding four or more letter keys at once looks like a paw. If that's you, turn <b>Paw detection</b> off in ⚙️ Settings. Locking by hand keeps working.
 </details>
 
 <details>
@@ -231,6 +253,8 @@ dotnet publish windows/PawsOff.csproj -c Release -o out
 | `.github/workflows/build.yml` | Builds both apps on every push; publishes a Release (with the Sparkle appcast) when a `v*` tag is pushed. |
 | `packaging/winget/`, `Tools/winget-submit.sh` | winget manifests and the script that submits a release. Homebrew: [EnigmaticZee/homebrew-tap](https://github.com/EnigmaticZee/homebrew-tap). |
 | `Tools/` | Icon, installer art, DMG, README art and in-app release notes generators. |
+| `site/` | The website and the one-line installers, published to GitHub Pages (`.github/workflows/site.yml`); `installers.yml` tests the installers on clean machines weekly. |
+| [`docs/TESTING.md`](docs/TESTING.md) | The hand-testing checklist for releases. |
 | [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | **Rules to read before changing code.** |
 | [`docs/HISTORY.md`](docs/HISTORY.md) | Version history. |
 
