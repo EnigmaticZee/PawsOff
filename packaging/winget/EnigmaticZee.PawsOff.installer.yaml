@@ -8,7 +8,7 @@ InstallModes:
   - silent
 UpgradeBehavior: install
 Installers:
-  - Architecture: neutral
+  - Architecture: x64
     InstallerUrl: {URL}
     InstallerSha256: {SHA256}
 ManifestType: installer
