@@ -44,8 +44,11 @@
   .tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
   .panel[hidden] { display: none; }
   .cmd { display: flex; align-items: center; gap: 12px; background: var(--code); color: var(--code-ink); border-radius: 12px; padding: 12px 12px 12px 16px; }
-  /* The command wraps instead of scrolling, so no scrollbar ever sits on top of it. */
-  .cmd code { flex: 1; min-width: 0; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: normal; overflow-wrap: anywhere; user-select: all; }
+  /* One line that scrolls sideways; the padding keeps the scrollbar below the text, never over it. */
+  .cmd code { flex: 1; min-width: 0; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: nowrap; overflow-x: auto; padding: 6px 0 12px; margin-bottom: -6px; user-select: all;
+    scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .28) transparent; }
+  .cmd code::-webkit-scrollbar { height: 6px; }
+  .cmd code::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .28); border-radius: 3px; }
   .cmd button { flex: none; align-self: center; border: 0; border-radius: 8px; background: var(--coral); color: #fff; font-family: inherit; font-size: 14px; font-weight: 700; line-height: 1; padding: 10px 14px; cursor: pointer; min-height: 36px; }
   .cmd button:hover { filter: brightness(1.06); }
   .hint { color: var(--soft); font-size: 14px; margin: 12px 4px 0; }
@@ -83,12 +86,19 @@
   .sub { text-align: center; color: var(--soft); margin: 0 auto 34px; max-width: 560px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
   .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
-  .card .tile { width: 40px; height: 40px; border-radius: 12px; background: var(--coral-soft); display: grid; place-items: center; font-size: 20px; }
+  .card .tile { width: 44px; height: 44px; border-radius: 13px; background: var(--coral-soft); color: var(--coral); display: grid; place-items: center; }
+  .card .tile svg { width: 24px; height: 24px; }
   .card h3 { font-size: 19px; margin: 14px 0 6px; }
   .card p { margin: 0; color: var(--soft); font-size: 15.5px; }
 
   .split { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; }
-  .split img { width: 100%; height: auto; border-radius: 18px; }
+  .vault { position: relative; margin: 0; padding: 24px 0; }
+  .vault img { display: block; width: 100%; max-width: 380px; height: auto; margin: 0 auto; }
+  .badge { position: absolute; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; font-size: 15px; font-weight: 800; white-space: nowrap; box-shadow: 0 8px 22px rgba(27, 23, 38, .14); }
+  .badge::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 4px; background: var(--coral); margin-right: 8px; vertical-align: middle; }
+  .b1 { top: 0; left: 2%; transform: rotate(-4deg); }
+  .b2 { top: 48%; right: 0; transform: rotate(3deg); }
+  .b3 { bottom: 12%; left: 6%; transform: rotate(-2deg); }
   .split ul { padding-left: 0; list-style: none; margin: 0; }
   .split li { position: relative; padding: 0 0 14px 24px; color: var(--soft); }
   .split li strong { color: var(--ink); }
@@ -139,12 +149,6 @@
     <p class="meta">Free and open source · macOS 14+ (Apple Silicon &amp; Intel) · Windows 10 &amp; 11</p>
   </header>
 
-  <div class="hero">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="media/hero-dark.png">
-      <img src="media/hero-light.png" alt="Paws Off: ready to clean, locked with a timer running, and after catching a paw" width="1600" height="896">
-    </picture>
-  </div>
 
   <section>
     <div class="paws">
@@ -171,12 +175,12 @@
     <h2>Two modes, one click</h2>
     <p class="sub">For cleaning your keyboard, and for leaving your computer around curious paws.</p>
     <div class="grid">
-      <div class="card"><div class="tile">🧽</div><h3>Clean mode</h3><p>Every key ignored, even media keys. Your trackpad keeps working, so you can always click Unlock. Add a timer and it unlocks itself.</p></div>
-      <div class="card"><div class="tile">🐾</div><h3>Away mode</h3><p>Lock it and walk away. Downloads and calls keep running. Type your unlock word to get back in: pets can't spell.</p></div>
-      <div class="card"><div class="tile">🐈</div><h3>Paw detection</h3><p>Forgot to lock? If a paw lands on the keyboard, Paws Off notices the pile of held keys and locks for you.</p></div>
-      <div class="card"><div class="tile">🔓</div><h3>Never locks you out</h3><p>The keyboard comes back the moment your computer locks, sleeps or switches user, so you can always type your password.</p></div>
-      <div class="card"><div class="tile">☕️</div><h3>Out of the way</h3><p>Lives in your menu bar or system tray. Click the paw, or use the shortcut from anywhere: ⌃⌥⌘L on Mac, Ctrl+Alt+Shift+L on Windows.</p></div>
-      <div class="card"><div class="tile">🌗</div><h3>Light, dark, auto</h3><p>Follows your system, or pick a side. Updates arrive on their own, so you don't have to think about it.</p></div>
+      <div class="card"><div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></div><h3>Clean mode</h3><p>Every key ignored, even media keys. Your trackpad keeps working, so you can always click Unlock. Add a timer and it unlocks itself.</p></div>
+      <div class="card"><div class="tile"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><ellipse cx="6" cy="10" rx="2.2" ry="2.8"/><ellipse cx="10" cy="6.5" rx="2.2" ry="2.9"/><ellipse cx="14" cy="6.5" rx="2.2" ry="2.9"/><ellipse cx="18" cy="10" rx="2.2" ry="2.8"/><path d="M12 12c-3 0-5.6 2.7-5.6 5.3 0 1.8 1.4 2.7 3 2.4 1-.2 1.7-.6 2.6-.6s1.6.4 2.6.6c1.6.3 3-.6 3-2.4C17.6 14.7 15 12 12 12z"/></svg></div><h3>Away mode</h3><p>Lock it and walk away. Downloads and calls keep running. Type your unlock word to get back in: pets can't spell.</p></div>
+      <div class="card"><div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6 10h.01M9.5 10h.01M13 10h.01M17 14H7"/><circle cx="17.5" cy="10" r="1.6" fill="currentColor" stroke="none"/></svg></div><h3>Paw detection</h3><p>Forgot to lock? If a paw lands on the keyboard, Paws Off notices the pile of held keys and locks for you.</p></div>
+      <div class="card"><div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="11" width="15" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 7.6-1.7"/><path d="M12 15.2v2"/></svg></div><h3>Never locks you out</h3><p>The keyboard comes back the moment your computer locks, sleeps or switches user, so you can always type your password.</p></div>
+      <div class="card"><div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="16" rx="2.5"/><path d="M2.5 8.5h19"/><circle cx="16.5" cy="6.25" r=".9" fill="currentColor" stroke="none"/><circle cx="19" cy="6.25" r=".9" fill="currentColor" stroke="none"/></svg></div><h3>Out of the way</h3><p>Lives in your menu bar or system tray. Click the paw, or use the shortcut from anywhere: ⌃⌥⌘L on Mac, Ctrl+Alt+Shift+L on Windows.</p></div>
+      <div class="card"><div class="tile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg></div><h3>Light, dark, auto</h3><p>Follows your system, or pick a side. Updates arrive on their own, so you don't have to think about it.</p></div>
     </div>
   </section>
 
@@ -190,7 +194,15 @@
         <li><strong>One network request: the update check.</strong> It asks GitHub whether there's a newer version. You can turn it off.</li>
         <li><strong>Open source.</strong> Every line is on <a href="https://github.com/EnigmaticZee/PawsOff">GitHub</a>, MIT licensed. Found a problem? See the <a href="https://github.com/EnigmaticZee/PawsOff/blob/main/SECURITY.md">security policy</a>.</li>
       </ul>
-      <img src="images/windows.png" alt="Paws Off on Windows: the window and the tray pop-up" width="1400" height="1000">
+      <figure class="vault">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="media/settings-dark.png">
+          <img src="media/settings-light.png" alt="Paws Off settings: appearance, unlock phrase, paw detection, updates and paw stats" width="864" height="1148">
+        </picture>
+        <figcaption class="badge b1">0 keystrokes stored</figcaption>
+        <figcaption class="badge b2">Nothing about you sent</figcaption>
+        <figcaption class="badge b3">100% open source</figcaption>
+      </figure>
     </div>
   </section>
 
