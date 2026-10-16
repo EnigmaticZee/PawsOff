@@ -11,7 +11,8 @@ Wipe it down without typing gibberish — or step away without your cat writing 
 &nbsp;
 <a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Setup.exe"><img src="https://img.shields.io/badge/Download_for_Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows" height="44"></a>
 
-<sub>Free · macOS 14+ (Apple Silicon & Intel) · Windows 10 & 11 · or <code>brew install --cask enigmaticzee/tap/paws-off</code></sub>
+<sub>Free · macOS 14+ (Apple Silicon & Intel) · Windows 10 & 11</sub><br>
+<sub>Homebrew: <code>brew install --cask enigmaticzee/tap/paws-off</code></sub>
 
 <br>
 
@@ -23,7 +24,10 @@ Wipe it down without typing gibberish — or step away without your cat writing 
 
 <br>
 
-<img src="docs/images/hero.png" alt="Paws Off in the menu bar, locked with a timer, and after catching a paw" width="100%">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.png">
+  <img src="docs/images/hero-light.png" alt="Paws Off: the panel dropping down from the menu bar paw, and the window locked with a timer running" width="100%">
+</picture>
 
 </div>
 
@@ -95,7 +99,7 @@ Paws Off isn't signed with a paid Apple or Microsoft developer certificate yet, 
 
 ### 🍎 Mac
 
-1. **[Download PawsOff-mac.dmg](https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg)**, open it, and drag **Paws Off** into **Applications**. (Or: `brew install --cask enigmaticzee/tap/paws-off`.)
+1. **[Download PawsOff-mac.dmg](https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg)**, open it, and drag **Paws Off** into **Applications**. (Using Homebrew? See [below](#-homebrew).)
 2. **Open it once.** Double-click **Paws Off** in Applications. macOS says *"Paws Off" Not Opened*. Click **Done**.
 3. **Allow it.** Open **System Settings → Privacy & Security**, scroll down to **Security**, and next to *"Paws Off" was blocked* click **Open Anyway**. Enter your password, then click **Open Anyway** again.
 4. **Give it keyboard access.** In Paws Off, click **Grant Access**, then switch on **Paws Off** in **System Settings → Privacy & Security → Accessibility**.
@@ -121,6 +125,19 @@ xattr -dr com.apple.quarantine "/Applications/Paws Off.app"
 Open the Paws Off window and click **Already switched on? Reset and ask again**. This clears an old permission, for example one left by an earlier version, and asks again.
 
 </details>
+
+### 🍺 Homebrew
+
+Prefer the Terminal? Install with [Homebrew](https://brew.sh):
+
+```sh
+brew install --cask enigmaticzee/tap/paws-off
+```
+
+Then do steps 2–4 above once: open the app, click **Open Anyway**, and give it keyboard access. (The Terminal shortcut in the box above works here too.)
+
+- **Updates:** Paws Off updates itself, so there's nothing to run. (`brew upgrade` skips it on purpose.)
+- **Uninstall:** `brew uninstall --cask paws-off`. Add `--zap` to remove its settings too.
 
 ### 🪟 Windows
 

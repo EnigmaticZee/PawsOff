@@ -12,4 +12,4 @@ mkdir -p docs/images
 swift Tools/make-readme-art.swift "$TMP/previews" docs/images
 
 # Keep the banner light for fast page loads.
-sips -Z 1600 docs/images/hero.png >/dev/null
+sips -Z 1600 docs/images/hero-light.png docs/images/hero-dark.png >/dev/null
