@@ -3,7 +3,8 @@ import AppKit
 import Combine
 
 /// The paw in the menu bar. Left-click drops down the card (the same one as the window), like the
-/// system's own menu bar panels; right-click (or Control-click) shows quick actions. Built on NSStatusItem because SwiftUI's
+/// system's own menu bar panels; right-click (or Control-click) shows quick actions. Built on
+/// NSStatusItem because SwiftUI's
 /// MenuBarExtra can't tell the two clicks apart.
 @MainActor
 final class MenuBarController: NSObject {
@@ -23,9 +24,15 @@ final class MenuBarController: NSObject {
         item.button?.setAccessibilityLabel("Paws Off")
         self.item = item
 
-        let card = NSHostingView(rootView: CardView(place: .panel).environmentObject(blocker))
+        let card = NSHostingView(rootView: freshCard())
         card.frame.size = CardView.size
-        panel = DropDownPanel(content: card, takesFocus: true) { [weak self] in self?.item?.button?.highlight(false) }
+        panel = DropDownPanel(content: card, takesFocus: true) { [weak self] in
+            guard let self else { return }
+            self.item?.button?.highlight(false)
+            // Next time it opens on the main screen, not wherever it was left (e.g. Settings).
+            // (After the current click finishes: it may have come from a button on this card.)
+            DispatchQueue.main.async { card.rootView = self.freshCard() }
+        }
 
         blocker.$isActive.sink { [weak self] locked in self?.updateIcon(locked: locked) }.store(in: &watches)
         // Give the panel the app's look (the Appearance setting, or the system's when that's Auto)
@@ -69,6 +76,11 @@ final class MenuBarController: NSObject {
     }
 
     func closePanel() { panel?.dismiss() }
+
+    /// A new card each time, so none of the last visit's page or half-typed input carries over.
+    private func freshCard() -> AnyView {
+        AnyView(CardView(place: .panel).environmentObject(blocker).id(UUID()))
+    }
 
     // MARK: Right-click menu
 
@@ -214,12 +226,15 @@ final class DropDownPanel: NSPanel {
         if takesFocus { makeKeyAndOrderFront(nil) } else { orderFrontRegardless() }
 
         // Close on a click anywhere else: in other apps (global) or our own windows (local).
-        // Clicks on the paw itself are left to the paw, which toggles.
-        monitors.append(NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
-            self?.dismiss()
-        } as Any)
-        monitors.append(NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
-            if let self, event.window !== self, event.window !== button.window { self.dismiss() }
+        // Clicks on the paw itself are left to the paw, which toggles the panel closed.
+        let outside = { [weak self] in
+            guard let self else { return }
+            let point = NSEvent.mouseLocation
+            if !anchor.contains(point) && !self.frame.contains(point) { self.dismiss() }
+        }
+        monitors.append(NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { _ in outside() } as Any)
+        monitors.append(NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { event in
+            outside()
             return event
         } as Any)
     }

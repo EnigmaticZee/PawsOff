@@ -1,5 +1,9 @@
 # Version history
 
+## 2.0.4 — 2026-10-15
+- Mac: clicking the menu bar paw again now closes its panel, like other menu bar items.
+- Mac: the panel always opens on the main screen, even if you left it in Settings.
+
 ## 2.0.3 — 2026-10-15
 - **A new app icon:** a coral key with a white paw, on a clean white tile.
 - Mac: the menu bar panel now drops down from the paw like the system's own panels, without the
