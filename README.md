@@ -222,11 +222,15 @@ Windows doesn't let normal apps block input to apps running with admin rights. E
 
 ## 🗺️ Roadmap
 
-- [ ] Screen-cleaning mode: a black fullscreen that shows smudges, with trackpad clicks paused
-- [ ] Key tester to check every key after cleaning
-- [ ] Custom global shortcut
+**Shipped**
+
+- [x] Lives in the menu bar (Mac) and system tray (Windows)
+- [x] Paw detection: locks itself when a paw lands on the keys
+
+**Up next**
+
 - [ ] Signed and notarized builds, so there's no first-launch prompt
-- [ ] `winget install EnigmaticZee.PawsOff`
+- [ ] Custom global shortcut
 
 <br>
 
