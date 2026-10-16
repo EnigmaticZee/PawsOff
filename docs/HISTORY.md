@@ -1,5 +1,11 @@
 # Version history
 
+## 2.0.6 — 2026-10-15
+A quiet one. Nothing to see here, and that's the point.
+
+- **Behind-the-scenes tidy-up.** No new buttons, no moved menus, nothing to relearn. This update
+  mostly exists to prove updates arrive on their own, and since you're reading this, they do. 🐾
+
 ## 2.0.5 — 2026-10-15
 Release notes got a glow-up. You're looking at it.
 
