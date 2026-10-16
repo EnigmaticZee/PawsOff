@@ -60,6 +60,8 @@ Paws Off moved into your menu bar. It's cosier up there.
   timer, 2 min, or any length from 2:01), just like the Mac.
 - **Install with Homebrew** on Mac: `brew install --cask enigmaticzee/tap/paws-off`.
 - **A one-time tip** shows where Paws Off is hiding the first time it starts in the menu bar or tray.
+- **A new app icon:** a white key with a paw on a coral-to-violet tile. (It has since had a makeover;
+  see 2.0.3.)
 
 ## 1.6.0 — 2026-10-15
 - **Mac: your paw stats.** Paws Off keeps lifetime totals on your Mac (never sent anywhere) and shows
