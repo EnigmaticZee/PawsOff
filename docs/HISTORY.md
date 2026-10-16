@@ -1,5 +1,13 @@
 # Version history
 
+## 2.0.1 — 2026-10-15
+- **Updates now install on their own.** Paws Off checks shortly after it starts and about once a day,
+  downloads new versions quietly and installs them (it restarts in a moment), never while your keyboard
+  is locked. Turn this off in Settings.
+- Mac: the menus at the top of the screen (Paws Off, Edit, Window) now open when you bring up the
+  window from the menu bar.
+- Mac: the menu bar panel follows your Appearance choice (Light, Dark or Auto), just like the window.
+
 ## 2.0.0 — 2026-10-15
 - **Paws Off now lives in your menu bar (Mac) and system tray (Windows).** Click the paw for a compact
   panel with everything in it; right-click for quick actions: lock for cleaning, lock while away,
