@@ -55,45 +55,34 @@ func drawWindow(_ image: NSImage, in rect: NSRect, radius: CGFloat, softShadow: 
     path.stroke()
 }
 
-func symbol(_ name: String, size: CGFloat, color: NSColor, at center: NSPoint) {
-    let config = NSImage.SymbolConfiguration(pointSize: size, weight: .semibold).applying(.init(paletteColors: [color]))
-    guard let image = NSImage(systemSymbolName: name, accessibilityDescription: nil)?.withSymbolConfiguration(config) else { return }
-    image.draw(in: NSRect(x: center.x - image.size.width / 2, y: center.y - image.size.height / 2, width: image.size.width, height: image.size.height))
-}
-
-// Hero: a desktop scene, no text (the README title sits above it). The menu bar with the panel
-// dropping down from the paw, and the window floating beside it: both places Paws Off lives.
-// One solid background, no glows; a light and a dark version, and the README shows whichever
-// matches the reader's GitHub theme.
+// Hero: three key screens (the menu bar panel, locked with a timer, a caught paw). Calm, solid
+// backgrounds with just a soft fall of light, no glows; a light and a dark version, and the README
+// shows whichever matches the reader's GitHub theme.
 for theme in ["light", "dark"] {
     let dark = theme == "dark"
-    let ink = dark ? rgb(0.96, 0.95, 0.98) : rgb(0.106, 0.090, 0.149)
-    let size = NSSize(width: 2000, height: 940)
+    let size = NSSize(width: 2000, height: 1120)
     let rep = canvas(size) {
         let bounds = NSRect(origin: .zero, size: size)
-        let bg = NSBezierPath(roundedRect: bounds, xRadius: 40, yRadius: 40)
+        let bg = NSBezierPath(roundedRect: bounds, xRadius: 48, yRadius: 48)
         bg.addClip()
-        (dark ? rgb(0.086, 0.075, 0.114) : rgb(0.969, 0.961, 0.949)).setFill()
-        bounds.fill()
+        // One colour, a touch lighter at the top, like light falling on a desk.
+        let top = dark ? rgb(0.118, 0.106, 0.153) : rgb(0.984, 0.976, 0.965)
+        let bottom = dark ? rgb(0.075, 0.067, 0.098) : rgb(0.949, 0.937, 0.922)
+        NSGradient(starting: top, ending: bottom)!.draw(in: bounds, angle: -90)
 
-        // Menu bar: the paw (highlighted, its panel is open), Wi-Fi and the clock.
-        let barH: CGFloat = 46, barY = size.height - barH
-        (dark ? rgb(1, 1, 1, 0.06) : rgb(1, 1, 1, 0.75)).setFill()
-        NSRect(x: 0, y: barY, width: size.width, height: barH).fill()
-        let pawX: CGFloat = 1340
-        (dark ? rgb(1, 1, 1, 0.16) : rgb(0, 0, 0, 0.10)).setFill()
-        NSBezierPath(roundedRect: NSRect(x: pawX - 24, y: barY + 8, width: 48, height: 30), xRadius: 15, yRadius: 15).fill()
-        symbol("pawprint.fill", size: 19, color: ink, at: NSPoint(x: pawX, y: barY + barH / 2))
-        symbol("wifi", size: 18, color: ink, at: NSPoint(x: size.width - 190, y: barY + barH / 2))
-        ("Thu 9:41" as NSString).draw(at: NSPoint(x: size.width - 160, y: barY + 11),
-                                      withAttributes: [.font: NSFont.systemFont(ofSize: 20, weight: .medium), .foregroundColor: ink])
-
-        // The panel, centred under the paw, and the window (locked, timer running) beside it.
-        let card = NSSize(width: 512, height: 688) // 320x430 card at 1.6x
-        drawWindow(screen("menu-bar-panel", theme: theme), in: NSRect(x: pawX - card.width / 2, y: barY - 14 - card.height, width: card.width, height: card.height),
+        let side = NSSize(width: 480, height: 645)   // 320x430 card at 1.5x
+        let middle = NSSize(width: 560, height: 753) // 1.75x
+        let gap: CGFloat = 70
+        let total = side.width * 2 + middle.width + gap * 2
+        var x = (size.width - total) / 2
+        drawWindow(screen("menu-bar-panel", theme: "light"), in: NSRect(x: x, y: (size.height - side.height) / 2 - 10, width: side.width, height: side.height),
+                   radius: 22, softShadow: !dark)
+        x += side.width + gap
+        drawWindow(screen("cleanTimer"), in: NSRect(x: x, y: (size.height - middle.height) / 2, width: middle.width, height: middle.height),
                    radius: 26, softShadow: !dark)
-        drawWindow(screen("cleanTimer", theme: theme), in: NSRect(x: 420, y: (barY - card.height) / 2 - 6, width: card.width, height: card.height),
-                   radius: 26, softShadow: !dark)
+        x += middle.width + gap
+        drawWindow(screen("pawsDetected", theme: "light"), in: NSRect(x: x, y: (size.height - side.height) / 2 - 10, width: side.width, height: side.height),
+                   radius: 22, softShadow: !dark)
     }
     save(rep, "hero-\(theme).png")
 }

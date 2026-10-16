@@ -26,7 +26,7 @@ Wipe it down without typing gibberish — or step away without your cat writing 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.png">
-  <img src="docs/images/hero-light.png" alt="Paws Off: the panel dropping down from the menu bar paw, and the window locked with a timer running" width="100%">
+  <img src="docs/images/hero-light.png" alt="Paws Off in the menu bar, locked with a timer, and after catching a paw" width="100%">
 </picture>
 
 </div>
