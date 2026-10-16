@@ -29,6 +29,15 @@ final class MenuBarController: NSObject {
         popover.behavior = .transient
 
         blocker.$isActive.sink { [weak self] locked in self?.updateIcon(locked: locked) }.store(in: &watches)
+        // A popover takes its look from the menu bar, not from the app; give it the app's
+        // (the Appearance setting, or the system's when that's Auto) and follow changes live.
+        Publishers.CombineLatest(blocker.$appearance, NSApp.publisher(for: \.effectiveAppearance))
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _, app in
+                let dark = app.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+                self?.popover.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+            }
+            .store(in: &watches)
     }
 
     private func updateIcon(locked: Bool) {

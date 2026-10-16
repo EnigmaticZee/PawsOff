@@ -11,9 +11,21 @@ enum MainWindow {
 
     static func show() {
         if window == nil { window = makeWindow() }
-        NSApp.setActivationPolicy(.regular)
-        window?.makeKeyAndOrderFront(nil)
-        NSApp.activate()
+        guard NSApp.activationPolicy() != .regular, NSApp.isActive else {
+            NSApp.setActivationPolicy(.regular)
+            window?.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        // A menu bar app that becomes a Dock app while it's frontmost (e.g. opened from the menu
+        // bar panel) gets menus that don't open until it's activated again. So step back to the
+        // Dock for a moment, switch while in the background, then come forward.
+        NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.dock").first?.activate()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            NSApp.setActivationPolicy(.regular)
+            window?.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 
     private static func makeWindow() -> NSWindow {

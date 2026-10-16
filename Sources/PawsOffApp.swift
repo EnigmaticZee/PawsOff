@@ -4,6 +4,16 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var appearanceWatch: Any?
 
+    private var opensWindowAtLaunch: Bool {
+        let blocker = KeyboardBlocker.shared
+        return CommandLine.arguments.contains("--snapshot-window") || blocker.launchPlace == .window || !blocker.hasPermission
+    }
+
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        // Become a Dock app before first coming to the front, so the menus work from the start.
+        if opensWindowAtLaunch { NSApp.setActivationPolicy(.regular) }
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         let blocker = KeyboardBlocker.shared
         // Set on the app so the window and the menu bar panel match, and Auto follows the system live.
@@ -15,8 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         MenuBarController.shared.install()
         _ = Updater.shared // starts the automatic update checks
 
-        let snapshot = CommandLine.arguments.contains("--snapshot-window")
-        if snapshot || blocker.launchPlace == .window || !blocker.hasPermission {
+        if opensWindowAtLaunch {
             MainWindow.show()
         } else {
             // Started quietly in the menu bar: the first time, point at the paw.

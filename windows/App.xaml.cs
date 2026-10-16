@@ -57,10 +57,15 @@ namespace PawsOff
             panel.Card.OpenWindowRequested += () => { panel.HidePanel(); ShowWindow(); };
             tray = new TrayIcon(blocker, ShowWindow, panel.Toggle, Quit);
 
-            // Automatic updates: check now (if it's been a day) and once a day after that.
+            // Automatic updates: check now (if it's been a day) and every few hours after that, and
+            // install a new version straight away unless the keyboard is locked (then on a later check).
             Updater.QuitApp = Quit;
-            Updater.Found += version => tray.Announce($"Paws Off {version} is available",
-                "Open Paws Off's settings to update.", () => { ShowWindow(); window.Card.OpenSettings(); });
+            Updater.Found += version =>
+            {
+                if (settings.AutoUpdate && !blocker.IsActive) _ = Updater.InstallAsync();
+                else tray.Announce($"Paws Off {version} is available",
+                    "Open Paws Off's settings to update.", () => { ShowWindow(); window.Card.OpenSettings(); });
+            };
             _ = Updater.CheckAsync(settings);
 
             // The first time Paws Off starts in the tray, say where it lives.
@@ -70,7 +75,11 @@ namespace PawsOff
                 tray.Announce("Paws Off lives in your system tray", "Click the paw to lock your keyboard. Right-click for quick actions.");
             }
             var daily = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromHours(6) };
-            daily.Tick += (s, e) => _ = Updater.CheckAsync(settings);
+            daily.Tick += async (s, e) =>
+            {
+                await Updater.CheckAsync(settings);
+                if (Updater.AvailableVersion != null && settings.AutoUpdate && !blocker.IsActive) await Updater.InstallAsync();
+            };
             daily.Start();
 
             // Signing in (--minimized) starts quietly. Otherwise open where the user chose: the window,

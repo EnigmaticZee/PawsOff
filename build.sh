@@ -55,6 +55,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>SUFeedURL</key><string>https://github.com/EnigmaticZee/PawsOff/releases/latest/download/appcast.xml</string>
   <key>SUPublicEDKey</key><string>AWihztekrNYm4LajURAnfH/LVfMNto0710fljAbVhP8=</string>
   <key>SUEnableAutomaticChecks</key><true/>
+  <key>SUAutomaticallyUpdate</key><true/>
   <!-- Starts as a menu bar app (no Dock icon); the window brings the Dock icon back while open. -->
   <key>LSUIElement</key><true/>
 </dict>
