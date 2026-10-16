@@ -73,8 +73,8 @@ Read `README.md` first, then these rules before changing anything.
 - **Windows updates** (`windows/Updater.cs`): checks the GitHub API for the latest release, downloads
   `PawsOff-Windows-Setup.exe` and runs it with `/SILENT`; the installer restarts the app after a silent
   install (CI tests that).
-- **Icon:** drawn in code by `Tools/make-icon.swift` (a white keycap with a paw, on the Lock button's
-  coral-to-violet; tiny sizes are a plain white paw). Never use SF Symbols in the icon or installer art
+- **Icon:** drawn in code by `Tools/make-icon.swift` (a coral keycap with a white paw on a white tile; one
+  solid colour per surface, no gradients; tiny sizes are a plain coral paw). Never use SF Symbols in the icon or installer art
   (their licence forbids it). `Tools/make-icons.sh` regenerates every copy: `Assets/AppIcon.icns`,
   `windows/Assets/PawsOff.ico` (also the tray icon), `docs/images/icon.png` and the installer art.
 - Installers: `Tools/make-installer-art.swift` draws the DMG background and the Inno Setup wizard bitmaps

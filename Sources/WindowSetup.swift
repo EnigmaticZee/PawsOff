@@ -11,6 +11,7 @@ enum MainWindow {
 
     static func show() {
         if window == nil { window = makeWindow() }
+        MenuBarController.shared.closePanel()
         guard NSApp.activationPolicy() != .regular, NSApp.isActive else {
             NSApp.setActivationPolicy(.regular)
             window?.makeKeyAndOrderFront(nil)

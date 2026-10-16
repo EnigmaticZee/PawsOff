@@ -2,15 +2,16 @@ import SwiftUI
 import AppKit
 import Combine
 
-/// The paw in the menu bar. Left-click opens the card (the same one as the window) in a popover;
-/// right-click (or Control-click) shows quick actions. Built on NSStatusItem because SwiftUI's
+/// The paw in the menu bar. Left-click drops down the card (the same one as the window), like the
+/// system's own menu bar panels; right-click (or Control-click) shows quick actions. Built on NSStatusItem because SwiftUI's
 /// MenuBarExtra can't tell the two clicks apart.
 @MainActor
 final class MenuBarController: NSObject {
     static let shared = MenuBarController()
 
     private var item: NSStatusItem?
-    private let popover = NSPopover()
+    private var panel: DropDownPanel?
+    private var tip: DropDownPanel?
     private var watches: Set<AnyCancellable> = []
     private let blocker = KeyboardBlocker.shared
 
@@ -22,20 +23,18 @@ final class MenuBarController: NSObject {
         item.button?.setAccessibilityLabel("Paws Off")
         self.item = item
 
-        let host = NSHostingController(rootView: CardView(place: .panel).environmentObject(blocker))
-        host.sizingOptions = .preferredContentSize
-        popover.contentViewController = host
-        popover.contentSize = CardView.size
-        popover.behavior = .transient
+        let card = NSHostingView(rootView: CardView(place: .panel).environmentObject(blocker))
+        card.frame.size = CardView.size
+        panel = DropDownPanel(content: card, takesFocus: true) { [weak self] in self?.item?.button?.highlight(false) }
 
         blocker.$isActive.sink { [weak self] locked in self?.updateIcon(locked: locked) }.store(in: &watches)
-        // A popover takes its look from the menu bar, not from the app; give it the app's
-        // (the Appearance setting, or the system's when that's Auto) and follow changes live.
+        // Give the panel the app's look (the Appearance setting, or the system's when that's Auto)
+        // rather than the menu bar's, and follow changes live.
         Publishers.CombineLatest(blocker.$appearance, NSApp.publisher(for: \.effectiveAppearance))
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _, app in
                 let dark = app.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-                self?.popover.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+                self?.panel?.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
             }
             .store(in: &watches)
     }
@@ -57,15 +56,19 @@ final class MenuBarController: NSObject {
     }
 
     func togglePopover() {
-        guard let button = item?.button else { return }
-        if popover.isShown {
-            popover.performClose(nil)
+        guard let button = item?.button, let panel else { return }
+        if panel.isVisible {
+            panel.dismiss()
         } else {
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            NSApp.activate()
-            popover.contentViewController?.view.window?.makeKey()
+            tip?.dismiss()
+            panel.show(under: button)
+            // Like the system's items, the paw stays highlighted while its panel is open (set after
+            // the click finishes, which would otherwise clear it).
+            DispatchQueue.main.async { button.highlight(true) }
         }
     }
+
+    func closePanel() { panel?.dismiss() }
 
     // MARK: Right-click menu
 
@@ -91,7 +94,7 @@ final class MenuBarController: NSObject {
         menu.addItem(.separator())
         menu.addItem(action("Quit Paws Off", #selector(quit), key: "q"))
 
-        // Attach just for this click, so a plain left-click still opens the popover.
+        // Attach just for this click, so a plain left-click still opens the panel.
         item?.menu = menu
         item?.button?.performClick(nil)
         item?.menu = nil
@@ -150,11 +153,86 @@ final class MenuBarController: NSObject {
 
     private func showTip(title: String, message: String, link: URL? = nil) {
         guard let button = item?.button else { return }
-        let tip = NSPopover()
-        tip.behavior = .transient
-        tip.contentViewController = NSHostingController(rootView: MenuBarTip(title: title, message: message, link: link) { tip.performClose(nil) })
-        tip.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        let content = NSHostingView(rootView: MenuBarTip(title: title, message: message, link: link) { [weak self] in self?.tip?.dismiss() })
+        content.frame.size = content.fittingSize
+        let material = NSVisualEffectView(frame: NSRect(origin: .zero, size: content.frame.size))
+        material.material = .popover
+        material.state = .active
+        material.addSubview(content)
+        tip = DropDownPanel(content: material, takesFocus: false)
+        tip?.show(under: button)
     }
+}
+
+/// A panel that drops down from the menu bar paw like the system's own (Control Center, Now
+/// Playing, Battery): no arrow, rounded corners and a shadow, just below the menu bar, centred under
+/// the paw and kept on screen. Clicking anywhere else or pressing Escape closes it.
+final class DropDownPanel: NSPanel {
+    private let takesFocus: Bool
+    private let onClose: () -> Void
+    private var monitors: [Any] = []
+
+    init(content: NSView, takesFocus: Bool, onClose: @escaping () -> Void = {}) {
+        self.takesFocus = takesFocus
+        self.onClose = onClose
+        super.init(contentRect: NSRect(origin: .zero, size: content.frame.size),
+                   styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
+        level = .popUpMenu
+        isFloatingPanel = true
+        hidesOnDeactivate = false
+        isReleasedWhenClosed = false
+        backgroundColor = .clear
+        isOpaque = false
+        hasShadow = true
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
+
+        let rounded = NSView(frame: NSRect(origin: .zero, size: content.frame.size))
+        rounded.wantsLayer = true
+        rounded.layer?.cornerRadius = 16
+        rounded.layer?.cornerCurve = .continuous
+        rounded.layer?.masksToBounds = true
+        rounded.layer?.borderWidth = 0.5
+        rounded.layer?.borderColor = NSColor(white: 0.5, alpha: 0.25).cgColor
+        content.frame = rounded.bounds
+        content.autoresizingMask = [.width, .height]
+        rounded.addSubview(content)
+        contentView = rounded
+    }
+
+    override var canBecomeKey: Bool { takesFocus }
+
+    func show(under button: NSStatusBarButton, attempt: Int = 0) {
+        // Right after launch the menu bar may not have placed the paw yet; try again shortly.
+        guard let buttonWindow = button.window, let screen = buttonWindow.screen, buttonWindow.frame.width > 0 else {
+            if attempt < 10 { DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.show(under: button, attempt: attempt + 1) } }
+            return
+        }
+        let anchor = buttonWindow.convertToScreen(button.convert(button.bounds, to: nil))
+        let size = frame.size, visible = screen.visibleFrame, margin: CGFloat = 8
+        let x = min(max(anchor.midX - size.width / 2, visible.minX + margin), visible.maxX - size.width - margin)
+        setFrameOrigin(NSPoint(x: x, y: anchor.minY - 5 - size.height))
+        if takesFocus { makeKeyAndOrderFront(nil) } else { orderFrontRegardless() }
+
+        // Close on a click anywhere else: in other apps (global) or our own windows (local).
+        // Clicks on the paw itself are left to the paw, which toggles.
+        monitors.append(NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+            self?.dismiss()
+        } as Any)
+        monitors.append(NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+            if let self, event.window !== self, event.window !== button.window { self.dismiss() }
+            return event
+        } as Any)
+    }
+
+    func dismiss() {
+        guard isVisible else { return }
+        monitors.forEach { NSEvent.removeMonitor($0) }
+        monitors = []
+        orderOut(nil)
+        onClose()
+    }
+
+    override func cancelOperation(_ sender: Any?) { dismiss() }
 }
 
 /// A small bubble under the menu bar paw: "Paws Off lives here" once, and "Updated to …" after an update.
