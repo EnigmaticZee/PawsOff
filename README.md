@@ -7,7 +7,7 @@
 **Pause your keyboard with one click.**<br>
 Wipe it down without typing gibberish — or step away without your cat writing your emails.
 
-<a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg"><img src="docs/images/download-mac.png" alt="Download for Mac" width="250" height="50"></a>
+<a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/download-mac-dark.png"><img src="docs/images/download-mac.png" alt="Download for Mac" width="250" height="50"></picture></a>
 &nbsp;
 <a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Setup.exe"><img src="docs/images/download-windows.png" alt="Download for Windows" width="250" height="50"></a>
 
