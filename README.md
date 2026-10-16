@@ -7,9 +7,9 @@
 **Pause your keyboard with one click.**<br>
 Wipe it down without typing gibberish — or step away without your cat writing your emails.
 
-<a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg"><img src="https://img.shields.io/badge/Download_for_Mac-111?style=for-the-badge&logo=apple&logoColor=white" alt="Download for Mac" height="44"></a>
+<a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg"><img src="docs/images/download-mac.png" alt="Download for Mac" width="250" height="50"></a>
 &nbsp;
-<a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Setup.exe"><img src="https://img.shields.io/badge/Download_for_Windows-0078D4?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows" height="44"></a>
+<a href="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-Windows-Setup.exe"><img src="docs/images/download-windows.png" alt="Download for Windows" width="250" height="50"></a>
 
 <sub>Free · macOS 14+ (Apple Silicon & Intel) · Windows 10 & 11</sub><br>
 <sub>Homebrew: <code>brew install --cask enigmaticzee/tap/paws-off</code></sub>
