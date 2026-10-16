@@ -63,7 +63,7 @@ For leaving your computer running near curious pets.
 | 📊 **Your paw stats** | Lifetime totals, kept only on your computer, shown as rotating one-liners like *"≈ 486 words by paws, never sent"*. |
 | 🔓 **Never locks you out** | The keyboard is released the moment your computer locks, sleeps, switches user or shuts down, so you can always type your password. |
 | 🌗 **Light and dark** | Follows your system (Auto), or pick Light or Dark in ⚙️ Settings. |
-| 🔄 **Stays up to date** | Checks for new versions about once a day and installs them for you. Turn it off in Settings. |
+| 🔄 **Stays up to date** | Checks for a new version when it starts and about once a day, installs it on its own (never while your keyboard is locked) and tells you when it has. Turn it off in Settings. |
 
 <details>
 <summary><b>📸 More screenshots</b></summary>
@@ -143,7 +143,7 @@ Open the Paws Off window and click **Already switched on? Reset and ask again**.
 - **Mac:** a session event tap (`CGEventTap`). **Windows:** a low-level keyboard hook (`WH_KEYBOARD_LL`). Both see key presses before any app does: passed straight through while unlocked, dropped while locked.
 - **Paw detection** only looks at *how many keys are held and for how long*, never at what you type, and never fires while the screen is locked.
 - **Nothing you type is stored or sent.** While locked it keeps only the last few characters, enough to spot your unlock phrase, and discards them on unlock. Paw stats are counts only, kept on your computer.
-- **The only network request is the update check:** about once a day it asks GitHub whether there's a newer release. Turn it off in Settings.
+- **The only network request is the update check:** when it starts and about once a day it asks GitHub whether there's a newer release. Turn it off in Settings.
 
 <br>
 
@@ -208,7 +208,7 @@ dotnet publish windows/PawsOff.csproj -c Release -o out
 
 | Path | What |
 | --- | --- |
-| `Sources/` | Mac app (SwiftUI + AppKit). `KeyboardBlocker.swift` holds the event tap and all lock logic; `CardView.swift` is the UI shown in the window and the menu bar popover. |
+| `Sources/` | Mac app (SwiftUI + AppKit). `KeyboardBlocker.swift` holds the event tap and all lock logic; `CardView.swift` is the UI shown in the window and the menu bar panel. |
 | `windows/` | Windows app (WPF, .NET Framework 4.8). `KeyboardBlocker.cs` holds the hook; `CardView.xaml` is the UI shown in the window and the tray pop-up. |
 | `Vendor/Sparkle/` | [Sparkle](https://sparkle-project.org) 2.10.0, the Mac updater (MIT). |
 | `.github/workflows/build.yml` | Builds both apps on every push; publishes a Release (with the Sparkle appcast) when a `v*` tag is pushed. |

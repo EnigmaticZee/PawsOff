@@ -51,11 +51,11 @@ final class MenuBarController: NSObject {
         if event?.type == .rightMouseUp || event?.modifierFlags.contains(.control) == true {
             showMenu()
         } else {
-            togglePopover()
+            togglePanel()
         }
     }
 
-    func togglePopover() {
+    func togglePanel() {
         guard let button = item?.button, let panel else { return }
         if panel.isVisible {
             panel.dismiss()

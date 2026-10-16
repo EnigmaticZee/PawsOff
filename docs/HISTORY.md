@@ -1,5 +1,11 @@
 # Version history
 
+## 2.0.3 — 2026-10-15
+- **A new app icon:** a coral key with a white paw, on a clean white tile.
+- Mac: the menu bar panel now drops down from the paw like the system's own panels, without the
+  little arrow.
+- Mac: the "Updated to …" note and the first-time tip now open right under the menu bar paw.
+
 ## 2.0.2 — 2026-10-15
 - After Paws Off updates itself, a small note under the menu bar paw (Mac) or by the tray icon (Windows)
   says which version you're on now, with a link to what's new.

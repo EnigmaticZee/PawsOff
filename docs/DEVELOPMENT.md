@@ -2,7 +2,7 @@
 
 Project: **Paws Off**, a keyboard-blocking app for cleaning (Clean mode) and pets (Away mode), in two
 native versions that share one design and one set of rules:
-- **Mac** (`Sources/`): SwiftUI views in an AppKit app (menu bar popover + window). No Xcode project;
+- **Mac** (`Sources/`): SwiftUI views in an AppKit app (menu bar panel + window). No Xcode project;
   built with `swiftc` via `build.sh`.
 - **Windows** (`windows/`): WPF on .NET Framework 4.8 (tray pop-up + window). Built by `dotnet publish`
   (CI only; it can't be built on a Mac).
@@ -30,12 +30,14 @@ Read `README.md` first, then these rules before changing anything.
 
 ### Structure
 - The whole UI is one **card** (320 x 430): `Sources/CardView.swift` and `windows/CardView.xaml`.
-  Each platform shows the same card in two places: the menu bar popover / tray pop-up, and the window.
+  Each platform shows the same card in two places: the menu bar panel / tray pop-up, and the window.
   Settings slide in *inside* the card (`SettingsPage.swift`, the `SettingsPage` grid in CardView.xaml),
   at the same size; don't add separate settings windows.
 - **Mac:** a plain AppKit app (`LSUIElement`, so it starts without a Dock icon). `MenuBarController`
-  (MenuBar.swift) owns the status item: left-click opens the card in an `NSPopover`, right-click shows
-  the quick-actions menu. `MainWindow` (WindowSetup.swift) creates the window itself; the card sits
+  (MenuBar.swift) owns the status item: left-click drops the card down in a `DropDownPanel` (centred
+  under the paw, no arrow, like the system's own menu bar panels), right-click shows the quick-actions
+  menu; tips and the "Updated to …" note use the same panel. Switching to a Dock app while frontmost
+  leaves dead menus, so `MainWindow.show()` steps back to the Dock for a moment first. `MainWindow` (WindowSetup.swift) creates the window itself; the card sits
   below the title bar and its background runs up behind the window buttons, so SwiftUI sizes the window
   to card + title bar. The app is in the Dock only while the window is open. `Start in` decides whether
   the window opens at launch (always while Accessibility isn't granted). `AppMenu` provides the menu bar
