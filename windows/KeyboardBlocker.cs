@@ -27,7 +27,6 @@ namespace PawsOff
     /// swallows every key. Locking the PC, sleeping or signing out releases the keyboard.
     public sealed class KeyboardBlocker : IDisposable
     {
-        public static readonly int[] TimerChoices = { 0, 120 };
         /// Custom lengths start just above the 2 min preset and go up to 99:59.
         public const int CustomMin = 121, CustomMax = 5999;
         public const string ShortcutLabel = "Ctrl+Alt+Shift+L";
