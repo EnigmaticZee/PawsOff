@@ -63,7 +63,8 @@ Read `README.md` first, then these rules before changing anything.
   included; blur effects don't show).
 
 ### Build, sign, update, release
-- Build with `./build.sh`; it must print `Built ...` with no errors. Compile mode is Swift 5.
+- Build with `./build.sh`; it must print `Built ...` with no errors. Compile mode is Swift 5. It needs
+  Xcode installed (SwiftUI's macros aren't in the Command Line Tools); `build.sh` picks Xcode on its own.
 - Keep the stable signing requirement in `build.sh` (`designated => identifier "local.pawsoff"`); the
   default ad-hoc requirement is a per-build cdhash, which silently invalidates the Accessibility grant
   and would break Sparkle's update check. A Developer ID signature (for sharing) replaces this.

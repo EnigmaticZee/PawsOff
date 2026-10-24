@@ -6,6 +6,11 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# SwiftUI's macros ship with Xcode, not the Command Line Tools, so use Xcode when it's installed.
+if [[ -z "${DEVELOPER_DIR:-}" && "$(xcode-select -p)" == *CommandLineTools* && -d /Applications/Xcode.app ]]; then
+  export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+fi
+
 if [[ $# -ge 1 ]]; then echo "$1" > VERSION; fi
 VERSION=$(cat VERSION)
 BUILD_NUMBER=$(git rev-list --count HEAD 2>/dev/null || echo 1)
