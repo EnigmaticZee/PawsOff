@@ -47,8 +47,10 @@ final class MenuBarController: NSObject {
     }
 
     private func updateIcon(locked: Bool) {
-        let image = NSImage(systemSymbolName: locked ? "pawprint.circle.fill" : "pawprint.fill",
+        var image = NSImage(systemSymbolName: locked ? "pawprint.circle.fill" : "pawprint.fill",
                             accessibilityDescription: locked ? "Paws Off: keyboard locked" : "Paws Off")
+        // The circle draws smaller than the plain paw at the default size; bump it so it's as easy to spot.
+        if locked { image = image?.withSymbolConfiguration(.init(pointSize: 16, weight: .regular)) }
         image?.isTemplate = true
         item?.button?.image = image
     }

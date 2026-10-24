@@ -1,5 +1,12 @@
 # Version history
 
+## 2.0.10 — 2026-10-24
+Easier to spot.
+
+- **Mac: the locked paw in the menu bar is full size.** When the keyboard is locked, the paw in a
+  circle used to look a little shrunken next to everything else up there. It's now as big as the
+  regular paw, so you can find it at a glance. 🐾
+
 ## 2.0.9 — 2026-10-15
 Spring cleaning, behind the scenes.
 
