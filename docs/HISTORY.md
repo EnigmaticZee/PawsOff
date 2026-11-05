@@ -1,5 +1,18 @@
 # Version history
 
+## 2.1.0 — 2026-11-04
+Your keyboard, your shortcut.
+
+- **Pick your own shortcut.** In Settings, click the shortcut, press the keys you'd like, done. Any
+  combination with ⌃, ⌥ or ⌘ works (Windows: Ctrl or Alt), and the little arrow takes you back to the
+  default whenever you want.
+- **The default is one key shorter.** It's now ⌃⌘L on Mac and Ctrl+Alt+L on Windows, so locking takes
+  one less finger. If your hands already know the old one, you can set it back in a couple of seconds.
+- **Mac: notarized by Apple.** Paws Off is now signed with a Developer ID and checked by Apple, so a
+  fresh download opens like any other app. No more treasure hunt for the Open Anyway button. 🐾
+- **Windows: AltGr keeps typing.** On keyboards where AltGr types letters like ł or €, it never sets off
+  the shortcut by accident.
+
 ## 2.0.10 — 2026-10-24
 Easier to spot.
 
