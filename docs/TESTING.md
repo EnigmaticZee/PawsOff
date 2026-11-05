@@ -33,7 +33,9 @@ Lock Screen; Windows: Ctrl+Alt+Delete → Lock), and Paws Off lets go.
 - [ ] Click the paw: the panel drops down under it. Click the paw again: it closes. Click elsewhere: it closes.
 - [ ] Open Settings in the panel, close the panel, reopen: it's back on the main screen.
 - [ ] Right-click the paw: Lock for Cleaning / Lock While Away / Unlock / Open Window / Check for Updates / Quit all work.
-- [ ] Global shortcut (⌃⌥⌘L / Ctrl+Alt+Shift+L) locks and unlocks from another app.
+- [ ] Global shortcut (⌃⌘L / Ctrl+Alt+L) locks and unlocks from another app.
+- [ ] Settings → Shortcut: click, press a new combination; it shows, works from another app, and survives a restart. A plain letter asks for a modifier, Esc cancels, ↺ goes back to the default.
+- [ ] Windows: AltGr+L (e.g. Polish ł) types normally and doesn't lock.
 - [ ] Window: opens from the panel's window button; menus (Mac: Paws Off, Edit, Window) open; closing it leaves the app in the menu bar.
 - [ ] **Start in → Window**, quit, reopen: the window opens. Back to Menu bar: it starts quietly.
 - [ ] Appearance Light / Dark / Auto: the window and the panel both follow.

@@ -22,6 +22,73 @@ namespace PawsOff
         public DateTime EndedAt = DateTime.Now;
     }
 
+    [Flags]
+    public enum ShortcutModifiers { None = 0, Ctrl = 1, Alt = 2, Shift = 4, Win = 8 }
+
+    /// The key combination that locks and unlocks from any app. Default Ctrl+Alt+L.
+    public sealed class Shortcut
+    {
+        public static readonly Shortcut Standard = new Shortcut('L', ShortcutModifiers.Ctrl | ShortcutModifiers.Alt);
+
+        public int Key { get; }
+        public ShortcutModifiers Modifiers { get; }
+
+        public Shortcut(int key, ShortcutModifiers modifiers)
+        {
+            Key = key;
+            Modifiers = modifiers;
+        }
+
+        public bool IsStandard => Key == Standard.Key && Modifiers == Standard.Modifiers;
+
+        /// "Ctrl+Alt+L", with the key named for the current keyboard layout.
+        public string Label
+        {
+            get
+            {
+                var parts = new List<string>();
+                if (Modifiers.HasFlag(ShortcutModifiers.Ctrl)) parts.Add("Ctrl");
+                if (Modifiers.HasFlag(ShortcutModifiers.Alt)) parts.Add("Alt");
+                if (Modifiers.HasFlag(ShortcutModifiers.Shift)) parts.Add("Shift");
+                parts.Add(KeyName(Key));
+                return string.Join("+", parts);
+            }
+        }
+
+        static string KeyName(int vk)
+        {
+            if (vk >= 0x70 && vk <= 0x87) return "F" + (vk - 0x6F);
+            if (vk >= 0x60 && vk <= 0x69) return "Num" + (vk - 0x60);
+            switch (vk)
+            {
+                case 0x08: return "Backspace";
+                case 0x09: return "Tab";
+                case 0x0D: return "Enter";
+                case 0x20: return "Space";
+                case 0x21: return "PgUp";
+                case 0x22: return "PgDn";
+                case 0x23: return "End";
+                case 0x24: return "Home";
+                case 0x25: return "Left";
+                case 0x26: return "Up";
+                case 0x27: return "Right";
+                case 0x28: return "Down";
+                case 0x2D: return "Ins";
+                case 0x2E: return "Del";
+            }
+            uint ch = MapVirtualKey((uint)vk, MAPVK_VK_TO_CHAR) & 0x7FFF; // the top bit marks dead keys
+            return ch != 0 ? char.ToUpperInvariant((char)ch).ToString() : $"Key {vk}";
+        }
+
+        const uint MAPVK_VK_TO_CHAR = 2;
+
+        [DllImport("user32.dll")]
+        static extern uint MapVirtualKey(uint uCode, uint uMapType);
+    }
+
+    /// While the Settings shortcut field is listening for a new combination.
+    public enum ShortcutRecording { Off, Listening, NeedsModifier }
+
     /// Owns one low-level keyboard hook for the app's lifetime. While unlocked it passes every
     /// key through (watching only for the global shortcut and paw patterns); while locked it
     /// swallows every key. Locking the PC, sleeping or signing out releases the keyboard.
@@ -29,7 +96,6 @@ namespace PawsOff
     {
         /// Custom lengths start just above the 2 min preset and go up to 99:59.
         public const int CustomMin = 121, CustomMax = 5999;
-        public const string ShortcutLabel = "Ctrl+Alt+Shift+L";
 
         public event Action Changed;
         public event Action PawsDetected;
@@ -46,11 +112,13 @@ namespace PawsOff
         /// once that lock ends.
         public bool TimerIsCustom { get; private set; }
         public PawStats Stats { get; private set; }
+        public ShortcutRecording Recording { get; private set; }
 
         readonly Dispatcher dispatcher;
         readonly LowLevelKeyboardProc hookProc; // kept in a field so the GC can't collect it
         IntPtr hook = IntPtr.Zero;
         DispatcherTimer unlockTimer;
+        DispatcherTimer recordingTimer;
         string typed = "";
         readonly HashSet<int> pressed = new HashSet<int>();
         readonly Dictionary<int, DateTime> heldKeys = new Dictionary<int, DateTime>();
@@ -83,6 +151,7 @@ namespace PawsOff
         public void Start(LockMode? requested = null, bool byPaws = false)
         {
             if (IsActive) return;
+            StopRecordingShortcut();
             ActiveMode = requested ?? Settings.Mode;
             PawTriggered = byPaws;
             KeysCaught = byPaws ? heldKeys.Count : 0;
@@ -172,6 +241,37 @@ namespace PawsOff
             Settings.SaveStats(Stats);
         }
 
+        // MARK: Shortcut
+
+        /// Listens for the next key combination (through the hook, so no app sees it) and makes it
+        /// the shortcut. Esc cancels. It gives up on its own after 10 seconds, so keys are never
+        /// held back for long.
+        public void RecordShortcut()
+        {
+            if (IsActive || dispatcher == null) return;
+            Recording = ShortcutRecording.Listening;
+            recordingTimer?.Stop();
+            recordingTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
+            recordingTimer.Tick += (s, e) => StopRecordingShortcut();
+            recordingTimer.Start();
+            Notify();
+        }
+
+        public void StopRecordingShortcut()
+        {
+            recordingTimer?.Stop();
+            recordingTimer = null;
+            if (Recording == ShortcutRecording.Off) return;
+            Recording = ShortcutRecording.Off;
+            Notify();
+        }
+
+        public void ResetShortcut()
+        {
+            Settings.Shortcut = Shortcut.Standard;
+            Notify();
+        }
+
         /// "2:01", "15:00"
         public static string Clock(int seconds) => $"{seconds / 60}:{seconds % 60:00}";
 
@@ -210,6 +310,14 @@ namespace PawsOff
             bool repeat = down && !pressed.Add(vk);
             if (!down) pressed.Remove(vk);
 
+            // Recording a new shortcut: keys go to the shortcut field only; modifiers pass through.
+            // Win combinations stay with Windows (swallowing them would open Start on release).
+            if (Recording != ShortcutRecording.Off && !IsActive)
+            {
+                if (Modifiers.Contains(vk) || IsDown(VK_LWIN) || IsDown(VK_RWIN)) return false;
+                if (down && !repeat) Record(vk);
+                return true;
+            }
             if (down && !repeat && IsShortcut(vk))
             {
                 Toggle();
@@ -233,9 +341,42 @@ namespace PawsOff
             return false;
         }
 
-        static bool IsShortcut(int vk) =>
-            vk == 'L' && IsDown(VK_CONTROL) && IsDown(VK_MENU) && IsDown(VK_SHIFT)
-            && !IsDown(VK_LWIN) && !IsDown(VK_RWIN);
+        /// AltGr types characters on many layouts (ł, €, @) and arrives as Ctrl+Alt, so a Ctrl+Alt
+        /// shortcut never fires while it's held.
+        bool IsShortcut(int vk)
+        {
+            var shortcut = Settings.Shortcut;
+            if (vk != shortcut.Key) return false;
+            var held = HeldModifiers();
+            var ctrlAlt = ShortcutModifiers.Ctrl | ShortcutModifiers.Alt;
+            return held == shortcut.Modifiers && !((held & ctrlAlt) == ctrlAlt && IsDown(VK_RMENU));
+        }
+
+        /// A shortcut needs Ctrl or Alt, so it can't take a plain letter away from every app.
+        void Record(int vk)
+        {
+            var held = HeldModifiers();
+            if (vk == VK_ESCAPE && held == ShortcutModifiers.None)
+            {
+                StopRecordingShortcut();
+            }
+            else if ((held & (ShortcutModifiers.Ctrl | ShortcutModifiers.Alt)) == 0)
+            {
+                Recording = ShortcutRecording.NeedsModifier;
+                Notify();
+            }
+            else
+            {
+                Settings.Shortcut = new Shortcut(vk, held);
+                StopRecordingShortcut();
+            }
+        }
+
+        static ShortcutModifiers HeldModifiers() =>
+            (IsDown(VK_CONTROL) ? ShortcutModifiers.Ctrl : 0)
+            | (IsDown(VK_MENU) ? ShortcutModifiers.Alt : 0)
+            | (IsDown(VK_SHIFT) ? ShortcutModifiers.Shift : 0)
+            | (IsDown(VK_LWIN) || IsDown(VK_RWIN) ? ShortcutModifiers.Win : 0);
 
         static bool IsDown(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
 
@@ -323,6 +464,7 @@ namespace PawsOff
             dispatcher?.Invoke(new Action(() =>
             {
                 pressed.Clear();
+                StopRecordingShortcut();
                 Stop(reason);
             }));
         }
@@ -346,6 +488,9 @@ namespace PawsOff
         {
             "cleanReady", "cleanCustom", "withStats", "cleanTimer", "awayReady", "awayLocked", "pawsDetected", "backFromAway", "autoReleased",
         };
+
+        /// Rendered with Settings open.
+        public static readonly string[] SettingsPreviewStates = { "shortcutListening", "shortcutNeedsModifier", "shortcutCustom" };
 
         public static KeyboardBlocker Preview(string state)
         {
@@ -399,6 +544,15 @@ namespace PawsOff
                         Mode = LockMode.Clean, Duration = TimeSpan.FromSeconds(95), Keys = 31, Reason = "PC locked",
                     };
                     break;
+                case "shortcutListening":
+                    b.Recording = ShortcutRecording.Listening;
+                    break;
+                case "shortcutNeedsModifier":
+                    b.Recording = ShortcutRecording.NeedsModifier;
+                    break;
+                case "shortcutCustom":
+                    b.Settings.Shortcut = new Shortcut('K', ShortcutModifiers.Ctrl | ShortcutModifiers.Shift);
+                    break;
             }
             return b;
         }
@@ -409,7 +563,7 @@ namespace PawsOff
         const int WM_KEYDOWN = 0x0100;
         const int WM_SYSKEYDOWN = 0x0104;
         const uint LLKHF_INJECTED = 0x10;
-        const int VK_SHIFT = 0x10, VK_CONTROL = 0x11, VK_MENU = 0x12, VK_LWIN = 0x5B, VK_RWIN = 0x5C;
+        const int VK_SHIFT = 0x10, VK_CONTROL = 0x11, VK_MENU = 0x12, VK_ESCAPE = 0x1B, VK_LWIN = 0x5B, VK_RWIN = 0x5C, VK_RMENU = 0xA5;
 
         delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 

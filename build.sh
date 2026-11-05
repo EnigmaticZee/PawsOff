@@ -54,7 +54,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
   <key>NSHighResolutionCapable</key><true/>
-  <key>NSHumanReadableCopyright</key><string>Made by Zaid</string>
+  <key>NSHumanReadableCopyright</key><string>Made by Observant Systems</string>
   <!-- Updates: Sparkle reads the feed from the latest GitHub release and only installs updates
        signed with the matching private key (kept in the release workflow's secrets). -->
   <key>SUFeedURL</key><string>https://github.com/EnigmaticZee/PawsOff/releases/latest/download/appcast.xml</string>

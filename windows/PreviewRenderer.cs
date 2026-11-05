@@ -33,9 +33,13 @@ namespace PawsOff
                 var panel = new TrayPanel(KeyboardBlocker.Preview("cleanReady")) { Left = -10000, Top = -10000, ShowActivated = false };
                 panel.Show();
                 panel.UpdateLayout();
-                Save((FrameworkElement)panel.Content, Path.Combine(dir, $"{theme}-{index}-tray-panel.png"), panel.Width, panel.Height);
+                Save((FrameworkElement)panel.Content, Path.Combine(dir, $"{theme}-{index++}-tray-panel.png"), panel.Width, panel.Height);
                 panel.AllowClose = true;
                 panel.Close();
+
+                foreach (var state in KeyboardBlocker.SettingsPreviewStates)
+                    RenderCard(new CardView(KeyboardBlocker.Preview(state), isPanel: false, showingSettings: true),
+                               Path.Combine(dir, $"{theme}-{index++}-settings-{state}.png"));
             }
         }
 

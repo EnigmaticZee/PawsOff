@@ -21,6 +21,12 @@ Read `README.md` first, then these rules before changing anything.
   event tap / low-level hook lives for the app's lifetime and passes everything through unless locked.
   It runs on every keystroke, so keep it cheap; on Windows it must never touch UI directly (Windows
   silently removes slow hooks): state changes are synchronous, UI updates go through `Notify()`.
+- The global shortcut (default ⌃⌘L / Ctrl+Alt+L) is a setting. Settings records a new one through the
+  same tap / hook, so no app sees the keys; while it listens, keys are held back, so recording ends on
+  Esc, a click elsewhere, closing the panel or window, switching apps, any lock or sleep, and after 10 s
+  at most. A shortcut needs ⌃, ⌥ or ⌘ (Windows: Ctrl or Alt) so it can't steal a plain letter. Windows
+  leaves Win combinations alone (swallowing them opens Start) and never fires a Ctrl+Alt shortcut while
+  AltGr (Right Alt) is down, since AltGr types characters on many layouts.
 - Paw detection must never lock while the screen is locked, and it is user-toggleable. Its thresholds
   (4 held keys, or 2 held for 3 s) are untested on real pets; tune with care.
 - Never store or log what the user types; the phrase buffer only exists while locked. Paw stats are

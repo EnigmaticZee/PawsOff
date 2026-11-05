@@ -36,6 +36,8 @@ namespace PawsOff
             Updater.Changed += Refresh;
             ticker.Tick += (s, e) => UpdateTicking();
             ticker.Start();
+            // Hiding the pop-up or the window ends a shortcut recording, so keys aren't held back unseen.
+            IsVisibleChanged += (s, e) => { if (!IsVisible) blocker.StopRecordingShortcut(); };
             if (showingSettings) OpenSettings(animate: false);
             Refresh();
         }
@@ -110,6 +112,7 @@ namespace PawsOff
                 SetSelected(choice, (string)choice.Tag == blocker.Settings.StartIn.ToString(), segmented: true);
             string phrase = blocker.Settings.TrimmedPhrase;
             PhraseText.Text = phrase.Length == 0 ? "off" : phrase;
+            RefreshShortcutField();
 
             GearButton.Visibility = Show(!locked);
             OpenWindowButton.Visibility = Show(isPanel && !locked);
@@ -121,6 +124,32 @@ namespace PawsOff
             RingTrack.Visibility = Show(timed);
             SetPulse(locked && !timed);
             UpdateTicking();
+        }
+
+        void RefreshShortcutField()
+        {
+            var recording = blocker.Recording;
+            bool listening = recording != ShortcutRecording.Off;
+            var coral = Theme.Idle[0];
+            ShortcutText.Text = recording == ShortcutRecording.NeedsModifier ? "Add Ctrl or Alt"
+                : listening ? "Press keys…" : blocker.Settings.Shortcut.Label;
+            ShortcutReset.Visibility = Show(!listening && !blocker.Settings.Shortcut.IsStandard);
+            ShortcutReset.ToolTip = $"Back to {Shortcut.Standard.Label}";
+            if (listening)
+            {
+                ShortcutField.Background = new SolidColorBrush(Color.FromArgb(ThemeManager.IsDark ? (byte)0x24 : (byte)0x1A, coral.R, coral.G, coral.B));
+                ShortcutField.BorderBrush = new SolidColorBrush(coral);
+                ShortcutField.BorderThickness = new Thickness(1.5);
+                if (recording == ShortcutRecording.NeedsModifier) ShortcutText.Foreground = new SolidColorBrush(coral);
+                else ShortcutText.SetResourceReference(TextBlock.ForegroundProperty, "TextMuted");
+            }
+            else
+            {
+                ShortcutField.SetResourceReference(Border.BackgroundProperty, "Fill2");
+                ShortcutField.SetResourceReference(Border.BorderBrushProperty, "Stroke2");
+                ShortcutField.BorderThickness = new Thickness(1);
+                ShortcutText.SetResourceReference(TextBlock.ForegroundProperty, "TextBody");
+            }
         }
 
         string TitleFor(bool locked, LockMode mode)
@@ -206,7 +235,7 @@ namespace PawsOff
             else
             {
                 BottomIcon.Text = "\uE765"; // keyboard
-                BottomText.Text = $"{KeyboardBlocker.ShortcutLabel} to lock";
+                BottomText.Text = $"{blocker.Settings.Shortcut.Label} to lock";
                 BottomText.ToolTip = "Locks and unlocks from any app";
             }
         }
@@ -284,9 +313,8 @@ namespace PawsOff
             PawSwitch.IsChecked = blocker.Settings.PawDetection;
             LoginSwitch.IsChecked = blocker.Settings.LaunchAtLogin;
             AutoUpdateSwitch.IsChecked = blocker.Settings.AutoUpdate;
-            ShortcutText.Text = KeyboardBlocker.ShortcutLabel;
-            var v = Assembly.GetExecutingAssembly().GetName().Version;
-            CreditText.Text = $"Made by Zaid · v{v.Major}.{v.Minor}.{v.Build}";
+            var v =Assembly.GetExecutingAssembly().GetName().Version;
+            CreditText.Text = $"Observant Systems · v{v.Major}.{v.Minor}.{v.Build}";
             settingsOpen = true;
             SettingsPage.Visibility = Visibility.Visible;
             Slide(0, animate, null);
@@ -294,6 +322,7 @@ namespace PawsOff
 
         void CloseSettings(bool animate = true)
         {
+            blocker.StopRecordingShortcut();
             settingsOpen = false;
             Slide(320, animate, () => SettingsPage.Visibility = Visibility.Collapsed);
         }
@@ -365,6 +394,15 @@ namespace PawsOff
         }
 
         void OnAutoUpdateSwitch(object sender, RoutedEventArgs e) => blocker.Settings.AutoUpdate = AutoUpdateSwitch.IsChecked == true;
+
+        void OnShortcutField(object sender, MouseButtonEventArgs e)
+        {
+            if (blocker.Recording == ShortcutRecording.Off) blocker.RecordShortcut();
+            else blocker.StopRecordingShortcut();
+            e.Handled = true;
+        }
+
+        void OnShortcutReset(object sender, RoutedEventArgs e) => blocker.ResetShortcut();
 
         // MARK: Actions
 
@@ -443,6 +481,7 @@ namespace PawsOff
         void OnBackgroundClick(object sender, MouseButtonEventArgs e)
         {
             CancelCustom();
+            blocker.StopRecordingShortcut();
             // Let the window be dragged from empty space (the pop-up stays put).
             if (!isPanel && e.ButtonState == MouseButtonState.Pressed) Window.GetWindow(this)?.DragMove();
         }

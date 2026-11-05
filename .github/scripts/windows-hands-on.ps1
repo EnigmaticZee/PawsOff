@@ -33,7 +33,7 @@ $form.Controls.Add($box); $form.Show(); Pump 500
 function Focus-Box { $form.Activate(); $box.Focus() | Out-Null; Pump 300 }
 function Type-Text($keys) { Focus-Box; [System.Windows.Forms.SendKeys]::SendWait($keys); Pump 800 }
 function Typed { $t = $box.Text; $box.Text = ''; Pump 100; return $t }
-function Shortcut { Focus-Box; [System.Windows.Forms.SendKeys]::SendWait('^%+l'); Pump 1000 }
+function Shortcut { Focus-Box; [System.Windows.Forms.SendKeys]::SendWait('^%l'); Pump 1000 }
 
 function Start-App {
   $p = Start-Process -FilePath $Exe -PassThru

@@ -30,13 +30,19 @@ struct CardView: View {
     var body: some View {
         ZStack {
             background
-                // Clicking empty space cancels a custom timer that's being set.
+                // Clicking empty space cancels a custom timer or a shortcut that's being set.
                 .contentShape(Rectangle())
-                .onTapGesture { cancelCustomTimer() }
+                .onTapGesture {
+                    cancelCustomTimer()
+                    blocker.stopRecordingShortcut()
+                }
 
             Group {
                 if showSettings {
-                    SettingsPage(place: place) { withAnimation(.snappy(duration: 0.3)) { showSettings = false } }
+                    SettingsPage(place: place) {
+                        blocker.stopRecordingShortcut()
+                        withAnimation(.snappy(duration: 0.3)) { showSettings = false }
+                    }
                         .transition(.move(edge: .trailing))
                 } else {
                     mainPage
@@ -463,7 +469,7 @@ struct CardView: View {
             .foregroundStyle(ink.text(0.6))
             .animation(.easeInOut(duration: 0.5), value: line)
         } else {
-            hint("keyboard", "\(KeyboardBlocker.shortcutLabel) locks from anywhere")
+            hint("keyboard", "\(blocker.shortcut.label) locks from anywhere")
         }
     }
 

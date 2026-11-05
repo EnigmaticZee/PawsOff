@@ -14,8 +14,8 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Version>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)../VERSION').Trim())</Version>
     <Product>Paws Off</Product>
-    <Company>Zaid</Company>
-    <Copyright>Made by Zaid</Copyright>
+    <Company>Observant Systems</Company>
+    <Copyright>Made by Observant Systems</Copyright>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
   </PropertyGroup>

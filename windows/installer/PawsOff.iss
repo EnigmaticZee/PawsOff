@@ -14,11 +14,11 @@ AppId={{7B3C5E2A-4F1D-4C8B-9E6A-2D5F8A1C3B90}
 AppName=Paws Off
 AppVersion={#AppVersion}
 AppVerName=Paws Off {#AppVersion}
-AppPublisher=Zaid
+AppPublisher=Observant Systems
 AppPublisherURL=https://github.com/EnigmaticZee/PawsOff
 AppSupportURL=https://github.com/EnigmaticZee/PawsOff/issues
 AppUpdatesURL=https://github.com/EnigmaticZee/PawsOff/releases
-AppCopyright=Made by Zaid
+AppCopyright=Made by Observant Systems
 VersionInfoVersion={#AppVersion}
 VersionInfoProductName=Paws Off
 VersionInfoDescription=Paws Off Setup
@@ -58,7 +58,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 WelcomeLabel1=Welcome to Paws Off
 WelcomeLabel2=Pause your keyboard with one click, so you can wipe it down without typing gibberish, or step away without your cat writing your emails.%n%nSetup will install Paws Off {#AppVersion} for you. It takes a few seconds and doesn't need admin rights.
 FinishedHeadingLabel=Paws Off is ready
-FinishedLabel=Paws Off lives in your system tray. Press Ctrl+Alt+Shift+L in any app to lock or unlock the keyboard.
+FinishedLabel=Paws Off lives in your system tray. Press Ctrl+Alt+L in any app to lock or unlock the keyboard (you can change it in Settings).
 ClickFinish=Click Finish to close Setup.
 
 [Tasks]

@@ -63,7 +63,7 @@ For leaving your computer running near curious pets.
 | | |
 | --- | --- |
 | 🐾 **Lives in your menu bar / tray** | Click the paw for the panel; right-click for quick actions (lock for cleaning, lock while away, unlock, quit). Prefer a window? Choose **Start in → Window** in Settings. |
-| ⌨️ **Global shortcut** | Lock or unlock from any app: <kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>L</kbd> on Mac, <kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>Shift</kbd><kbd>L</kbd> on Windows. |
+| ⌨️ **Global shortcut** | Lock or unlock from any app: <kbd>⌃</kbd><kbd>⌘</kbd><kbd>L</kbd> on Mac, <kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>L</kbd> on Windows, or set your own in Settings. |
 | 📊 **Your paw stats** | Lifetime totals, kept only on your computer, shown as rotating one-liners like *"≈ 486 words by paws, never sent"*. |
 | 🔓 **Never locks you out** | The keyboard is released the moment your computer locks, sleeps, switches user or shuts down, so you can always type your password. |
 | 🌗 **Light and dark** | Follows your system (Auto), or pick Light or Dark in ⚙️ Settings. |
@@ -226,11 +226,11 @@ Windows doesn't let normal apps block input to apps running with admin rights. E
 
 - [x] Lives in the menu bar (Mac) and system tray (Windows)
 - [x] Paw detection: locks itself when a paw lands on the keys
+- [x] Custom global shortcut
 
 **Up next**
 
 - [ ] Signed and notarized builds, so there's no first-launch prompt
-- [ ] Custom global shortcut
 
 <br>
 

@@ -1,5 +1,6 @@
 import AppKit
 import ApplicationServices
+import Carbon.HIToolbox
 
 enum LockMode: String, CaseIterable, Identifiable {
     case clean, away
@@ -40,6 +41,32 @@ struct LockSummary {
     var endedAt = Date()
 }
 
+/// The key combination that locks and unlocks from any app. Default ⌃⌘L.
+struct Shortcut: Codable, Equatable {
+    var keyCode: Int64
+    var modifiers: UInt64 // CGEventFlags, only ⌃ ⌥ ⇧ ⌘
+    var key: String       // the key's name on the layout it was recorded with
+
+    static let standard = Shortcut(keyCode: 37, modifiers: CGEventFlags([.maskControl, .maskCommand]).rawValue, key: "L")
+    static let modifierMask: CGEventFlags = [.maskControl, .maskAlternate, .maskShift, .maskCommand]
+
+    /// "⌃⌘L", in the order macOS menus use.
+    var label: String {
+        let flags = CGEventFlags(rawValue: modifiers)
+        return [(CGEventFlags.maskControl, "⌃"), (.maskAlternate, "⌥"), (.maskShift, "⇧"), (.maskCommand, "⌘")]
+            .filter { flags.contains($0.0) }.map(\.1).joined() + key
+    }
+
+    func matches(_ event: CGEvent) -> Bool {
+        event.getIntegerValueField(.keyboardEventKeycode) == keyCode
+            && event.flags.intersection(Self.modifierMask).rawValue == modifiers
+            && event.getIntegerValueField(.keyboardEventAutorepeat) == 0
+    }
+}
+
+/// While the Settings shortcut field is listening for a new combination.
+enum ShortcutRecording { case listening, needsModifier }
+
 /// Lifetime totals, kept only on this Mac (UserDefaults) and never sent anywhere.
 struct PawStats: Codable, Equatable {
     var keysStopped = 0    // every key swallowed, any mode
@@ -77,17 +104,17 @@ final class KeyboardBlocker: ObservableObject {
     @Published var pawDetection = true { didSet { save(pawDetection, Keys.paw) } }
     @Published var appearance: Appearance = .auto { didSet { save(appearance.rawValue, Keys.appearance) } }
     @Published var launchPlace: LaunchPlace = .menuBar { didSet { save(launchPlace.rawValue, Keys.launchPlace) } }
+    @Published private(set) var shortcut = Shortcut.standard { didSet { saveShortcut() } }
+    @Published private(set) var shortcutRecording: ShortcutRecording?
 
     static let timerChoices = [0, 120]
     /// Custom lengths start just above the 2 min preset and go up to 99:59.
     static let customRange = 121...5999
-    static let shortcutLabel = "⌃⌥⌘L"
-    private static let shortcutKeyCode: Int64 = 37 // kVK_ANSI_L
 
     private enum Keys {
         static let mode = "mode", timer = "timerSeconds", phrase = "unlockPhrase", paw = "pawDetection"
         static let appearance = "appearance", launchPlace = "launchPlace"
-        static let customSeconds = "customSeconds", stats = "pawStats"
+        static let customSeconds = "customSeconds", stats = "pawStats", shortcut = "shortcut"
     }
 
     private var persists = false
@@ -95,6 +122,7 @@ final class KeyboardBlocker: ObservableObject {
     private var runLoopSource: CFRunLoopSource?
     private var permissionTimer: Timer?
     private var unlockTimer: Timer?
+    private var recordingTimer: Timer?
     private var observers: [(NotificationCenter, NSObjectProtocol)] = []
     private var typed = ""
     private var heldKeys: [Int64: Date] = [:]
@@ -116,6 +144,9 @@ final class KeyboardBlocker: ObservableObject {
         }
         if let data = defaults.data(forKey: Keys.stats), let saved = try? JSONDecoder().decode(PawStats.self, from: data) {
             stats = saved
+        }
+        if let data = defaults.data(forKey: Keys.shortcut), let saved = try? JSONDecoder().decode(Shortcut.self, from: data) {
+            shortcut = saved
         }
         hasPermission = AXIsProcessTrusted()
         persists = true
@@ -152,6 +183,28 @@ final class KeyboardBlocker: ObservableObject {
 
     func resetStats() { stats = PawStats() }
 
+    // MARK: Shortcut
+
+    /// Listens for the next key combination (through the event tap, so no app sees it) and makes
+    /// it the shortcut. Esc cancels. It gives up on its own after 10 seconds, so keys are never
+    /// held back for long.
+    func recordShortcut() {
+        guard !isActive, hasPermission else { return }
+        shortcutRecording = .listening
+        recordingTimer?.invalidate()
+        let timer = Timer(timeInterval: 10, repeats: false) { [weak self] _ in self?.stopRecordingShortcut() }
+        RunLoop.main.add(timer, forMode: .common)
+        recordingTimer = timer
+    }
+
+    func stopRecordingShortcut() {
+        recordingTimer?.invalidate()
+        recordingTimer = nil
+        if shortcutRecording != nil { shortcutRecording = nil }
+    }
+
+    func resetShortcut() { shortcut = .standard }
+
     static func clampCustom(_ seconds: Int) -> Int {
         min(max(seconds, customRange.lowerBound), customRange.upperBound)
     }
@@ -178,6 +231,7 @@ final class KeyboardBlocker: ObservableObject {
         guard !isActive else { return }
         guard hasPermission, tap != nil else { requestPermission(); return }
 
+        stopRecordingShortcut()
         activeMode = requested ?? mode
         pawTriggered = byPaws
         keysCaught = byPaws ? heldKeys.count : 0
@@ -277,7 +331,12 @@ final class KeyboardBlocker: ObservableObject {
 
     /// Runs on the main run loop for every keyboard event. Keep it cheap.
     private func shouldSwallow(_ type: CGEventType, _ event: CGEvent) -> Bool {
-        if type == .keyDown && isShortcut(event) {
+        // Recording a new shortcut: keys go to the shortcut field only; modifiers pass through.
+        if shortcutRecording != nil && !isActive {
+            if type == .keyDown { record(event) }
+            return type == .keyDown || type == .keyUp
+        }
+        if type == .keyDown && shortcut.matches(event) {
             toggle()
             return true
         }
@@ -295,12 +354,47 @@ final class KeyboardBlocker: ObservableObject {
         return false
     }
 
-    private func isShortcut(_ event: CGEvent) -> Bool {
-        let flags = event.flags
-        return event.getIntegerValueField(.keyboardEventKeycode) == Self.shortcutKeyCode
-            && flags.contains([.maskControl, .maskAlternate, .maskCommand])
-            && !flags.contains(.maskShift)
-            && event.getIntegerValueField(.keyboardEventAutorepeat) == 0
+    /// A shortcut needs ⌃, ⌥ or ⌘, so it can't take a plain letter away from every app.
+    private func record(_ event: CGEvent) {
+        guard event.getIntegerValueField(.keyboardEventAutorepeat) == 0 else { return }
+        let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
+        let modifiers = event.flags.intersection(Shortcut.modifierMask)
+        if keyCode == Int64(kVK_Escape) && modifiers.isEmpty {
+            stopRecordingShortcut()
+        } else if modifiers.isDisjoint(with: [.maskControl, .maskAlternate, .maskCommand]) {
+            shortcutRecording = .needsModifier
+        } else {
+            shortcut = Shortcut(keyCode: keyCode, modifiers: modifiers.rawValue, key: Self.keyName(keyCode))
+            stopRecordingShortcut()
+        }
+    }
+
+    private static let specialKeys: [Int: String] = [
+        kVK_Return: "↩", kVK_Tab: "⇥", kVK_Space: "Space", kVK_Delete: "⌫", kVK_ForwardDelete: "⌦",
+        kVK_ANSI_KeypadEnter: "⌤", kVK_Home: "↖", kVK_End: "↘", kVK_PageUp: "⇞", kVK_PageDown: "⇟",
+        kVK_LeftArrow: "←", kVK_RightArrow: "→", kVK_DownArrow: "↓", kVK_UpArrow: "↑",
+        kVK_F1: "F1", kVK_F2: "F2", kVK_F3: "F3", kVK_F4: "F4", kVK_F5: "F5", kVK_F6: "F6",
+        kVK_F7: "F7", kVK_F8: "F8", kVK_F9: "F9", kVK_F10: "F10", kVK_F11: "F11", kVK_F12: "F12",
+        kVK_F13: "F13", kVK_F14: "F14", kVK_F15: "F15", kVK_F16: "F16", kVK_F17: "F17", kVK_F18: "F18",
+        kVK_F19: "F19", kVK_F20: "F20",
+    ]
+
+    /// What the key prints on the current layout, without modifiers ("L", "7", "Ö"), or its symbol.
+    private static func keyName(_ keyCode: Int64) -> String {
+        if let name = specialKeys[Int(keyCode)] { return name }
+        guard let source = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue(),
+              let data = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)
+        else { return "Key \(keyCode)" }
+        let layout = Unmanaged<CFData>.fromOpaque(data).takeUnretainedValue()
+        var deadKeys: UInt32 = 0
+        var chars = [UniChar](repeating: 0, count: 4)
+        var length = 0
+        let status = CFDataGetBytePtr(layout).withMemoryRebound(to: UCKeyboardLayout.self, capacity: 1) {
+            UCKeyTranslate($0, UInt16(keyCode), UInt16(kUCKeyActionDisplay), 0, UInt32(LMGetKbdType()),
+                           OptionBits(kUCKeyTranslateNoDeadKeysBit), &deadKeys, chars.count, &length, &chars)
+        }
+        let name = String(utf16CodeUnits: chars, count: length).trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        return status == noErr && !name.isEmpty ? name : "Key \(keyCode)"
     }
 
     /// Keeps the last few typed characters and reports when they spell the unlock phrase.
@@ -380,6 +474,10 @@ final class KeyboardBlocker: ObservableObject {
         if persists, let data = try? JSONEncoder().encode(stats) { UserDefaults.standard.set(data, forKey: Keys.stats) }
     }
 
+    private func saveShortcut() {
+        if persists, let data = try? JSONEncoder().encode(shortcut) { UserDefaults.standard.set(data, forKey: Keys.shortcut) }
+    }
+
     private func save(_ value: Any, _ key: String) {
         if persists { UserDefaults.standard.set(value, forKey: key) }
     }
@@ -403,14 +501,23 @@ final class KeyboardBlocker: ObservableObject {
 
         for (center, name, reason) in events {
             let token = center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                self?.stopRecordingShortcut()
                 self?.stop(reason: reason)
             }
             observers.append((center, token))
         }
+
+        // Recording a shortcut also holds keys back, so it ends as soon as you switch to another app.
+        let local = NotificationCenter.default
+        let token = local.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.stopRecordingShortcut()
+        }
+        observers.append((local, token))
     }
 
     deinit {
         unlockTimer?.invalidate()
+        recordingTimer?.invalidate()
         permissionTimer?.invalidate()
         if let tap {
             CGEvent.tapEnable(tap: tap, enable: false)
@@ -466,6 +573,14 @@ extension KeyboardBlocker {
         case .autoReleased:
             b.lastSummary = LockSummary(mode: .clean, duration: 95, keys: 31, pawTriggered: false, reason: "Screen locked")
         }
+        return b
+    }
+
+    /// For the Settings renders: the shortcut field listening, or set to something other than the default.
+    static func previewShortcut(_ recording: ShortcutRecording?, custom: Bool = false) -> KeyboardBlocker {
+        let b = preview(.withStats)
+        b.shortcutRecording = recording
+        if custom { b.shortcut = Shortcut(keyCode: 40, modifiers: CGEventFlags([.maskShift, .maskCommand]).rawValue, key: "K") }
         return b
     }
 }

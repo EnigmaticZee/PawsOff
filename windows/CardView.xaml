@@ -238,11 +238,18 @@
                         </StackPanel>
                     </Grid>
                     <Rectangle Height="1" Fill="{DynamicResource Stroke1}" Margin="10,0" />
-                    <Grid Height="40" Margin="10,0" Background="Transparent" ToolTip="Locks and unlocks from any app.">
+                    <Grid Height="40" Margin="10,0" Background="Transparent"
+                          ToolTip="Locks and unlocks from any app. Click, then press the keys you want; Esc cancels.">
                         <TextBlock Text="Shortcut" Style="{StaticResource RowTitle}" />
-                        <Border HorizontalAlignment="Right" VerticalAlignment="Center" CornerRadius="6" Background="{DynamicResource Fill2}"
-                                BorderBrush="{DynamicResource Stroke2}" BorderThickness="1" Padding="7,2">
-                            <TextBlock x:Name="ShortcutText" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource TextBody}" />
+                        <!-- Looks like the phrase field. Click to listen for a new combination (outlined in coral); the arrow goes back to the default. -->
+                        <Border x:Name="ShortcutField" HorizontalAlignment="Right" VerticalAlignment="Center" Width="110" Height="24" CornerRadius="7"
+                                Background="{DynamicResource Fill2}" BorderBrush="{DynamicResource Stroke2}" BorderThickness="1" Padding="7,0,2,0"
+                                Cursor="Hand" MouseLeftButtonDown="OnShortcutField">
+                            <DockPanel LastChildFill="True">
+                                <Button x:Name="ShortcutReset" DockPanel.Dock="Right" Style="{StaticResource BarIcon}" Content="&#xE7A7;" FontSize="10"
+                                        Width="20" Height="20" Click="OnShortcutReset" />
+                                <TextBlock x:Name="ShortcutText" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            </DockPanel>
                         </Border>
                     </Grid>
                 </StackPanel>

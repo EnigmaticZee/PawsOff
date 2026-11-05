@@ -40,6 +40,7 @@ namespace PawsOff
         bool autoUpdate = true;
         DateTime lastUpdateCheck = DateTime.MinValue;
         string lastAnnouncedVersion = "";
+        Shortcut shortcut = Shortcut.Standard;
 
         /// True the very first time Paws Off runs (nothing saved yet).
         public bool IsFirstRun { get; private set; }
@@ -64,6 +65,7 @@ namespace PawsOff
                 if (key.GetValue("PawDetection") is int paw) s.pawDetection = paw != 0;
                 if (Enum.TryParse(key.GetValue("Theme") as string, out ThemeChoice th)) s.theme = th;
                 if (Enum.TryParse(key.GetValue("StartIn") as string, out StartPlace sp)) s.startIn = sp;
+                if (key.GetValue("ShortcutKey") is int sk && key.GetValue("ShortcutModifiers") is int sm) s.shortcut = new Shortcut(sk, (ShortcutModifiers)sm);
             }
             return s;
         }
@@ -132,6 +134,18 @@ namespace PawsOff
         {
             get => lastAnnouncedVersion;
             set { lastAnnouncedVersion = value ?? ""; Save("LastAnnouncedVersion", lastAnnouncedVersion); }
+        }
+
+        /// Locks and unlocks from any app.
+        public Shortcut Shortcut
+        {
+            get => shortcut;
+            set
+            {
+                shortcut = value;
+                Save("ShortcutKey", value.Key);
+                Save("ShortcutModifiers", (int)value.Modifiers);
+            }
         }
 
         /// Last custom auto-unlock length the user entered (seconds).

@@ -29,6 +29,7 @@ final class MenuBarController: NSObject {
         panel = DropDownPanel(content: card, takesFocus: true) { [weak self] in
             guard let self else { return }
             self.item?.button?.highlight(false)
+            self.blocker.stopRecordingShortcut()
             // Next time it opens on the main screen, not wherever it was left (e.g. Settings).
             // (After the current click finishes: it may have come from a button on this card.)
             DispatchQueue.main.async { card.rootView = self.freshCard() }

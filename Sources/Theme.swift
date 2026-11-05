@@ -160,17 +160,3 @@ struct GlowSwitchStyle: ToggleStyle {
         }
     }
 }
-
-struct Keycap: View {
-    var text: String
-    @Environment(\.ink) private var ink
-    var body: some View {
-        Text(text)
-            .font(.system(size: 12, weight: .semibold, design: .rounded))
-            .foregroundStyle(ink.text(0.85))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(RoundedRectangle(cornerRadius: 6).fill(ink.fill(0.1)))
-            .overlay(RoundedRectangle(cornerRadius: 6).stroke(ink.stroke(0.16), lineWidth: 1))
-    }
-}

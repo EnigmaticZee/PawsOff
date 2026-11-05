@@ -206,7 +206,7 @@ func wizardLarge(_ w: CGFloat, _ h: CGFloat) {
     let d = w * 0.56, cx = w / 2, cy = h * 0.58
     icon(in: NSRect(x: cx - d / 2, y: cy - d / 2, width: d, height: d))
     text("Paws Off", rounded(w * 0.125, .bold), .white, centerX: cx, y: h * 0.25)
-    text("Made by Zaid", rounded(w * 0.06, .medium), NSColor.white.withAlphaComponent(0.6), centerX: cx, y: h * 0.19)
+    text("Made by Observant Systems", rounded(w * 0.06, .medium), NSColor.white.withAlphaComponent(0.6), centerX: cx, y: h * 0.19)
 }
 
 func wizardSmall(_ s: CGFloat) {

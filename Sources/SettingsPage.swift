@@ -59,8 +59,8 @@ struct SettingsPage: View {
                         .toggleStyle(GlowSwitchStyle()).fixedSize()
                 }
                 divider
-                row("Shortcut", help: "Locks and unlocks from any app.") {
-                    Keycap(text: KeyboardBlocker.shortcutLabel)
+                row("Shortcut", help: "Locks and unlocks from any app. Click, then press the keys you want; Esc cancels.") {
+                    shortcutField
                 }
                 divider
                 row("Updates", help: "Checks GitHub about once a day and offers new versions. Nothing else is sent.") {
@@ -147,9 +147,52 @@ struct SettingsPage: View {
         .overlay(shape.stroke(ink.stroke(0.14), lineWidth: 1))
     }
 
+    /// Looks like the phrase field above it. Click to listen for a new combination (outlined in
+    /// coral); ↺ goes back to the default.
+    @ViewBuilder
+    private var shortcutField: some View {
+        let shape = RoundedRectangle(cornerRadius: 7, style: .continuous)
+        if let recording = blocker.shortcutRecording {
+            Text(recording == .needsModifier ? "Add ⌃, ⌥ or ⌘" : "Press keys…")
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                .foregroundStyle(recording == .needsModifier ? Palette.idle[0] : ink.text(0.55))
+                .padding(.horizontal, 8)
+                .frame(width: 110, height: 24, alignment: .leading)
+                .background(shape.fill(Palette.idle[0].opacity(ink.dark ? 0.14 : 0.1)))
+                .overlay(shape.stroke(Palette.idle[0], lineWidth: 1.5))
+                .contentShape(shape)
+                .onTapGesture { blocker.stopRecordingShortcut() }
+        } else {
+            HStack(spacing: 4) {
+                Text(blocker.shortcut.label)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundStyle(ink.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                Spacer(minLength: 0)
+                if blocker.shortcut != .standard {
+                    Button { blocker.resetShortcut() } label: {
+                        Image(systemName: "arrow.counterclockwise.circle.fill")
+                            .font(.system(size: 13))
+                            .foregroundStyle(ink.text(0.35))
+                    }
+                    .buttonStyle(.plain)
+                    .help("Back to \(Shortcut.standard.label)")
+                }
+            }
+            .padding(.leading, 8)
+            .padding(.trailing, 5)
+            .frame(width: 110, height: 24)
+            .background(shape.fill(ink.fill(0.08)))
+            .overlay(shape.stroke(ink.stroke(0.14), lineWidth: 1))
+            .contentShape(shape)
+            .onTapGesture { blocker.recordShortcut() }
+        }
+    }
+
     private var credit: String {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-        return version.map { "Made by Zaid · v\($0)" } ?? "Made by Zaid"
+        return version.map { "Observant Systems · v\($0)" } ?? "Observant Systems"
     }
 
     private var statsHelp: String {
