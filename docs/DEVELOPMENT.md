@@ -73,7 +73,16 @@ Read `README.md` first, then these rules before changing anything.
   Xcode installed (SwiftUI's macros aren't in the Command Line Tools); `build.sh` picks Xcode on its own.
 - Keep the stable signing requirement in `build.sh` (`designated => identifier "local.pawsoff"`); the
   default ad-hoc requirement is a per-build cdhash, which silently invalidates the Accessibility grant
-  and would break Sparkle's update check. A Developer ID signature (for sharing) replaces this.
+  and would break Sparkle's update check. A Developer ID signature (for sharing) replaces this:
+  `SIGN_IDENTITY="Developer ID Application: …" Tools/make-dmg.sh` signs the app,
+  Sparkle's helpers and the DMG with the hardened runtime and a secure timestamp. Its requirement
+  (identifier plus team) still satisfies grants and update checks made against the ad-hoc one.
+- **Notarizing:** with an App Store Connect API key in `APP_STORE_CONNECT_KEY` (path to the .p8),
+  `APP_STORE_CONNECT_KEY_ID` and `APP_STORE_CONNECT_ISSUER_ID` as well, `Tools/make-dmg.sh` also
+  notarizes and staples the app and the DMG (`Tools/notarize.sh`). The tag build in CI does the same from
+  the secrets `DEVELOPER_ID_P12`, `DEVELOPER_ID_P12_PASSWORD`, `APP_STORE_CONNECT_KEY`,
+  `APP_STORE_CONNECT_KEY_ID` and `APP_STORE_CONNECT_ISSUER_ID`, and stays ad hoc until they exist. Branch
+  builds are always ad hoc.
 - **Sparkle** (Mac updates) is vendored in `Vendor/Sparkle` (2.10.0); never edit the framework.
   `build.sh` embeds and signs it. Updates are found via `appcast.xml` on the latest GitHub release and
   must be signed with the EdDSA key: the private key lives in the owner's Keychain (account `pawsoff`)
@@ -88,9 +97,9 @@ Read `README.md` first, then these rules before changing anything.
   `windows/Assets/PawsOff.ico` (also the tray icon), `docs/images/icon.png` and the installer art.
 - **DMG first-launch guide:** while the app isn't notarized, the DMG window (660 x 596, its bottom kept clear for
   Finder's path and status bars) shows three
-  steps for the one-time "Open Anyway" prompt, each with the button to look for. Once notarized,
-  build with `NOTARIZED=1 Tools/make-dmg.sh` (set it in the CI `macos` job) for the clean 660 x 400
-  window (`dmg-background-notarized`), and drop the "Open Anyway" steps from the README and website.
+  steps for the one-time "Open Anyway" prompt, each with the button to look for. A notarized build
+  gets the clean 660 x 400 window (`dmg-background-notarized`) by itself; the release notes switch their
+  install steps the same way (`dist/notarized`).
 - Installers: `Tools/make-installer-art.swift` draws the DMG background and the Inno Setup wizard bitmaps
   into `Assets/installer`. The DMG layout lives in `Tools/dmg-settings.py`. The Windows wizard is
   `windows/installer/PawsOff.iss`; CI screenshots it and tests a silent install and uninstall.

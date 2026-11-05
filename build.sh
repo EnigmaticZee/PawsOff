@@ -67,12 +67,20 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-# Ad-hoc signature with a stable requirement: macOS ties the Accessibility grant to the
-# designated requirement, and the default ad-hoc one (cdhash) changes on every build.
-# Sign Sparkle's helpers inside-out, then the app.
+# Signing, Sparkle's helpers inside-out, then the app.
+# Default: ad-hoc with a stable requirement. macOS ties the Accessibility grant to the designated
+# requirement, and the default ad-hoc one (cdhash) changes on every build.
+# SIGN_IDENTITY="Developer ID Application: …" signs for sharing instead: hardened runtime, secure
+# timestamp and Apple's own requirement (identifier plus team, which still satisfies grants and
+# Sparkle checks made against the ad-hoc identifier "local.pawsoff").
 SPARKLE="$APP/Contents/Frameworks/Sparkle.framework/Versions/B"
-for part in "$SPARKLE"/XPCServices/*.xpc "$SPARKLE/Autoupdate" "$SPARKLE/Updater.app" "$APP/Contents/Frameworks/Sparkle.framework"; do
-  codesign --force --sign - "$part"
-done
-codesign --force --sign - -r='designated => identifier "local.pawsoff"' "$APP"
+PARTS=("$SPARKLE"/XPCServices/*.xpc "$SPARKLE/Autoupdate" "$SPARKLE/Updater.app" "$APP/Contents/Frameworks/Sparkle.framework")
+if [[ -n "${SIGN_IDENTITY:-}" ]]; then
+  SIGN=(--force --sign "$SIGN_IDENTITY" --options runtime --timestamp)
+  for part in $PARTS; do codesign "${SIGN[@]}" --preserve-metadata=entitlements "$part"; done
+  codesign "${SIGN[@]}" "$APP"
+else
+  for part in $PARTS; do codesign --force --sign - "$part"; done
+  codesign --force --sign - -r='designated => identifier "local.pawsoff"' "$APP"
+fi
 echo "Built $APP $VERSION ($BUILD_NUMBER)"
