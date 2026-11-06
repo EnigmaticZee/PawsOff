@@ -3,7 +3,7 @@
 #   curl -fsSL https://enigmaticzee.github.io/PawsOff/install.sh | bash
 # It downloads the latest release's DMG from GitHub, copies "Paws Off.app" into /Applications
 # (or ~/Applications if that isn't writable), and opens it. Files downloaded with curl aren't
-# marked "downloaded from the internet", so macOS opens the app without the "Open Anyway" step.
+# marked "downloaded from the internet", so macOS opens the app without asking first.
 set -euo pipefail
 
 URL="https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg"

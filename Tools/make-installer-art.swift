@@ -80,10 +80,10 @@ func saveBMP(_ rep: NSBitmapImageRep, _ name: String) {
 
 // MARK: Mac DMG window. Finder places the icons at y = 200 from the top (Tools/dmg-settings.py).
 // Two versions:
-// - dmg-background: today's, 660 x 596. Below the drag arrow, a step-by-step guide to the one-time
-//   "Open Anyway" prompt (the app isn't notarized yet).
-// - dmg-background-notarized: the clean 660 x 400 window with no guide, for once the app is notarized
-//   (Tools/make-dmg.sh: NOTARIZED=1).
+// - dmg-background: 660 x 596, for builds that aren't notarized. Below the drag arrow, a step-by-step
+//   guide to the one-time "Open Anyway" prompt.
+// - dmg-background-notarized: the clean 660 x 400 window with no guide, used by releases
+//   (Tools/make-dmg.sh picks it whenever it notarizes).
 
 func paragraph(_ string: String, _ font: NSFont, _ color: NSColor, bold: [String] = [], align: NSTextAlignment = .left) -> NSAttributedString {
     let style = NSMutableParagraphStyle(); style.alignment = align; style.lineSpacing = 2

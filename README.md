@@ -109,30 +109,17 @@ curl -fsSL https://enigmaticzee.github.io/PawsOff/install.sh | bash
 irm https://enigmaticzee.github.io/PawsOff/install.ps1 | iex
 ```
 
-Each downloads the latest release from this page, installs it (just for you, no admin rights on Windows) and opens Paws Off, without the security prompts below. Curious what they do? Read [`install.sh`](site/install.sh) and [`install.ps1`](site/install.ps1); they're short. On a Mac, click **Grant Access** once to let it pause your keyboard.
+Each downloads the latest release from this page, installs it (just for you, no admin rights on Windows) and opens Paws Off, with no security prompts. Curious what they do? Read [`install.sh`](site/install.sh) and [`install.ps1`](site/install.ps1); they're short. On a Mac, click **Grant Access** once to let it pause your keyboard.
 
-Paws Off isn't signed with a paid Apple or Microsoft developer certificate yet, so if you download it the usual way, both systems ask you to confirm the first time you open it. It's open source: you can read every line, or [build it yourself](#%EF%B8%8F-development).
+The Mac app is signed with a Developer ID and notarized by Apple, so it opens like any other app. The Windows app isn't code-signed yet, so Windows asks you to confirm once when you run the installer. Both are open source: you can read every line, or [build it yourself](#%EF%B8%8F-development).
 
 ### 🍎 Mac
 
 1. **[Download PawsOff-mac.dmg](https://github.com/EnigmaticZee/PawsOff/releases/latest/download/PawsOff-mac.dmg)**, open it, and drag **Paws Off** into **Applications**. (Using Homebrew? See [below](#-homebrew).)
-2. **Open it once.** Double-click **Paws Off** in Applications. macOS says *"Paws Off" Not Opened*. Click **Done**.
-3. **Allow it.** Open **System Settings → Privacy & Security**, scroll down to **Security**, and next to *"Paws Off" was blocked* click **Open Anyway**. Enter your password, then click **Open Anyway** again.
-4. **Give it keyboard access.** In Paws Off, click **Grant Access**, then switch on **Paws Off** in **System Settings → Privacy & Security → Accessibility**.
+2. **Open it.** Double-click **Paws Off** in Applications. If macOS checks that you meant to open an app from the internet, click **Open**.
+3. **Give it keyboard access.** In Paws Off, click **Grant Access**, then switch on **Paws Off** in **System Settings → Privacy & Security → Accessibility**.
 
 From then on Paws Off starts in your menu bar: look for the 🐾 at the top of your screen.
-
-<details>
-<summary>Prefer Terminal? Skip steps 2–3 with one command</summary>
-<br>
-
-This removes the "downloaded from the internet" flag that macOS checks, for this app only:
-
-```sh
-xattr -dr com.apple.quarantine "/Applications/Paws Off.app"
-```
-
-</details>
 
 <details>
 <summary>The Accessibility switch is on, but nothing gets locked</summary>
@@ -150,7 +137,7 @@ Prefer the Terminal? Install with [Homebrew](https://brew.sh):
 brew install --cask enigmaticzee/tap/paws-off
 ```
 
-Then do steps 2–4 above once: open the app, click **Open Anyway**, and give it keyboard access. (The Terminal shortcut in the box above works here too.)
+Then do steps 2–3 above once: open the app and give it keyboard access.
 
 - **Updates:** Paws Off updates itself, so there's nothing to run. (`brew upgrade` skips it on purpose.)
 - **Uninstall:** `brew uninstall --cask paws-off`. Add `--zap` to remove its settings too.
@@ -189,12 +176,6 @@ No. It has to see key presses to block them, but it never records what you type:
 </details>
 
 <details>
-<summary><b>Why does macOS say "Paws Off" can't be opened?</b></summary>
-<br>
-Paws Off isn't notarized by Apple yet (that needs a paid developer account, and it's on the way). macOS asks you to confirm any app like that once: <b>System Settings → Privacy & Security → Open Anyway</b>. Or install with the <a href="#-quickest-one-line">one-line installer</a>, which skips the prompt.
-</details>
-
-<details>
 <summary><b>Why does the Mac version need Accessibility access?</b></summary>
 <br>
 macOS only lets apps with Accessibility access intercept keystrokes. Paws Off uses it only to drop key presses while locked and to notice the shortcut and paw patterns. Windows needs no permission.
@@ -227,10 +208,11 @@ Windows doesn't let normal apps block input to apps running with admin rights. E
 - [x] Lives in the menu bar (Mac) and system tray (Windows)
 - [x] Paw detection: locks itself when a paw lands on the keys
 - [x] Custom global shortcut
+- [x] Notarized by Apple (Mac)
 
 **Up next**
 
-- [ ] Signed and notarized builds, so there's no first-launch prompt
+- [ ] Signed Windows builds, so there's no SmartScreen prompt
 
 <br>
 

@@ -6,9 +6,10 @@ minutes each. If anything ever gets stuck: click **Unlock**, or lock the compute
 Lock Screen; Windows: Ctrl+Alt+Delete → Lock), and Paws Off lets go.
 
 ## Install (fresh machine or user account if you can)
-- [ ] One-line installer (from the website) installs and opens the app, without an "Open Anyway" prompt.
+- [ ] One-line installer (from the website) installs and opens the app, without any prompt.
 - [ ] Mac: **Grant Access** → Accessibility switch on → the card switches to "Ready to clean?".
-- [ ] DMG path: drag to Applications, "Open Anyway", grant access: works too.
+- [ ] DMG path: drag to Applications and open it: at most macOS's "downloaded from the internet" check
+  (click **Open**), never "Not Opened" or "Open Anyway". Grant access: works too.
 - [ ] Windows installer path: SmartScreen "Run anyway", setup, app starts in the tray.
 
 ## Clean mode
