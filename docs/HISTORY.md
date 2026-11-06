@@ -1,6 +1,6 @@
 # Version history
 
-## 2.1.0 — 2026-11-04
+## 2.1.0 — 2026-11-06
 Your keyboard, your shortcut.
 
 - **Pick your own shortcut.** In Settings, click the shortcut, press the keys you'd like, done. Any
