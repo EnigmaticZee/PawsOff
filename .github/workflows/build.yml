@@ -33,6 +33,7 @@ jobs:
           security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
           IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" | grep -o '"Developer ID Application: [^"]*"' | head -1 | tr -d '"')
           test -n "$IDENTITY"
+          echo "::add-mask::$IDENTITY" # the log is public; keep the certificate's name out of it
           echo "SIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
       - name: Set up the notary key
         if: startsWith(github.ref, 'refs/tags/v') && env.P8 != ''
