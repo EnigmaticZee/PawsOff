@@ -254,7 +254,7 @@ dotnet publish windows/PawsOff.csproj -c Release -o out
 
 <div align="center">
 
-Made with 🐾 by **Zee** · [MIT License](LICENSE)<br>
+Made with 🐾 by **Observant Systems** · [MIT License](LICENSE)<br>
 <sub>Windows app font: [Nunito](https://github.com/googlefonts/nunito) by the Nunito Project Authors, [SIL Open Font License](windows/Fonts/OFL.txt) · Updates by [Sparkle](https://sparkle-project.org)</sub>
 
 </div>
